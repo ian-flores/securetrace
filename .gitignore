@@ -3,8 +3,6 @@
 .Rdata
 .httr-oauth
 .DS_Store
-man/
-NAMESPACE
 *.o
 *.so
 *.dll
