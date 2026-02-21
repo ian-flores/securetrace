@@ -1,0 +1,28 @@
+# Trace a Secure Code Execution
+
+Wraps a securer session execution with a span. Requires the securer
+package.
+
+## Usage
+
+``` r
+trace_execution(session, code, ...)
+```
+
+## Arguments
+
+- session:
+
+  A securer SecureSession object.
+
+- code:
+
+  Code string to execute.
+
+- ...:
+
+  Additional arguments passed to `session$execute()`.
+
+## Value
+
+The execution result.
