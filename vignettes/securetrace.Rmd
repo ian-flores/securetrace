@@ -1,0 +1,139 @@
+---
+title: "Getting Started with securetrace"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with securetrace}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## Overview
+
+securetrace provides observability and tracing for R-based LLM agent workflows.
+It tracks structured traces with spans, records token and cost accounting,
+monitors latency, and exports data as JSONL for analysis.
+
+## Basic Usage
+
+Create a trace with spans to track an agent workflow:
+
+```{r}
+library(securetrace)
+
+# Wrap your workflow in a trace
+result <- with_trace("my-agent-run", {
+
+  # Each operation gets its own span
+  with_span("llm-call", type = "llm", {
+    record_tokens(1500, 300, model = "claude-sonnet-4-5")
+    "The answer is 42"
+  })
+})
+```
+
+## Token and Cost Tracking
+
+securetrace includes built-in pricing for popular LLM models:
+
+```{r}
+# View known model pricing (per 1M tokens)
+model_costs()
+
+# Calculate cost for a specific call
+calculate_cost("claude-opus-4-6", input_tokens = 5000, output_tokens = 1000)
+
+# Register custom model pricing
+add_model_cost("my-fine-tuned-model", input_price = 5, output_price = 20)
+```
+
+## Exporting Traces
+
+Export completed traces to JSONL files or the console:
+```{r}
+# JSONL file export
+exp <- jsonl_exporter("traces.jsonl")
+
+with_trace("exported-run", exporter = exp, {
+  with_span("work", type = "tool", {
+    42
+  })
+})
+
+# Console export for debugging
+debug_exp <- console_exporter(verbose = TRUE)
+
+# Combine multiple exporters
+both <- multi_exporter(exp, debug_exp)
+
+# Or set a default exporter for all traces
+set_default_exporter(exp)
+```
+
+## Integration Helpers
+
+securetrace provides helpers for common operations:
+
+```{r}
+# Wrap tool calls
+result <- with_trace("tools", {
+  trace_tool_call("calculator", function(x) x * 2, 21)
+})
+
+# Wrap guardrail checks
+with_trace("guarded", {
+  trace_guardrail("length-check", function(x) nchar(x) < 1000, user_input)
+})
+```
+
+## Nested Spans
+
+Spans can be nested to represent hierarchical operations:
+
+```{r}
+with_trace("complex-workflow", {
+  with_span("planning", type = "llm", {
+    record_tokens(2000, 500, model = "claude-sonnet-4-5")
+
+    with_span("tool-use", type = "tool", {
+      # Tool execution within the planning step
+      42
+    })
+  })
+
+  with_span("summarize", type = "llm", {
+    record_tokens(1000, 200, model = "claude-haiku-4-5")
+    "Summary complete"
+  })
+})
+```
+
+## Trace Summary
+
+Get a formatted summary of any trace:
+
+```{r}
+tr <- Trace$new("manual-trace")
+tr$start()
+s <- Span$new("llm", type = "llm")
+s$start()
+s$set_tokens(input = 5000, output = 1000)
+s$set_model("claude-opus-4-6")
+s$end()
+tr$add_span(s)
+tr$end()
+
+tr$summary()
+# Trace: manual-trace (completed)
+#   Duration: 0.01s
+#   Spans: 1
+#   Tokens: 5000 input, 1000 output
+#   Cost: $0.150000
+```

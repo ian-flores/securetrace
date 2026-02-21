@@ -1,0 +1,53 @@
+url: https://ian-flores.github.io/securetrace/
+
+template:
+  bootstrap: 5
+
+reference:
+  - title: Traces and Spans
+    contents:
+      - Trace
+      - Span
+      - trace_event
+      - is_trace_event
+
+  - title: Context Management
+    contents:
+      - with_trace
+      - with_span
+      - current_trace
+      - current_span
+      - set_default_exporter
+
+  - title: Metrics
+    contents:
+      - record_tokens
+      - record_latency
+      - record_metric
+
+  - title: Cost
+    contents:
+      - model_costs
+      - calculate_cost
+      - add_model_cost
+      - trace_total_cost
+
+  - title: Exporters
+    contents:
+      - new_exporter
+      - jsonl_exporter
+      - console_exporter
+      - export_trace
+      - multi_exporter
+
+  - title: Integrations
+    contents:
+      - trace_llm_call
+      - trace_tool_call
+      - trace_guardrail
+      - trace_execution
+
+articles:
+  - title: Getting Started
+    contents:
+      - securetrace
