@@ -7,7 +7,8 @@ Description: Structured traces with spans, token and cost accounting,
     latency monitoring, and JSONL export for R-based LLM agent workflows.
     Follows OpenTelemetry-inspired patterns adapted for R AI applications.
 License: MIT + file LICENSE
-URL: https://github.com/ian-flores/securetrace
+URL: https://github.com/ian-flores/securetrace,
+    https://ian-flores.github.io/securetrace/
 BugReports: https://github.com/ian-flores/securetrace/issues
 Imports:
     cli (>= 3.0.0),
