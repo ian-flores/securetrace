@@ -1,9 +1,11 @@
-# Observability Integration
+# Core Observability Concepts
 
 securetrace provides structured observability for R-based LLM agent
-workflows. This vignette covers how to instrument your agents with
-traces and spans, record token and cost data, and export traces for
-analysis.
+workflows. This vignette covers the core building blocks – traces,
+spans, events, and metrics – and shows how they compose to give you full
+visibility into agent behavior. For exporting traces to files and
+external systems, see
+[`vignette("exporters")`](https://ian-flores.github.io/securetrace/articles/exporters.md).
 
 ## Core Concepts
 
@@ -18,13 +20,20 @@ primitives:
 - **Event** – A discrete point-in-time occurrence within a span, such as
   a model selection or a prompt being sent.
 
+Together, these three primitives let you represent arbitrarily complex
+agent workflows as structured data. A trace is the “story” of an agent
+run; spans are the “chapters”; events are the “sentences” within each
+chapter.
+
 ## Creating Traces and Spans
 
 The simplest way to instrument code is with the
 [`with_trace()`](https://ian-flores.github.io/securetrace/reference/with_trace.md)
 and
 [`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md)
-context managers:
+context managers. These handle the lifecycle for you: creating the
+object, starting the clock, evaluating your code, and ending the object
+when the block completes (even if an error occurs).
 
 ``` r
 library(securetrace)
@@ -53,12 +62,25 @@ at any point during evaluation.
 
 ## Span Nesting
 
-Spans can nest to represent hierarchical operations. When you call
+Agent workflows are hierarchical. A planning step might invoke a tool,
+which itself makes a sub-call. Spans nest naturally to capture this
+structure. When you call
 [`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md)
 inside another
 [`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md),
 the inner span automatically records the outer span’s ID as its
 `parent_id`:
+
+    Trace: "nested-workflow"
+    |
+    |-- Span: "planning" (type: llm)
+    |   |-- tokens: 2000 in / 500 out
+    |   |
+    |   '-- Span: "calculator" (type: tool)    <-- child of "planning"
+    |       '-- result: 4
+    |
+    '-- Span: "summarize" (type: llm)          <-- sibling of "planning"
+        '-- tokens: 1000 in / 200 out
 
 ``` r
 result <- with_trace("nested-workflow", {
@@ -91,8 +113,12 @@ Each span knows its parent. When the trace is serialized with
 
 ## Manual Trace and Span Construction
 
-For full control, you can use the R6 classes directly instead of the
-context-manager wrappers:
+The context-manager style (`with_trace` / `with_span`) is convenient for
+most cases, but sometimes you need full control – for example, when
+spans are created in one function and ended in another, or when you are
+building traces from recorded data rather than live execution.
+
+For these cases, use the R6 classes directly:
 
 ``` r
 # Create a trace manually
@@ -119,15 +145,19 @@ tr$end()
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.00678277
+#> [1] 0.006293058
 length(tr$spans)
 #> [1] 2
 ```
 
 ## Recording Events
 
-Events capture discrete occurrences within a span. They are S7 objects
-created with
+Events capture discrete occurrences within a span – things that happen
+at a specific moment in time rather than spanning a duration. Common
+examples include model selection, prompt dispatch, streaming start, and
+tool invocation.
+
+Events are S7 objects created with
 [`trace_event()`](https://ian-flores.github.io/securetrace/reference/trace_event.md)
 and attached to spans with `$add_event()`:
 
@@ -161,9 +191,15 @@ s$events[[1]]@data
 ```
 
 Note the `@` accessor for S7 properties on events (and exporters),
-versus `$` for R6 fields on Trace and Span objects.
+versus `$` for R6 fields on Trace and Span objects. This reflects the
+design principle: events and exporters are value objects (S7), while
+traces and spans are stateful objects (R6).
 
 ## Token and Cost Accounting
+
+Token tracking is at the heart of AI agent observability. Without it,
+you cannot answer the most basic production question: “How much did this
+run cost?”
 
 ### Recording Tokens
 
@@ -277,7 +313,8 @@ calculate_cost("my-fine-tuned-model", input_tokens = 1000, output_tokens = 500)
 
 ### Custom Metrics
 
-Record arbitrary metrics on spans with
+Beyond tokens, you may want to track domain-specific measurements like
+rows processed, cache hit rates, or response quality scores. Use
 [`record_metric()`](https://ian-flores.github.io/securetrace/reference/record_metric.md)
 (inside a
 [`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md))
@@ -296,7 +333,9 @@ result <- with_trace("metrics-demo", {
 ## Trace Summary
 
 The `$summary()` method prints a formatted overview of a completed
-trace, including span count, total tokens, and estimated cost:
+trace, including span count, total tokens, and estimated cost. This is
+the quickest way to understand what happened in an agent run without
+parsing export files:
 
 ``` r
 tr <- Trace$new("summary-demo")
@@ -315,182 +354,6 @@ tr$summary()
 #> 0.00s Spans: 1 Tokens: 5000 input, 1000 output Cost: $0.150000
 ```
 
-## JSONL Export
-
-The
-[`jsonl_exporter()`](https://ian-flores.github.io/securetrace/reference/jsonl_exporter.md)
-writes each completed trace as a single JSON line to a file. This is
-ideal for post-hoc analysis, dashboards, or feeding into observability
-platforms:
-
-``` r
-# Create a temporary file for this example
-trace_file <- tempfile(fileext = ".jsonl")
-
-exp <- jsonl_exporter(trace_file)
-
-# Traces are exported automatically when with_trace() completes
-with_trace("exported-run", exporter = exp, {
-  with_span("llm-call", type = "llm", {
-    record_tokens(1500, 300, model = "claude-sonnet-4-5")
-    "response"
-  })
-
-  with_span("tool-call", type = "tool", {
-    42
-  })
-})
-#> [1] 42
-
-# Read back the exported data
-lines <- readLines(trace_file)
-length(lines)  # 1 line per trace
-#> [1] 1
-
-# Parse and inspect
-trace_data <- jsonlite::fromJSON(lines[[1]])
-trace_data$name
-#> [1] "exported-run"
-trace_data$status
-#> [1] "completed"
-length(trace_data$spans$span_id)
-#> [1] 2
-
-# Clean up
-unlink(trace_file)
-```
-
-Each JSONL line contains the full trace structure: trace ID, name,
-status, timestamps, duration, and all spans with their tokens, events,
-and metrics.
-
-## Console Exporter
-
-The
-[`console_exporter()`](https://ian-flores.github.io/securetrace/reference/console_exporter.md)
-prints trace summaries directly to the console, useful for debugging and
-interactive development:
-
-``` r
-debug_exp <- console_exporter(verbose = TRUE)
-
-with_trace("debug-run", exporter = debug_exp, {
-  with_span("planning", type = "llm", {
-    record_tokens(2000, 500, model = "claude-sonnet-4-5")
-    "plan"
-  })
-
-  with_span("execution", type = "tool", {
-    100
-  })
-})
-#> --- Trace: debug-run ---
-#> Status: completed
-#> Duration: 0.00s
-#> Spans: 2
-#> -- Spans --
-#>   * planning [llm] (ok) - 0.000s
-#>   * execution [tool] (ok) - 0.000s
-#> [1] 100
-```
-
-Set `verbose = FALSE` to print only the trace header without individual
-span details.
-
-## Multi-Exporter Setup
-
-Use
-[`multi_exporter()`](https://ian-flores.github.io/securetrace/reference/multi_exporter.md)
-to send traces to multiple destinations at once. A common pattern is
-logging to both a file and the console:
-
-``` r
-trace_file <- tempfile(fileext = ".jsonl")
-
-# Combine a file exporter and a console exporter
-file_exp <- jsonl_exporter(trace_file)
-console_exp <- console_exporter(verbose = TRUE)
-combined <- multi_exporter(file_exp, console_exp)
-
-with_trace("multi-export-run", exporter = combined, {
-  with_span("llm-call", type = "llm", {
-    record_tokens(3000, 600, model = "claude-opus-4-6")
-    "result"
-  })
-})
-#> --- Trace: multi-export-run ---
-#> Status: completed
-#> Duration: 0.00s
-#> Spans: 1
-#> -- Spans --
-#>   * llm-call [llm] (ok) - 0.000s
-#> [1] "result"
-
-# The trace was written to the file AND printed to console
-lines <- readLines(trace_file)
-length(lines)
-#> [1] 1
-
-unlink(trace_file)
-```
-
-## Default Exporter
-
-Rather than passing an exporter to every
-[`with_trace()`](https://ian-flores.github.io/securetrace/reference/with_trace.md)
-call, set a session-wide default:
-
-``` r
-trace_file <- tempfile(fileext = ".jsonl")
-set_default_exporter(jsonl_exporter(trace_file))
-
-# All subsequent traces are automatically exported
-with_trace("auto-exported-1", {
-  with_span("work", type = "tool", { 1 + 1 })
-})
-#> [1] 2
-
-with_trace("auto-exported-2", {
-  with_span("more-work", type = "tool", { 2 + 2 })
-})
-#> [1] 4
-
-lines <- readLines(trace_file)
-length(lines)  # 2 traces exported
-#> [1] 2
-
-unlink(trace_file)
-```
-
-## Custom Exporters
-
-Build your own exporter by passing a function to
-[`new_exporter()`](https://ian-flores.github.io/securetrace/reference/new_exporter.md).
-The function receives the serialized trace list (from `$to_list()`) as
-its single argument:
-
-``` r
-# A simple exporter that counts spans per trace
-span_counter <- new_exporter(function(trace_list) {
-  cat(sprintf(
-    "Trace '%s' completed with %d spans\n",
-    trace_list$name,
-    length(trace_list$spans)
-  ))
-})
-
-with_trace("custom-export", exporter = span_counter, {
-  with_span("a", type = "tool", { 1 })
-  with_span("b", type = "tool", { 2 })
-  with_span("c", type = "llm", {
-    record_tokens(100, 50, model = "claude-haiku-4-5")
-    3
-  })
-})
-#> Trace 'custom-export' completed with 3 spans
-#> [1] 3
-```
-
 ## Error Handling
 
 Traces and spans capture errors gracefully. When an error occurs inside
@@ -498,7 +361,10 @@ Traces and spans capture errors gracefully. When an error occurs inside
 the span’s status is set to `"error"` and the error message is recorded.
 The error then propagates to the enclosing
 [`with_trace()`](https://ian-flores.github.io/securetrace/reference/with_trace.md),
-which marks itself as `"error"` and exports before re-raising:
+which marks itself as `"error"` and exports before re-raising.
+
+This means you always get trace data, even for failed runs – which is
+exactly when you need it most.
 
 ``` r
 trace_file <- tempfile(fileext = ".jsonl")
@@ -525,39 +391,6 @@ trace_data$spans$error
 #> [1] "something went wrong"
 
 unlink(trace_file)
-```
-
-## Serialization
-
-Every trace and span can be serialized to a plain R list with
-`$to_list()`. This is what exporters receive, and it is useful for
-programmatic analysis:
-
-``` r
-tr <- Trace$new("serialize-demo")
-tr$start()
-
-s <- Span$new("work", type = "custom")
-s$start()
-s$add_metric("quality", 0.95)
-s$end()
-tr$add_span(s)
-
-tr$end()
-
-trace_list <- tr$to_list()
-names(trace_list)
-#> [1] "trace_id"      "name"          "status"        "metadata"     
-#> [5] "start_time"    "end_time"      "duration_secs" "spans"
-trace_list$name
-#> [1] "serialize-demo"
-trace_list$spans[[1]]$metrics
-#> [[1]]
-#> [[1]]$name
-#> [1] "quality"
-#> 
-#> [[1]]$value
-#> [1] 0.95
 ```
 
 ## Integration Helpers
@@ -626,33 +459,11 @@ with_trace("guarded-input", {
 #   reason     -- explanation string (if the check failed)
 ```
 
-### trace_schema() – JSONL Format Reference
-
-[`trace_schema()`](https://ian-flores.github.io/securetrace/reference/trace_schema.md)
-returns a list describing every field in the JSONL export format,
-including types and descriptions for both trace-level and span-level
-fields. This is useful for building parsers or validating exported data:
-
-``` r
-schema <- trace_schema()
-names(schema)
-#> [1] "trace_id"   "name"       "status"     "start_time" "end_time"  
-#> [6] "duration"   "spans"
-#> [1] "trace_id" "name" "status" "start_time" "end_time" "duration" "spans"
-
-# Inspect span-level fields
-names(schema$spans$fields)
-#>  [1] "span_id"       "name"          "type"          "status"       
-#>  [5] "start_time"    "end_time"      "duration_secs" "parent_id"    
-#>  [9] "model"         "input_tokens"  "output_tokens"
-#> [1] "span_id" "name" "type" "status" "start_time" "end_time"
-#> [7] "duration_secs" "parent_id" "model" "input_tokens" "output_tokens"
-```
-
 ## Putting It All Together
 
-Here is a complete example of an instrumented multi-step agent workflow
-with file export:
+Here is a complete example of an instrumented multi-step agent workflow.
+It combines everything covered in this vignette: nested spans, token
+recording, events, custom metrics, and error-safe execution.
 
 ``` r
 trace_file <- tempfile(fileext = ".jsonl")
@@ -710,7 +521,7 @@ result <- with_trace("full-agent-workflow", exporter = combined_exp, {
 #>   * summarize [llm] (ok) - 0.000s
 
 result
-#> [1] "Processed 250 rows, mean = -0.10"
+#> [1] "Processed 250 rows, mean = -0.04"
 
 # Verify export
 lines <- readLines(trace_file)
@@ -723,3 +534,15 @@ sprintf("Trace '%s': %d spans, status = %s",
 
 unlink(trace_file)
 ```
+
+## Next Steps
+
+- [`vignette("exporters")`](https://ian-flores.github.io/securetrace/articles/exporters.md)
+  – JSONL export, console and custom exporters, the trace schema, and
+  serialization details.
+- [`vignette("cloud-native")`](https://ian-flores.github.io/securetrace/articles/cloud-native.md)
+  – OTLP export, Prometheus metrics, and W3C Trace Context for
+  distributed tracing.
+- [`vignette("orchestr-integration")`](https://ian-flores.github.io/securetrace/articles/orchestr-integration.md)
+  – Automatic tracing of orchestr graph executions and agent
+  invocations.

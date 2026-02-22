@@ -363,8 +363,10 @@ MIT
 
 ### Guides
 
-- [Observability
-  Integration](https://ian-flores.github.io/securetrace/articles/observability.md):
+- [Core Observability
+  Concepts](https://ian-flores.github.io/securetrace/articles/observability.md):
+- [Exporting and Analyzing
+  Traces](https://ian-flores.github.io/securetrace/articles/exporters.md):
 - [Cloud-Native
   Observability](https://ian-flores.github.io/securetrace/articles/cloud-native.md):
 - [Tracing orchestr

@@ -62,12 +62,50 @@
     
     
 <div class="section level2">
+<h2 id="why-auto-instrument-orchestr">Why Auto-Instrument orchestr?<a class="anchor" aria-label="anchor" href="#why-auto-instrument-orchestr"></a>
+</h2>
+<p>Graph-based agent orchestration (pipelines, ReAct loops, supervisor
+routing) involves many moving parts: nodes invoke LLMs, call tools,
+check guardrails, and route to other nodes based on conditions. When
+something goes wrong – unexpected cost, wrong routing, a node that runs
+longer than expected – you need to see exactly which nodes executed, in
+what order, and what each one did.</p>
+<p>Manually wrapping every node handler in <code><a href="../reference/with_span.html">with_span()</a></code>
+calls is tedious and error-prone. securetrace’s orchestr integration
+solves this by automatically creating a span for each node execution
+when you use <code><a href="../reference/trace_graph.html">trace_graph()</a></code>. One function call gives you
+full per-node visibility without modifying any node handlers.</p>
+<pre><code>trace_graph(graph, initial_state)
+
+Execution flow with automatic spans:
+================================================
+
+Trace: "graph-execution"
+|
+|-- Span: "node:fetch"       (step 1)
+|   '-- metadata: {node: "fetch", step: 1}
+|
+|-- Span: "node:analyze"     (step 2)
+|   |-- tokens: 2000 in / 500 out
+|   '-- metadata: {node: "analyze", step: 2}
+|
+|-- Span: "node:summarize"   (step 3)
+|   |-- tokens: 1000 in / 200 out
+|   '-- metadata: {node: "summarize", step: 3}
+|
+'-- (END)</code></pre>
+<p>Each node gets its own span named <code>"node:{name}"</code>, with
+metadata recording the node name and step number. If nodes make LLM
+calls that record tokens, those tokens appear on the correct span
+automatically.</p>
+</div>
+<div class="section level2">
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h2>
 <p>securetrace integrates with <a href="https://github.com/ian-flores/orchestr" class="external-link">orchestr</a> to
 automatically trace graph executions and agent invocations. Install both
 packages to use these features:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/orchestr/" class="external-link">orchestr</a></span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -78,7 +116,7 @@ packages to use these features:</p>
 creates a child span for each node that executes. Build a graph with
 <code><a href="https://ian-flores.github.io/orchestr/reference/graph_builder.html" class="external-link">graph_builder()</a></code>, then pass the compiled graph and initial
 state:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ian-flores.github.io/orchestr/reference/graph_builder.html" class="external-link">graph_builder</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">gb</span><span class="op">$</span><span class="fu">add_node</span><span class="op">(</span><span class="st">"fetch"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">state</span>, <span class="va">config</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">mtcars</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">gb</span><span class="op">$</span><span class="fu">add_node</span><span class="op">(</span><span class="st">"summarize"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">state</span>, <span class="va">config</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>summary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">state</span><span class="op">$</span><span class="va">data</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -98,7 +136,7 @@ step number.</p>
 <p><code><a href="../reference/trace_agent.html">trace_agent()</a></code> wraps a single <code>agent$invoke()</code>
 call. It auto-extracts the model name and token usage from the
 underlying ellmer Chat object:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">ellmer</span><span class="fu">::</span><span class="fu"><a href="https://ellmer.tidyverse.org/reference/chat_openai.html" class="external-link">chat_openai</a></span><span class="op">(</span>model <span class="op">=</span> <span class="st">"gpt-4o"</span><span class="op">)</span></span>
 <span><span class="va">assistant</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ian-flores.github.io/orchestr/reference/Agent.html" class="external-link">agent</a></span><span class="op">(</span><span class="st">"assistant"</span>, <span class="va">chat</span><span class="op">)</span></span>
 <span></span>
@@ -112,7 +150,7 @@ used per call.</p>
 </h2>
 <p>Pass an exporter to <code><a href="../reference/trace_graph.html">trace_graph()</a></code> to persist the full
 trace as JSONL:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"graph-traces.jsonl"</span><span class="op">)</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trace_graph.html">trace_graph</a></span><span class="op">(</span><span class="va">graph</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>data <span class="op">=</span> <span class="cn">NULL</span>, summary <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>, exporter <span class="op">=</span> <span class="va">exp</span><span class="op">)</span></span>
 <span></span>
@@ -125,8 +163,9 @@ trace as JSONL:</p>
 </h2>
 <p>When graph nodes make LLM calls that record model and token
 information, <code><a href="../reference/trace_total_cost.html">trace_total_cost()</a></code> aggregates costs across all
-spans:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+spans. This is particularly valuable for ReAct loops where the number of
+LLM calls is unpredictable:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">ellmer</span><span class="fu">::</span><span class="fu"><a href="https://ellmer.tidyverse.org/reference/chat_openai.html" class="external-link">chat_openai</a></span><span class="op">(</span>model <span class="op">=</span> <span class="st">"gpt-4o"</span><span class="op">)</span></span>
 <span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ian-flores.github.io/orchestr/reference/react_graph.html" class="external-link">react_graph</a></span><span class="op">(</span><span class="fu"><a href="https://ian-flores.github.io/orchestr/reference/Agent.html" class="external-link">agent</a></span><span class="op">(</span><span class="st">"analyst"</span>, <span class="va">chat</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -136,12 +175,32 @@ spans:</p>
 <span><span class="co">#&gt; [1] 0.00045</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="when-to-use-trace_graph-vs-manual-spans">When to Use trace_graph vs Manual Spans<a class="anchor" aria-label="anchor" href="#when-to-use-trace_graph-vs-manual-spans"></a>
+</h2>
+<p>Both approaches give you trace data, but they serve different
+needs:</p>
+<p><strong>Use <code><a href="../reference/trace_graph.html">trace_graph()</a></code></strong> when you want
+automatic, zero-effort instrumentation of an entire graph execution.
+Every node gets a span without any changes to your node handlers. This
+is the right choice for production monitoring, cost tracking, and
+general observability where you want to see the full picture with
+minimal code.</p>
+<p><strong>Use manual <code><a href="../reference/with_span.html">with_span()</a></code> inside node
+handlers</strong> when you need finer-grained control: custom span
+names, sub-spans within a single node, domain-specific metrics, or when
+you want to trace only certain nodes. This is common during development
+when you are debugging a specific node’s behavior.</p>
+<p>You can combine both approaches: use <code><a href="../reference/trace_graph.html">trace_graph()</a></code> for
+the overall structure and add manual <code><a href="../reference/with_span.html">with_span()</a></code> calls
+inside specific nodes that need extra detail.</p>
+</div>
+<div class="section level2">
 <h2 id="manual-instrumentation">Manual Instrumentation<a class="anchor" aria-label="anchor" href="#manual-instrumentation"></a>
 </h2>
 <p>For finer control, use <code><a href="../reference/with_trace.html">with_trace()</a></code> and
 <code><a href="../reference/with_span.html">with_span()</a></code> directly inside graph node handlers instead of
 <code><a href="../reference/trace_graph.html">trace_graph()</a></code>:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">analyze_node</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">state</span>, <span class="va">config</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"llm-call"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">120</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>

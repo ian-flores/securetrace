@@ -1,5 +1,47 @@
 # Tracing orchestr Workflows
 
+## Why Auto-Instrument orchestr?
+
+Graph-based agent orchestration (pipelines, ReAct loops, supervisor
+routing) involves many moving parts: nodes invoke LLMs, call tools,
+check guardrails, and route to other nodes based on conditions. When
+something goes wrong – unexpected cost, wrong routing, a node that runs
+longer than expected – you need to see exactly which nodes executed, in
+what order, and what each one did.
+
+Manually wrapping every node handler in
+[`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md)
+calls is tedious and error-prone. securetrace’s orchestr integration
+solves this by automatically creating a span for each node execution
+when you use
+[`trace_graph()`](https://ian-flores.github.io/securetrace/reference/trace_graph.md).
+One function call gives you full per-node visibility without modifying
+any node handlers.
+
+    trace_graph(graph, initial_state)
+
+    Execution flow with automatic spans:
+    ================================================
+
+    Trace: "graph-execution"
+    |
+    |-- Span: "node:fetch"       (step 1)
+    |   '-- metadata: {node: "fetch", step: 1}
+    |
+    |-- Span: "node:analyze"     (step 2)
+    |   |-- tokens: 2000 in / 500 out
+    |   '-- metadata: {node: "analyze", step: 2}
+    |
+    |-- Span: "node:summarize"   (step 3)
+    |   |-- tokens: 1000 in / 200 out
+    |   '-- metadata: {node: "summarize", step: 3}
+    |
+    '-- (END)
+
+Each node gets its own span named `"node:{name}"`, with metadata
+recording the node name and step number. If nodes make LLM calls that
+record tokens, those tokens appear on the correct span automatically.
+
 ## Setup
 
 securetrace integrates with
@@ -71,7 +113,8 @@ result <- trace_graph(graph, list(data = NULL, summary = NULL))
 
 When graph nodes make LLM calls that record model and token information,
 [`trace_total_cost()`](https://ian-flores.github.io/securetrace/reference/trace_total_cost.md)
-aggregates costs across all spans:
+aggregates costs across all spans. This is particularly valuable for
+ReAct loops where the number of LLM calls is unpredictable:
 
 ``` r
 chat <- ellmer::chat_openai(model = "gpt-4o")
@@ -82,6 +125,31 @@ tr <- current_trace()
 trace_total_cost(tr)
 #> [1] 0.00045
 ```
+
+## When to Use trace_graph vs Manual Spans
+
+Both approaches give you trace data, but they serve different needs:
+
+**Use
+[`trace_graph()`](https://ian-flores.github.io/securetrace/reference/trace_graph.md)**
+when you want automatic, zero-effort instrumentation of an entire graph
+execution. Every node gets a span without any changes to your node
+handlers. This is the right choice for production monitoring, cost
+tracking, and general observability where you want to see the full
+picture with minimal code.
+
+**Use manual
+[`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md)
+inside node handlers** when you need finer-grained control: custom span
+names, sub-spans within a single node, domain-specific metrics, or when
+you want to trace only certain nodes. This is common during development
+when you are debugging a specific node’s behavior.
+
+You can combine both approaches: use
+[`trace_graph()`](https://ian-flores.github.io/securetrace/reference/trace_graph.md)
+for the overall structure and add manual
+[`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md)
+calls inside specific nodes that need extra detail.
 
 ## Manual Instrumentation
 

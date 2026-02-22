@@ -8,6 +8,43 @@ and W3C Trace Context propagation for distributed tracing.
 For core tracing concepts (traces, spans, events, exporters), see
 [`vignette("observability")`](https://ian-flores.github.io/securetrace/articles/observability.md).
 
+## How It All Fits Together
+
+In a production deployment, traces flow from your R agent through
+several systems. The following diagram shows the typical data path:
+
+      R Agent Process                    Infrastructure
+      ================                   ==============
+
+      with_trace("run", {
+        with_span("llm", ...)   --.
+        with_span("tool", ...)  --+--> OTLP exporter
+      })                           |       |
+                                   |       v
+                                   |   Jaeger / Grafana Tempo
+                                   |   (distributed trace viewer)
+                                   |
+                                   +--> Prometheus exporter
+                                   |       |
+                                   |       v
+                                   |   Prometheus server
+                                   |   (scrapes /metrics endpoint)
+                                   |       |
+                                   |       v
+                                   |   Grafana dashboards
+                                   |   (token usage, cost, latency)
+                                   |
+                                   +--> JSONL exporter
+                                           |
+                                           v
+                                       Local file
+                                       (audit trail, post-hoc analysis)
+
+Each export path serves a different purpose: OTLP gives you trace
+visualization with span hierarchy, Prometheus gives you time-series
+metrics for alerting, and JSONL gives you a durable local record for
+compliance or batch analysis.
+
 ## OTLP Export
 
 The OpenTelemetry Protocol (OTLP) is the standard wire format for
@@ -57,6 +94,8 @@ service.
 
 ### Inspecting OTLP Output
 
+Before pointing at a live collector, you may want to inspect what
+securetrace actually sends.
 [`otlp_format_trace()`](https://ian-flores.github.io/securetrace/reference/otlp_format_trace.md)
 is the pure function underneath the exporter. It converts a trace list
 into the OTLP `ExportTraceServiceRequest` JSON structure without sending
@@ -89,9 +128,25 @@ offline import.
 
 ### OTLP Batching and Retry
 
-By default, traces are buffered in memory and sent to the collector when
-the buffer reaches `batch_size`. This reduces HTTP overhead for
-high-throughput agents. Use
+Sending an HTTP request for every single trace is expensive, especially
+in high-throughput agent workflows where you might complete dozens of
+traces per minute. The OTLP exporter addresses this with two
+production-essential features: batching and retry.
+
+**Batching** reduces network overhead by buffering traces in memory and
+sending them to the collector in groups. By default, traces are buffered
+until the buffer reaches `batch_size`, at which point a single HTTP POST
+delivers the entire batch. This means 10 traces cost one HTTP round-trip
+instead of 10.
+
+**Retry with exponential backoff** handles the reality that collectors
+sometimes return transient errors – rate limits (429), server errors
+(5xx), or momentary network failures. Instead of silently dropping
+traces, the exporter retries with increasing delays (1s, 2s, 4s, …) up
+to `max_retries` attempts. This makes trace delivery robust without
+requiring you to build retry logic yourself.
+
+Use
 [`flush_otlp()`](https://ian-flores.github.io/securetrace/reference/flush_otlp.md)
 to force-send any buffered traces – for example, at process exit to
 ensure nothing is lost:
@@ -114,14 +169,23 @@ for (i in seq_len(5)) {
 flush_otlp(exp)
 ```
 
-Transient HTTP errors (429, 5xx) are retried with exponential backoff
-(1s, 2s, 4s, …) up to `max_retries` attempts.
+A good practice is to call
+[`flush_otlp()`](https://ian-flores.github.io/securetrace/reference/flush_otlp.md)
+in an [`on.exit()`](https://rdrr.io/r/base/on.exit.html) handler or a
+`tryCatch(finally = ...)` block so that traces are delivered even if
+your script terminates unexpectedly.
 
 ## Prometheus Metrics
 
-Prometheus is a pull-based monitoring system. securetrace can expose
-agent metrics (span counts, token usage, cost, duration histograms) in
-Prometheus text exposition format.
+Prometheus is a pull-based monitoring system. While OTLP sends full
+trace detail to a collector, Prometheus works differently: your
+application exposes an HTTP endpoint with aggregated metrics, and
+Prometheus scrapes it at a regular interval. This makes Prometheus ideal
+for dashboards and alerting – “how many tokens did we use in the last
+hour?” or “alert if error rate exceeds 5%.”
+
+securetrace bridges the gap by extracting metrics from traces and
+exposing them in Prometheus text exposition format.
 
 ### Creating a Registry
 
@@ -245,9 +309,9 @@ scrape_configs:
 ## W3C Trace Context Propagation
 
 When R agents call external services (or are called by them), trace
-context must propagate across process boundaries. securetrace implements
-the [W3C Trace Context](https://www.w3.org/TR/trace-context/) standard
-for this.
+context must propagate across process boundaries so that the full
+distributed trace can be reconstructed. securetrace implements the [W3C
+Trace Context](https://www.w3.org/TR/trace-context/) standard for this.
 
 ### Generating Traceparent Headers
 
@@ -336,6 +400,11 @@ ctx$span_id
 ```
 
 ## Distributed Tracing with Plumber
+
+Distributed tracing becomes concrete when two services – a client and a
+server – share the same trace ID. The client injects context into its
+request, the server extracts it and creates child spans, and the
+resulting trace shows the complete journey across both processes.
 
 Here is a complete example of a Plumber API endpoint that extracts
 incoming trace context and creates a child trace for its work:

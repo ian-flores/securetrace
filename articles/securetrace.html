@@ -62,18 +62,74 @@
     
     
 <div class="section level2">
-<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+<h2 id="why-observability-for-ai-agents">Why Observability for AI Agents?<a class="anchor" aria-label="anchor" href="#why-observability-for-ai-agents"></a>
 </h2>
-<p>securetrace provides observability and tracing for R-based LLM agent
-workflows. It tracks structured traces with spans, records token and
-cost accounting, monitors latency, and exports data as JSONL for
-analysis.</p>
+<p>Traditional software is deterministic: the same input produces the
+same output, and when something goes wrong you can reproduce the
+failure. AI agents break this contract. A language model might return a
+different plan each time it runs, choose different tools, consume wildly
+different numbers of tokens, and produce outputs that are plausible but
+wrong. Without structured observability, debugging an agent workflow
+becomes guesswork.</p>
+<p>Observability means capturing what happened <em>inside</em> an agent
+run – not just the final answer, but every LLM call, every tool
+invocation, every guardrail check, along with the tokens consumed,
+latency incurred, and costs accrued. With this data you can answer
+questions that matter in production: Why did this run cost $2.40 instead
+of $0.15? Why did the agent call the same tool four times? Where did the
+guardrail reject a valid input?</p>
+<p>securetrace brings this discipline to R. It provides structured
+traces with nested spans, automatic token and cost accounting, and
+multiple export formats so you can feed trace data into whatever
+analysis pipeline you already use – from a simple JSONL file to Jaeger,
+Prometheus, or Grafana Tempo.</p>
+</div>
+<div class="section level2">
+<h2 id="trace-anatomy">Trace Anatomy<a class="anchor" aria-label="anchor" href="#trace-anatomy"></a>
+</h2>
+<p>Every securetrace observation follows a hierarchical model inspired
+by OpenTelemetry, adapted for the specific needs of AI agent
+workflows:</p>
+<pre><code>Trace: "agent-run-042"
+|
+|-- Span: "planning" (type: llm)
+|   |-- tokens: 2000 in / 500 out
+|   |-- model: claude-sonnet-4-5
+|   |-- cost: $0.0135
+|   |-- Event: "model_selected"
+|   |-- Event: "prompt_sent"
+|   |
+|   '-- Span: "calculator" (type: tool)     &lt;-- nested child
+|       '-- metric: rows_processed = 150
+|
+|-- Span: "guardrail" (type: guardrail)
+|   '-- Event: "guardrail.result" { pass: TRUE }
+|
+'-- Span: "summarize" (type: llm)
+    |-- tokens: 1000 in / 200 out
+    |-- model: claude-haiku-4-5
+    '-- cost: $0.0013</code></pre>
+<ul>
+<li>
+<strong>Trace</strong> – The root container for a complete agent
+run. Holds metadata, timing, and a collection of spans.</li>
+<li>
+<strong>Span</strong> – A single operation: an LLM call, a tool
+invocation, a guardrail check, or any custom step. Spans nest to
+represent parent-child relationships.</li>
+<li>
+<strong>Event</strong> – A discrete point-in-time occurrence within
+a span (model selection, prompt dispatch, guardrail result).</li>
+<li>
+<strong>Metrics</strong> – Numeric measurements attached to spans:
+token counts, latency, cost, or any custom value you define.</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="basic-usage">Basic Usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h2>
 <p>Create a trace with spans to track an agent workflow:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Wrap your workflow in a trace</span></span>
@@ -85,12 +141,22 @@ analysis.</p>
 <span>    <span class="st">"The answer is 42"</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/with_trace.html">with_trace()</a></code> handles the lifecycle for you: it creates a
+Trace object, starts the clock, evaluates your code, ends the trace, and
+optionally exports it. Inside, <code><a href="../reference/with_span.html">with_span()</a></code> works the same
+way for individual operations. At any point during evaluation,
+<code><a href="../reference/current_trace.html">current_trace()</a></code> and <code><a href="../reference/current_span.html">current_span()</a></code> give you
+access to the active objects so you can record tokens, events, or
+metrics.</p>
 </div>
 <div class="section level2">
 <h2 id="token-and-cost-tracking">Token and Cost Tracking<a class="anchor" aria-label="anchor" href="#token-and-cost-tracking"></a>
 </h2>
-<p>securetrace includes built-in pricing for popular LLM models:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>Understanding token consumption is critical for managing AI agent
+costs. securetrace includes built-in pricing for popular LLM models so
+you can see exactly how much each operation costs without maintaining
+your own pricing tables.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View known model pricing (per 1M tokens)</span></span>
 <span><span class="fu"><a href="../reference/model_costs.html">model_costs</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -102,9 +168,13 @@ analysis.</p>
 <div class="section level3">
 <h3 id="multi-provider-support">Multi-Provider Support<a class="anchor" aria-label="anchor" href="#multi-provider-support"></a>
 </h3>
-<p>securetrace ships with pricing for models across Anthropic, OpenAI,
-Google Gemini, Mistral, and DeepSeek:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>Real-world agent systems rarely use a single model. A planning step
+might use a powerful model like Claude Opus, while a simple
+classification step uses a cheaper model like Haiku. securetrace ships
+with pricing for models across Anthropic, OpenAI, Google Gemini,
+Mistral, and DeepSeek, so you can track costs across providers without
+manual configuration.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View all known model pricing (per 1M tokens)</span></span>
 <span><span class="va">costs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_costs.html">model_costs</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">costs</span><span class="op">)</span></span>
@@ -115,9 +185,12 @@ Google Gemini, Mistral, and DeepSeek:</p>
 <span><span class="co">#&gt; 4      gemini-1.5-pro        1.25         5.00</span></span>
 <span><span class="co">#&gt; 5      gemini-2.0-flash      0.10         0.40</span></span>
 <span><span class="co">#&gt; 6  deepseek-reasoner        0.55         2.19</span></span></code></pre></div>
-<p>Cloud provider model IDs (AWS Bedrock, Google Vertex) are resolved
-automatically via built-in aliases:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>When your infrastructure runs models through a cloud provider
+gateway, the model IDs look different from the canonical names.
+securetrace resolves cloud provider model IDs (AWS Bedrock, Google
+Vertex) automatically via built-in aliases, so you do not need to
+maintain a mapping yourself:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Bedrock model ID works transparently</span></span>
 <span><span class="fu"><a href="../reference/calculate_cost.html">calculate_cost</a></span><span class="op">(</span></span>
 <span>  <span class="st">"anthropic.claude-3-5-sonnet-20241022-v2:0"</span>,</span>
@@ -131,14 +204,16 @@ automatically via built-in aliases:</p>
 <span>  input_tokens <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>  output_tokens <span class="op">=</span> <span class="fl">2000</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>For custom or self-hosted deployments, register your own aliases:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>For custom or self-hosted deployments, register your own aliases to
+map internal names to known pricing:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Map an internal deployment name to a known model</span></span>
 <span><span class="fu"><a href="../reference/add_model_alias.html">add_model_alias</a></span><span class="op">(</span><span class="st">"my-company-claude"</span>, <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/calculate_cost.html">calculate_cost</a></span><span class="op">(</span><span class="st">"my-company-claude"</span>, input_tokens <span class="op">=</span> <span class="fl">5000</span>, output_tokens <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span></code></pre></div>
 <p>When using <code><a href="../reference/trace_llm_call.html">trace_llm_call()</a></code> with an ellmer Chat object,
-model name and token counts are extracted automatically:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+the model name and token counts are extracted automatically – you do not
+need to call <code><a href="../reference/record_tokens.html">record_tokens()</a></code> manually:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"auto-instrumented"</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/trace_llm_call.html">trace_llm_call</a></span><span class="op">(</span><span class="st">"analysis"</span>, <span class="va">chat</span>, <span class="st">"Summarize the data."</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
@@ -148,8 +223,11 @@ model name and token counts are extracted automatically:</p>
 <div class="section level2">
 <h2 id="exporting-traces">Exporting Traces<a class="anchor" aria-label="anchor" href="#exporting-traces"></a>
 </h2>
-<p>Export completed traces to JSONL files or the console:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>Traces are only useful if you can get them out of R and into your
+analysis pipeline. securetrace provides several built-in exporters that
+cover the most common scenarios, from quick debugging to production
+observability.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># JSONL file export</span></span>
 <span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"traces.jsonl"</span><span class="op">)</span></span>
 <span></span>
@@ -167,12 +245,18 @@ model name and token counts are extracted automatically:</p>
 <span></span>
 <span><span class="co"># Or set a default exporter for all traces</span></span>
 <span><span class="fu"><a href="../reference/set_default_exporter.html">set_default_exporter</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span></code></pre></div>
+<p>For a deep dive into exporters – JSONL format, console output, custom
+exporters, and the trace schema – see
+<code><a href="../articles/exporters.html">vignette("exporters")</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="integration-helpers">Integration Helpers<a class="anchor" aria-label="anchor" href="#integration-helpers"></a>
 </h2>
-<p>securetrace provides helpers for common operations:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<p>Instrumenting every LLM call and tool invocation manually would be
+tedious. securetrace provides convenience wrappers that create
+properly-typed spans, record the right metadata, and handle errors
+automatically.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Wrap tool calls</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"tools"</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/trace_tool_call.html">trace_tool_call</a></span><span class="op">(</span><span class="st">"calculator"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span> <span class="op">*</span> <span class="fl">2</span>, <span class="fl">21</span><span class="op">)</span></span>
@@ -190,7 +274,7 @@ model name and token counts are extracted automatically:</p>
 object’s <code>$stream()</code> method is called instead of
 <code>$chat()</code>, and a <code>streaming</code> event is recorded on
 the span:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Stream responses with automatic tracing</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"streaming-example"</span>, <span class="op">{</span></span>
 <span>  <span class="va">response</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trace_llm_call.html">trace_llm_call</a></span><span class="op">(</span><span class="va">chat</span>, <span class="st">"Explain R6 classes"</span>, stream <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -204,7 +288,7 @@ the span:</p>
 <code><a href="../reference/trace_llm_call.html">trace_llm_call()</a></code> automatically inspects the response turn
 and records each tool invocation as a <code>tool_call</code> event on
 the span. No extra instrumentation is needed:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Register tools on the chat object, then trace the call</span></span>
 <span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">ellmer</span><span class="fu">::</span><span class="fu"><a href="https://ellmer.tidyverse.org/reference/chat_openai.html" class="external-link">chat_openai</a></span><span class="op">(</span>model <span class="op">=</span> <span class="st">"gpt-4o"</span><span class="op">)</span></span>
 <span><span class="va">chat</span><span class="op">$</span><span class="fu">register_tool</span><span class="op">(</span><span class="fu">ellmer</span><span class="fu">::</span><span class="fu"><a href="https://ellmer.tidyverse.org/reference/tool.html" class="external-link">tool</a></span><span class="op">(</span></span>
@@ -221,8 +305,12 @@ the span. No extra instrumentation is needed:</p>
 <div class="section level2">
 <h2 id="nested-spans">Nested Spans<a class="anchor" aria-label="anchor" href="#nested-spans"></a>
 </h2>
-<p>Spans can be nested to represent hierarchical operations:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<p>Agent workflows are rarely flat. A planning step might invoke a tool,
+which itself calls an LLM for sub-reasoning. Spans nest naturally to
+capture this hierarchy – inner spans record the outer span’s ID as their
+<code>parent_id</code>, preserving the full call tree when the trace is
+serialized.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"complex-workflow"</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"planning"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fl">500</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
@@ -242,8 +330,9 @@ the span. No extra instrumentation is needed:</p>
 <div class="section level2">
 <h2 id="trace-summary">Trace Summary<a class="anchor" aria-label="anchor" href="#trace-summary"></a>
 </h2>
-<p>Get a formatted summary of any trace:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<p>Get a formatted summary of any trace to quickly understand what
+happened:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Trace.html">Trace</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"manual-trace"</span><span class="op">)</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">s</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Span.html">Span</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"llm"</span>, type <span class="op">=</span> <span class="st">"llm"</span><span class="op">)</span></span>
@@ -260,6 +349,25 @@ the span. No extra instrumentation is needed:</p>
 <span><span class="co">#   Spans: 1</span></span>
 <span><span class="co">#   Tokens: 5000 input, 1000 output</span></span>
 <span><span class="co">#   Cost: $0.150000</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="next-steps">Next Steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
+</h2>
+<ul>
+<li>
+<code><a href="../articles/observability.html">vignette("observability")</a></code> – Core concepts: traces,
+spans, events, metrics, error handling, and a full “Putting It All
+Together” example.</li>
+<li>
+<code><a href="../articles/exporters.html">vignette("exporters")</a></code> – JSONL export, console exporter,
+custom exporters, and the trace schema reference.</li>
+<li>
+<code><a href="../articles/cloud-native.html">vignette("cloud-native")</a></code> – OTLP export to Jaeger/Tempo,
+Prometheus metrics, W3C Trace Context propagation.</li>
+<li>
+<code><a href="../articles/orchestr-integration.html">vignette("orchestr-integration")</a></code> – Automatic tracing of
+orchestr graph executions and agent invocations.</li>
+</ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
