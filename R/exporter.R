@@ -1,18 +1,39 @@
+#' Exporter Class (S7)
+#'
+#' Wraps an export function as an S7 exporter object.
+#'
+#' @param export_fn A function that accepts a trace list.
+#'
+#' @examples
+#' # Create a custom exporter
+#' exp <- securetrace_exporter(export_fn = function(trace_list) {
+#'   cat("Exported:", trace_list$name, "\n")
+#' })
+#' exp@export_fn
+#' @export
+securetrace_exporter <- new_class("securetrace_exporter", properties = list(
+  export_fn = class_function
+))
+
 #' Create a New Exporter
 #'
-#' Wraps an export function as an S3 exporter object.
+#' Factory function for creating exporter objects.
 #'
 #' @param export_fn A function that accepts a trace list (from `trace$to_list()`).
-#' @return An S3 object of class `securetrace_exporter`.
+#' @return An S7 object of class `securetrace_exporter`.
+#' @examples
+#' # Create an exporter that counts traces
+#' counter <- new.env(parent = emptyenv())
+#' counter$n <- 0L
+#' exp <- new_exporter(function(trace_list) {
+#'   counter$n <- counter$n + 1L
+#' })
 #' @export
 new_exporter <- function(export_fn) {
   if (!is.function(export_fn)) {
     cli::cli_abort("{.arg export_fn} must be a function.")
   }
-  structure(
-    list(export_fn = export_fn),
-    class = "securetrace_exporter"
-  )
+  securetrace_exporter(export_fn = export_fn)
 }
 
 #' JSONL Exporter
@@ -22,6 +43,18 @@ new_exporter <- function(export_fn) {
 #'
 #' @param path File path for the JSONL output.
 #' @return An S3 `securetrace_exporter` object.
+#' @examples
+#' # Write traces to a temporary JSONL file
+#' tmp <- tempfile(fileext = ".jsonl")
+#' exp <- jsonl_exporter(tmp)
+#'
+#' tr <- Trace$new("demo")
+#' tr$start()
+#' tr$end()
+#' export_trace(exp, tr)
+#'
+#' readLines(tmp)
+#' unlink(tmp)
 #' @export
 jsonl_exporter <- function(path) {
   new_exporter(function(trace_list) {
@@ -36,6 +69,17 @@ jsonl_exporter <- function(path) {
 #'
 #' @param verbose If `TRUE`, print detailed span information.
 #' @return An S3 `securetrace_exporter` object.
+#' @examples
+#' exp <- console_exporter(verbose = TRUE)
+#'
+#' tr <- Trace$new("demo-run")
+#' tr$start()
+#' span <- Span$new("step1", type = "custom")
+#' span$start()
+#' span$end()
+#' tr$add_span(span)
+#' tr$end()
+#' export_trace(exp, tr)
 #' @export
 console_exporter <- function(verbose = TRUE) {
   new_exporter(function(trace_list) {
@@ -62,13 +106,19 @@ console_exporter <- function(verbose = TRUE) {
 #' @param exporter An S3 `securetrace_exporter` object.
 #' @param trace A `Trace` object.
 #' @return Invisible `NULL`.
+#' @examples
+#' exp <- console_exporter(verbose = FALSE)
+#' tr <- Trace$new("test-trace")
+#' tr$start()
+#' tr$end()
+#' export_trace(exp, tr)
 #' @export
 export_trace <- function(exporter, trace) {
-  if (!inherits(exporter, "securetrace_exporter")) {
+  if (!S7_inherits(exporter, securetrace_exporter)) {
     cli::cli_abort("{.arg exporter} must be a {.cls securetrace_exporter} object.")
   }
   trace_list <- trace$to_list()
-  exporter$export_fn(trace_list)
+  exporter@export_fn(trace_list)
   invisible(NULL)
 }
 
@@ -79,23 +129,35 @@ export_trace <- function(exporter, trace) {
 #'
 #' @param ... Exporter objects to combine.
 #' @return An S3 `securetrace_exporter` object.
+#' @examples
+#' # Export to both console and JSONL
+#' tmp <- tempfile(fileext = ".jsonl")
+#' combined <- multi_exporter(
+#'   console_exporter(verbose = FALSE),
+#'   jsonl_exporter(tmp)
+#' )
+#'
+#' tr <- Trace$new("multi-demo")
+#' tr$start()
+#' tr$end()
+#' export_trace(combined, tr)
+#' unlink(tmp)
 #' @export
 multi_exporter <- function(...) {
   exporters <- list(...)
   for (e in exporters) {
-    if (!inherits(e, "securetrace_exporter")) {
+    if (!S7_inherits(e, securetrace_exporter)) {
       cli::cli_abort("All arguments must be {.cls securetrace_exporter} objects.")
     }
   }
   new_exporter(function(trace_list) {
     for (e in exporters) {
-      e$export_fn(trace_list)
+      e@export_fn(trace_list)
     }
   })
 }
 
-#' @export
-print.securetrace_exporter <- function(x, ...) {
+method(print, securetrace_exporter) <- function(x, ...) {
   cat("<securetrace_exporter>\n")
   invisible(x)
 }

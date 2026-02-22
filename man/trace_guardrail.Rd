@@ -20,3 +20,11 @@ The guardrail result.
 Wraps a secureguard guardrail check with a span.
 Requires the secureguard package.
 }
+\examples{
+# Trace a guardrail check function
+check_length <- function(x) nchar(x) < 1000
+with_trace("guard-demo", {
+  result <- trace_guardrail("length_check", check_length, "short input")
+  result
+})
+}

@@ -6,3 +6,5 @@
 ^_pkgdown\.yml$
 ^\.github$
 ^\.gitignore$
+^doc$
+^Meta$

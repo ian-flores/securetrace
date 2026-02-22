@@ -12,6 +12,23 @@ Span Class
 Represents a single operation within a trace, such as an LLM call,
 tool execution, guardrail check, or custom operation.
 }
+\examples{
+# Create a span for an LLM call
+span <- Span$new("gpt-call", type = "llm")
+span$start()
+span$set_model("gpt-4o")
+span$set_tokens(input = 500L, output = 200L)
+span$add_metric("latency", 1.23, unit = "seconds")
+
+# Add an event
+evt <- trace_event("prompt_sent", data = list(length = 42L))
+span$add_event(evt)
+
+span$end()
+span$status
+span$duration()
+span$to_list()
+}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{

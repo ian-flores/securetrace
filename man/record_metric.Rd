@@ -19,3 +19,12 @@ Invisible \code{NULL}.
 \description{
 Record a Custom Metric on the Current Span
 }
+\examples{
+# Record a custom metric on the active span
+with_trace("metric-demo", {
+  with_span("scoring", type = "custom", {
+    record_metric("confidence", 0.95)
+    record_metric("temperature", 0.7, unit = "degrees")
+  })
+})
+}

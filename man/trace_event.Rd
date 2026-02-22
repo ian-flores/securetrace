@@ -14,8 +14,13 @@ trace_event(name, data = list(), timestamp = Sys.time())
 \item{timestamp}{Timestamp for the event. Defaults to current time.}
 }
 \value{
-An S3 object of class \code{securetrace_event}.
+An S7 object of class \code{securetrace_event}.
 }
 \description{
-Discrete point-in-time event within a span.
+Factory function for creating trace events.
+}
+\examples{
+evt <- trace_event("response_received", data = list(tokens = 150L))
+evt@name
+evt@data$tokens
 }

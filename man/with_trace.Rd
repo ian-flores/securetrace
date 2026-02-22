@@ -24,3 +24,16 @@ Creates a new trace, evaluates the expression, ends the trace, and
 optionally exports it. The trace is available via \code{\link[=current_trace]{current_trace()}}
 during evaluation.
 }
+\examples{
+# Trace a block of code
+result <- with_trace("my-operation", {
+  Sys.sleep(0.01)
+  1 + 1
+})
+result
+
+# With an exporter
+result <- with_trace("traced-op", {
+  10 * 2
+}, exporter = console_exporter(verbose = FALSE))
+}

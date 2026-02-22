@@ -15,3 +15,8 @@ Logical scalar.
 \description{
 Test if an Object is a Trace Event
 }
+\examples{
+evt <- trace_event("test_event")
+is_trace_event(evt)
+is_trace_event("not an event")
+}

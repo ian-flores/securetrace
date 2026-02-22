@@ -20,3 +20,12 @@ The chat response.
 Wraps an ellmer chat call with automatic span and token recording.
 Requires the ellmer package.
 }
+\examples{
+\dontrun{
+# Requires ellmer package
+chat <- ellmer::chat_openai(model = "gpt-4o")
+with_trace("llm-demo", {
+  response <- trace_llm_call(chat, "What is 2 + 2?")
+})
+}
+}

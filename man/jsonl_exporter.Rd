@@ -16,3 +16,16 @@ An S3 \code{securetrace_exporter} object.
 Creates an exporter that writes completed traces as JSONL
 (one JSON object per line) to a file.
 }
+\examples{
+# Write traces to a temporary JSONL file
+tmp <- tempfile(fileext = ".jsonl")
+exp <- jsonl_exporter(tmp)
+
+tr <- Trace$new("demo")
+tr$start()
+tr$end()
+export_trace(exp, tr)
+
+readLines(tmp)
+unlink(tmp)
+}

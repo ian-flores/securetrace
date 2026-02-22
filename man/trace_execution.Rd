@@ -20,3 +20,13 @@ The execution result.
 Wraps a securer session execution with a span.
 Requires the securer package.
 }
+\examples{
+\dontrun{
+# Requires securer package
+session <- securer::SecureSession$new()
+with_trace("exec-demo", {
+  result <- trace_execution(session, "1 + 1")
+})
+session$close()
+}
+}

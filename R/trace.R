@@ -4,6 +4,26 @@
 #' representing individual operations like LLM calls, tool executions,
 #' and guardrail checks.
 #'
+#' @examples
+#' # Create and use a trace
+#' tr <- Trace$new("my-agent-run", metadata = list(user = "test"))
+#' tr$start()
+#'
+#' # Add a span to the trace
+#' span <- Span$new("llm-call", type = "llm")
+#' span$start()
+#' span$set_tokens(input = 100L, output = 50L)
+#' span$end()
+#' tr$add_span(span)
+#'
+#' tr$end()
+#' tr$status
+#' tr$duration()
+#' tr$summary()
+#'
+#' # Serialize to list for export
+#' trace_list <- tr$to_list()
+#' trace_list$name
 #' @export
 Trace <- R6::R6Class(
   "Trace",

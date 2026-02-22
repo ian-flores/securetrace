@@ -15,3 +15,11 @@ Invisible \code{NULL}.
 \description{
 Records a latency metric on the currently active span.
 }
+\examples{
+# Record latency on the active span
+with_trace("latency-demo", {
+  with_span("api-call", type = "custom", {
+    record_latency(0.45)
+  })
+})
+}

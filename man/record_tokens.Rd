@@ -20,3 +20,12 @@ Invisible \code{NULL}.
 Convenience wrapper that records input and output token counts
 on the currently active span from the trace context.
 }
+\examples{
+# Record tokens on the active span inside a trace
+with_trace("token-demo", {
+  with_span("llm-step", type = "llm", {
+    record_tokens(500, 200, model = "gpt-4o")
+    current_span()$input_tokens
+  })
+})
+}

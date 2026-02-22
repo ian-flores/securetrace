@@ -1,6 +1,6 @@
 test_that("new_exporter creates exporter object", {
   exp <- new_exporter(function(trace_list) NULL)
-  expect_s3_class(exp, "securetrace_exporter")
+  expect_true(S7::S7_inherits(exp, securetrace_exporter))
 })
 
 test_that("new_exporter rejects non-functions", {

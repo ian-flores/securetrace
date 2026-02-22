@@ -19,3 +19,8 @@ Invisible \code{NULL}.
 \description{
 Register custom model pricing (per 1M tokens).
 }
+\examples{
+# Register a custom model's pricing
+add_model_cost("my-local-model", input_price = 0, output_price = 0)
+calculate_cost("my-local-model", 1000, 500)
+}

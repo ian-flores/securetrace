@@ -12,3 +12,8 @@ A named list where each element has \code{input} and \code{output} prices.
 \description{
 Returns a named list of model pricing (per 1M tokens).
 }
+\examples{
+costs <- model_costs()
+names(costs)
+costs[["gpt-4o"]]
+}

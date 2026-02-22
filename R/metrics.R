@@ -7,6 +7,14 @@
 #' @param output_tokens Number of output tokens.
 #' @param model Optional model name string.
 #' @return Invisible `NULL`.
+#' @examples
+#' # Record tokens on the active span inside a trace
+#' with_trace("token-demo", {
+#'   with_span("llm-step", type = "llm", {
+#'     record_tokens(500, 200, model = "gpt-4o")
+#'     current_span()$input_tokens
+#'   })
+#' })
 #' @export
 record_tokens <- function(input_tokens, output_tokens, model = NULL) {
   span <- current_span()
@@ -27,6 +35,13 @@ record_tokens <- function(input_tokens, output_tokens, model = NULL) {
 #'
 #' @param duration_secs Duration in seconds.
 #' @return Invisible `NULL`.
+#' @examples
+#' # Record latency on the active span
+#' with_trace("latency-demo", {
+#'   with_span("api-call", type = "custom", {
+#'     record_latency(0.45)
+#'   })
+#' })
 #' @export
 record_latency <- function(duration_secs) {
   span <- current_span()
@@ -45,6 +60,14 @@ record_latency <- function(duration_secs) {
 #' @param value Metric value.
 #' @param unit Optional unit string.
 #' @return Invisible `NULL`.
+#' @examples
+#' # Record a custom metric on the active span
+#' with_trace("metric-demo", {
+#'   with_span("scoring", type = "custom", {
+#'     record_metric("confidence", 0.95)
+#'     record_metric("temperature", 0.7, unit = "degrees")
+#'   })
+#' })
 #' @export
 record_metric <- function(name, value, unit = NULL) {
   span <- current_span()

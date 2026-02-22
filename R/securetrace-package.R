@@ -2,6 +2,7 @@
 "_PACKAGE"
 
 ## usethis namespace: start
+#' @import S7
 #' @importFrom R6 R6Class
 #' @importFrom rlang abort warn inform
 #' @importFrom jsonlite toJSON fromJSON write_json

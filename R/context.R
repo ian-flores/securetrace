@@ -19,6 +19,18 @@
 #' @param exporter Optional exporter. If `NULL`, uses the default exporter
 #'   (if set).
 #' @return The result of evaluating `expr`.
+#' @examples
+#' # Trace a block of code
+#' result <- with_trace("my-operation", {
+#'   Sys.sleep(0.01)
+#'   1 + 1
+#' })
+#' result
+#'
+#' # With an exporter
+#' result <- with_trace("traced-op", {
+#'   10 * 2
+#' }, exporter = console_exporter(verbose = FALSE))
 #' @export
 with_trace <- function(name, expr, ..., exporter = NULL) {
   dots <- list(...)
@@ -59,6 +71,14 @@ with_trace <- function(name, expr, ..., exporter = NULL) {
 #' @param expr Expression to evaluate.
 #' @param ... Additional arguments stored as metadata on the span.
 #' @return The result of evaluating `expr`.
+#' @examples
+#' # Use with_span inside a trace
+#' with_trace("example", {
+#'   result <- with_span("compute", type = "tool", {
+#'     sqrt(144)
+#'   })
+#'   result
+#' })
 #' @export
 with_span <- function(name, type = "custom", expr, ...) {
   tr <- current_trace()
@@ -96,6 +116,15 @@ with_span <- function(name, type = "custom", expr, ...) {
 #' Get the Current Active Trace
 #'
 #' @return The active `Trace` object, or `NULL` if none.
+#' @examples
+#' # Outside a trace, returns NULL
+#' current_trace()
+#'
+#' # Inside a trace, returns the active Trace
+#' with_trace("demo", {
+#'   tr <- current_trace()
+#'   tr$name
+#' })
 #' @export
 current_trace <- function() {
   stack <- .trace_context$trace_stack
@@ -106,6 +135,17 @@ current_trace <- function() {
 #' Get the Current Active Span
 #'
 #' @return The active `Span` object, or `NULL` if none.
+#' @examples
+#' # Outside a span, returns NULL
+#' current_span()
+#'
+#' # Inside a span, returns the active Span
+#' with_trace("demo", {
+#'   with_span("step", type = "custom", {
+#'     s <- current_span()
+#'     s$name
+#'   })
+#' })
 #' @export
 current_span <- function() {
   stack <- .trace_context$span_stack
@@ -117,9 +157,20 @@ current_span <- function() {
 #'
 #' @param exporter An S3 `securetrace_exporter` object.
 #' @return Invisible `NULL`.
+#' @examples
+#' # Set a default exporter for all with_trace() calls
+#' set_default_exporter(console_exporter(verbose = FALSE))
+#'
+#' # Now with_trace() auto-exports without specifying exporter
+#' with_trace("auto-exported", {
+#'   1 + 1
+#' })
+#'
+#' # Reset by setting a no-op exporter
+#' set_default_exporter(new_exporter(function(trace_list) invisible(NULL)))
 #' @export
 set_default_exporter <- function(exporter) {
-  if (!inherits(exporter, "securetrace_exporter")) {
+  if (!S7_inherits(exporter, securetrace_exporter)) {
     cli::cli_abort("{.arg exporter} must be a {.cls securetrace_exporter} object.")
   }
   .trace_context$default_exporter <- exporter

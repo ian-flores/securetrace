@@ -15,3 +15,15 @@ An S3 \code{securetrace_exporter} object.
 \description{
 Creates an exporter that prints trace summaries to the console.
 }
+\examples{
+exp <- console_exporter(verbose = TRUE)
+
+tr <- Trace$new("demo-run")
+tr$start()
+span <- Span$new("step1", type = "custom")
+span$start()
+span$end()
+tr$add_span(span)
+tr$end()
+export_trace(exp, tr)
+}

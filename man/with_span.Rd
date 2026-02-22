@@ -23,3 +23,12 @@ Creates a new span within the current trace, evaluates the expression,
 and ends the span. The span is available via \code{\link[=current_span]{current_span()}}
 during evaluation.
 }
+\examples{
+# Use with_span inside a trace
+with_trace("example", {
+  result <- with_span("compute", type = "tool", {
+    sqrt(144)
+  })
+  result
+})
+}

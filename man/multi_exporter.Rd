@@ -16,3 +16,17 @@ An S3 \code{securetrace_exporter} object.
 Combines multiple exporters into one. When a trace is exported,
 it is sent to all contained exporters.
 }
+\examples{
+# Export to both console and JSONL
+tmp <- tempfile(fileext = ".jsonl")
+combined <- multi_exporter(
+  console_exporter(verbose = FALSE),
+  jsonl_exporter(tmp)
+)
+
+tr <- Trace$new("multi-demo")
+tr$start()
+tr$end()
+export_trace(combined, tr)
+unlink(tmp)
+}

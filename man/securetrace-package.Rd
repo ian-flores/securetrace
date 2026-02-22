@@ -11,6 +11,7 @@ Structured traces with spans, token and cost accounting, latency monitoring, and
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://ian-flores.github.io/securetrace/}
   \item \url{https://github.com/ian-flores/securetrace}
   \item Report bugs at \url{https://github.com/ian-flores/securetrace/issues}
 }

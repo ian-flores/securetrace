@@ -7,6 +7,14 @@
 #' @param prompt The prompt string to send.
 #' @param ... Additional arguments passed to the chat method.
 #' @return The chat response.
+#' @examples
+#' \dontrun{
+#' # Requires ellmer package
+#' chat <- ellmer::chat_openai(model = "gpt-4o")
+#' with_trace("llm-demo", {
+#'   response <- trace_llm_call(chat, "What is 2 + 2?")
+#' })
+#' }
 #' @export
 trace_llm_call <- function(chat, prompt, ...) {
   if (!requireNamespace("ellmer", quietly = TRUE)) {
@@ -34,6 +42,12 @@ trace_llm_call <- function(chat, prompt, ...) {
 #' @param fn Function to execute.
 #' @param ... Arguments passed to `fn`.
 #' @return The result of `fn(...)`.
+#' @examples
+#' # Trace a tool function call
+#' with_trace("tool-demo", {
+#'   result <- trace_tool_call("add", function(a, b) a + b, 3, 4)
+#'   result
+#' })
 #' @export
 trace_tool_call <- function(name, fn, ...) {
   with_span(name, type = "tool", {
@@ -50,6 +64,13 @@ trace_tool_call <- function(name, fn, ...) {
 #' @param guardrail The guardrail object or function.
 #' @param x Input to check.
 #' @return The guardrail result.
+#' @examples
+#' # Trace a guardrail check function
+#' check_length <- function(x) nchar(x) < 1000
+#' with_trace("guard-demo", {
+#'   result <- trace_guardrail("length_check", check_length, "short input")
+#'   result
+#' })
 #' @export
 trace_guardrail <- function(name, guardrail, x) {
   with_span(name, type = "guardrail", {
@@ -70,6 +91,15 @@ trace_guardrail <- function(name, guardrail, x) {
 #' @param code Code string to execute.
 #' @param ... Additional arguments passed to `session$execute()`.
 #' @return The execution result.
+#' @examples
+#' \dontrun{
+#' # Requires securer package
+#' session <- securer::SecureSession$new()
+#' with_trace("exec-demo", {
+#'   result <- trace_execution(session, "1 + 1")
+#' })
+#' session$close()
+#' }
 #' @export
 trace_execution <- function(session, code, ...) {
   if (!requireNamespace("securer", quietly = TRUE)) {

@@ -10,8 +10,16 @@ new_exporter(export_fn)
 \item{export_fn}{A function that accepts a trace list (from \code{trace$to_list()}).}
 }
 \value{
-An S3 object of class \code{securetrace_exporter}.
+An S7 object of class \code{securetrace_exporter}.
 }
 \description{
-Wraps an export function as an S3 exporter object.
+Factory function for creating exporter objects.
+}
+\examples{
+# Create an exporter that counts traces
+counter <- new.env(parent = emptyenv())
+counter$n <- 0L
+exp <- new_exporter(function(trace_list) {
+  counter$n <- counter$n + 1L
+})
 }

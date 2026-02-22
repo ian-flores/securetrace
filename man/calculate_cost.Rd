@@ -19,3 +19,10 @@ Numeric cost in USD.
 \description{
 Calculate Cost for a Model Call
 }
+\examples{
+# Calculate cost for a GPT-4o call
+calculate_cost("gpt-4o", input_tokens = 1000, output_tokens = 500)
+
+# Unknown models return 0
+calculate_cost("unknown-model", 1000, 500)
+}

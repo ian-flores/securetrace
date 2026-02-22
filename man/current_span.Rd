@@ -12,3 +12,15 @@ The active \code{Span} object, or \code{NULL} if none.
 \description{
 Get the Current Active Span
 }
+\examples{
+# Outside a span, returns NULL
+current_span()
+
+# Inside a span, returns the active Span
+with_trace("demo", {
+  with_span("step", type = "custom", {
+    s <- current_span()
+    s$name
+  })
+})
+}

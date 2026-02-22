@@ -66,7 +66,7 @@ test_that("Span add_event works", {
   ev <- trace_event("test-event", data = list(x = 1))
   s$add_event(ev)
   expect_length(s$events, 1)
-  expect_equal(s$events[[1]]$name, "test-event")
+  expect_equal(s$events[[1]]@name, "test-event")
 })
 
 test_that("Span add_event rejects non-events", {

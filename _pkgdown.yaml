@@ -51,3 +51,6 @@ articles:
   - title: Getting Started
     contents:
       - securetrace
+  - title: Guides
+    contents:
+      - observability

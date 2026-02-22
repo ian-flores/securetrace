@@ -12,3 +12,13 @@ The active \code{Trace} object, or \code{NULL} if none.
 \description{
 Get the Current Active Trace
 }
+\examples{
+# Outside a trace, returns NULL
+current_trace()
+
+# Inside a trace, returns the active Trace
+with_trace("demo", {
+  tr <- current_trace()
+  tr$name
+})
+}

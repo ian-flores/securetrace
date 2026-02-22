@@ -17,3 +17,10 @@ Invisible \code{NULL}.
 \description{
 Calls the exporter's export function with the serialized trace.
 }
+\examples{
+exp <- console_exporter(verbose = FALSE)
+tr <- Trace$new("test-trace")
+tr$start()
+tr$end()
+export_trace(exp, tr)
+}
