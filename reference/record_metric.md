@@ -25,3 +25,16 @@ record_metric(name, value, unit = NULL)
 ## Value
 
 Invisible `NULL`.
+
+## Examples
+
+``` r
+# Record a custom metric on the active span
+with_trace("metric-demo", {
+  with_span("scoring", type = "custom", {
+    record_metric("confidence", 0.95)
+    record_metric("temperature", 0.7, unit = "degrees")
+  })
+})
+#> NULL
+```

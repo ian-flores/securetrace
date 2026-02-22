@@ -17,3 +17,24 @@ console_exporter(verbose = TRUE)
 ## Value
 
 An S3 `securetrace_exporter` object.
+
+## Examples
+
+``` r
+exp <- console_exporter(verbose = TRUE)
+
+tr <- Trace$new("demo-run")
+tr$start()
+span <- Span$new("step1", type = "custom")
+span$start()
+span$end()
+tr$add_span(span)
+tr$end()
+export_trace(exp, tr)
+#> --- Trace: demo-run ---
+#> Status: completed
+#> Duration: 0.00s
+#> Spans: 1
+#> -- Spans --
+#>   * step1 [custom] (ok) - 0.000s
+```

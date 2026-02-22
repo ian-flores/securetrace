@@ -32,3 +32,24 @@ with_trace(name, expr, ..., exporter = NULL)
 ## Value
 
 The result of evaluating `expr`.
+
+## Examples
+
+``` r
+# Trace a block of code
+result <- with_trace("my-operation", {
+  Sys.sleep(0.01)
+  1 + 1
+})
+result
+#> [1] 2
+
+# With an exporter
+result <- with_trace("traced-op", {
+  10 * 2
+}, exporter = console_exporter(verbose = FALSE))
+#> --- Trace: traced-op ---
+#> Status: completed
+#> Duration: 0.00s
+#> Spans: 0
+```

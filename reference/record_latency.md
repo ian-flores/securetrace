@@ -17,3 +17,15 @@ record_latency(duration_secs)
 ## Value
 
 Invisible `NULL`.
+
+## Examples
+
+``` r
+# Record latency on the active span
+with_trace("latency-demo", {
+  with_span("api-call", type = "custom", {
+    record_latency(0.45)
+  })
+})
+#> NULL
+```

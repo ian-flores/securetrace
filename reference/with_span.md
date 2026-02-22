@@ -32,3 +32,16 @@ with_span(name, type = "custom", expr, ...)
 ## Value
 
 The result of evaluating `expr`.
+
+## Examples
+
+``` r
+# Use with_span inside a trace
+with_trace("example", {
+  result <- with_span("compute", type = "tool", {
+    sqrt(144)
+  })
+  result
+})
+#> [1] 12
+```

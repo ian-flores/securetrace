@@ -25,3 +25,14 @@ trace_tool_call(name, fn, ...)
 ## Value
 
 The result of `fn(...)`.
+
+## Examples
+
+``` r
+# Trace a tool function call
+with_trace("tool-demo", {
+  result <- trace_tool_call("add", function(a, b) a + b, 3, 4)
+  result
+})
+#> [1] 7
+```

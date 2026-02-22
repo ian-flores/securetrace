@@ -1,6 +1,6 @@
 # Create a New Exporter
 
-Wraps an export function as an S3 exporter object.
+Factory function for creating exporter objects.
 
 ## Usage
 
@@ -16,4 +16,15 @@ new_exporter(export_fn)
 
 ## Value
 
-An S3 object of class `securetrace_exporter`.
+An S7 object of class `securetrace_exporter`.
+
+## Examples
+
+``` r
+# Create an exporter that counts traces
+counter <- new.env(parent = emptyenv())
+counter$n <- 0L
+exp <- new_exporter(function(trace_list) {
+  counter$n <- counter$n + 1L
+})
+```

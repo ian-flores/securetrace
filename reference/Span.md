@@ -277,3 +277,92 @@ The objects of this class are cloneable with this method.
 - `deep`:
 
   Whether to make a deep clone.
+
+## Examples
+
+``` r
+# Create a span for an LLM call
+span <- Span$new("gpt-call", type = "llm")
+span$start()
+span$set_model("gpt-4o")
+span$set_tokens(input = 500L, output = 200L)
+span$add_metric("latency", 1.23, unit = "seconds")
+
+# Add an event
+evt <- trace_event("prompt_sent", data = list(length = 42L))
+span$add_event(evt)
+
+span$end()
+span$status
+#> [1] "ok"
+span$duration()
+#> [1] 0.00728631
+span$to_list()
+#> $span_id
+#> [1] "be45eee35844e7ec"
+#> 
+#> $name
+#> [1] "gpt-call"
+#> 
+#> $type
+#> [1] "llm"
+#> 
+#> $status
+#> [1] "ok"
+#> 
+#> $parent_id
+#> NULL
+#> 
+#> $metadata
+#> list()
+#> 
+#> $start_time
+#> [1] "2026-02-22T01:48:25.191Z"
+#> 
+#> $end_time
+#> [1] "2026-02-22T01:48:25.198Z"
+#> 
+#> $duration_secs
+#> [1] 0.00728631
+#> 
+#> $input_tokens
+#> [1] 500
+#> 
+#> $output_tokens
+#> [1] 200
+#> 
+#> $model
+#> [1] "gpt-4o"
+#> 
+#> $error
+#> NULL
+#> 
+#> $events
+#> $events[[1]]
+#> $events[[1]]$name
+#> [1] "prompt_sent"
+#> 
+#> $events[[1]]$data
+#> $events[[1]]$data$length
+#> [1] 42
+#> 
+#> 
+#> $events[[1]]$timestamp
+#> [1] "2026-02-22T01:48:25.193Z"
+#> 
+#> 
+#> 
+#> $metrics
+#> $metrics[[1]]
+#> $metrics[[1]]$name
+#> [1] "latency"
+#> 
+#> $metrics[[1]]$value
+#> [1] 1.23
+#> 
+#> $metrics[[1]]$unit
+#> [1] "seconds"
+#> 
+#> 
+#> 
+```

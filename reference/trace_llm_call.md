@@ -26,3 +26,15 @@ trace_llm_call(chat, prompt, ...)
 ## Value
 
 The chat response.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Requires ellmer package
+chat <- ellmer::chat_openai(model = "gpt-4o")
+with_trace("llm-demo", {
+  response <- trace_llm_call(chat, "What is 2 + 2?")
+})
+} # }
+```

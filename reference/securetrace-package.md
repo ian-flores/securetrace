@@ -8,6 +8,8 @@ OpenTelemetry-inspired patterns adapted for R AI applications.
 
 Useful links:
 
+- <https://ian-flores.github.io/securetrace/>
+
 - <https://github.com/ian-flores/securetrace>
 
 - Report bugs at <https://github.com/ian-flores/securetrace/issues>

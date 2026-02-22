@@ -17,3 +17,13 @@ is_trace_event(x)
 ## Value
 
 Logical scalar.
+
+## Examples
+
+``` r
+evt <- trace_event("test_event")
+is_trace_event(evt)
+#> [1] TRUE
+is_trace_event("not an event")
+#> [1] FALSE
+```

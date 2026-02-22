@@ -1,6 +1,6 @@
 # Create a Trace Event
 
-Discrete point-in-time event within a span.
+Factory function for creating trace events.
 
 ## Usage
 
@@ -24,4 +24,14 @@ trace_event(name, data = list(), timestamp = Sys.time())
 
 ## Value
 
-An S3 object of class `securetrace_event`.
+An S7 object of class `securetrace_event`.
+
+## Examples
+
+``` r
+evt <- trace_event("response_received", data = list(tokens = 150L))
+evt@name
+#> [1] "response_received"
+evt@data$tokens
+#> [1] 150
+```

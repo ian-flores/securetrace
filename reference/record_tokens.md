@@ -26,3 +26,16 @@ record_tokens(input_tokens, output_tokens, model = NULL)
 ## Value
 
 Invisible `NULL`.
+
+## Examples
+
+``` r
+# Record tokens on the active span inside a trace
+with_trace("token-demo", {
+  with_span("llm-step", type = "llm", {
+    record_tokens(500, 200, model = "gpt-4o")
+    current_span()$input_tokens
+  })
+})
+#> [1] 500
+```

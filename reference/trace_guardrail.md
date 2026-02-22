@@ -26,3 +26,15 @@ trace_guardrail(name, guardrail, x)
 ## Value
 
 The guardrail result.
+
+## Examples
+
+``` r
+# Trace a guardrail check function
+check_length <- function(x) nchar(x) < 1000
+with_trace("guard-demo", {
+  result <- trace_guardrail("length_check", check_length, "short input")
+  result
+})
+#> [1] TRUE
+```

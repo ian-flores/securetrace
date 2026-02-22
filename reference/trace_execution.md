@@ -26,3 +26,16 @@ trace_execution(session, code, ...)
 ## Value
 
 The execution result.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Requires securer package
+session <- securer::SecureSession$new()
+with_trace("exec-demo", {
+  result <- trace_execution(session, "1 + 1")
+})
+session$close()
+} # }
+```

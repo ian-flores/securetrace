@@ -171,3 +171,32 @@ The objects of this class are cloneable with this method.
 - `deep`:
 
   Whether to make a deep clone.
+
+## Examples
+
+``` r
+# Create and use a trace
+tr <- Trace$new("my-agent-run", metadata = list(user = "test"))
+tr$start()
+
+# Add a span to the trace
+span <- Span$new("llm-call", type = "llm")
+span$start()
+span$set_tokens(input = 100L, output = 50L)
+span$end()
+tr$add_span(span)
+
+tr$end()
+tr$status
+#> [1] "completed"
+tr$duration()
+#> [1] 0.002890348
+tr$summary()
+#> Trace: my-agent-run (completed) ID: 6ada44bc15ee3f1285a6f4585e9f4103 Duration:
+#> 0.00s Spans: 1 Tokens: 100 input, 50 output Cost: $0.000000
+
+# Serialize to list for export
+trace_list <- tr$to_list()
+trace_list$name
+#> [1] "my-agent-run"
+```
