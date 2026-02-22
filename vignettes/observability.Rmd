@@ -484,9 +484,61 @@ result <- with_trace("guard-integration", {
 result
 ```
 
-For `trace_llm_call()` (wrapping ellmer chat objects) and `trace_execution()`
-(wrapping securer sessions), see the package documentation -- these require
-their respective optional dependencies.
+### trace_execution() -- Secure Code Execution
+
+`trace_execution()` wraps a securer `SecureSession$execute()` call with a
+span. The submitted code is recorded as a `code.submitted` event, and any
+captured stdout is recorded as an `execution.stdout` event:
+
+```{r, eval = FALSE}
+session <- securer::SecureSession$new()
+
+with_trace("sandboxed-run", {
+  result <- trace_execution(session, "cat('hello'); 1 + 1")
+})
+session$close()
+
+# The span contains two events:
+#   1. code.submitted  -- data: list(code = "cat('hello'); 1 + 1")
+#   2. execution.stdout -- data: list(lines = "hello")
+```
+
+### trace_guardrail() -- secureguard Integration
+
+When you pass a secureguard Guard object (not just a plain function),
+`trace_guardrail()` calls `secureguard::run_guardrail()` and records
+structured result metadata as a `guardrail.result` event on the span:
+
+```{r, eval = FALSE}
+guard <- secureguard::guard_code_analysis()
+
+with_trace("guarded-input", {
+  result <- trace_guardrail("code-safety", guard, "system('rm -rf /')")
+})
+
+# The span event "guardrail.result" contains:
+#   pass       -- TRUE/FALSE
+#   guard_name -- name from the Guard object
+#   guard_type -- type from the Guard object
+#   reason     -- explanation string (if the check failed)
+```
+
+### trace_schema() -- JSONL Format Reference
+
+`trace_schema()` returns a list describing every field in the JSONL export
+format, including types and descriptions for both trace-level and span-level
+fields. This is useful for building parsers or validating exported data:
+
+```{r}
+schema <- trace_schema()
+names(schema)
+#> [1] "trace_id" "name" "status" "start_time" "end_time" "duration" "spans"
+
+# Inspect span-level fields
+names(schema$spans$fields)
+#> [1] "span_id" "name" "type" "status" "start_time" "end_time"
+#> [7] "duration_secs" "parent_id" "model" "input_tokens" "output_tokens"
+```
 
 ## Putting It All Together
 
