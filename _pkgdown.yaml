@@ -9,6 +9,7 @@ reference:
       - Trace
       - Span
       - trace_event
+      - securetrace_event
       - is_trace_event
 
   - title: Context Management
@@ -35,6 +36,7 @@ reference:
   - title: Exporters
     contents:
       - new_exporter
+      - securetrace_exporter
       - jsonl_exporter
       - console_exporter
       - export_trace
@@ -47,6 +49,7 @@ reference:
 
   - title: Prometheus
     contents:
+      - prometheus
       - prometheus_registry
       - prometheus_metrics
       - prometheus_exporter
