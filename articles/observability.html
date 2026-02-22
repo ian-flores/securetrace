@@ -136,10 +136,10 @@ inner span automatically records the outer span’s ID as its
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">200</span>, model <span class="op">=</span> <span class="st">"claude-haiku-4-5"</span><span class="op">)</span></span>
 <span>    <span class="st">"Summary complete"</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Inspect the trace structure</span></span>
-<span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/current_trace.html">current_trace</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="co"># Capture the trace while still inside with_trace()</span></span>
+<span>  <span class="va">tr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/current_trace.html">current_trace</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Each span knows its parent. When the trace is serialized with
 <code>$to_list()</code>, the parent-child relationships are preserved
 through <code>parent_id</code> fields, letting you reconstruct the full
@@ -175,7 +175,7 @@ context-manager wrappers:</p>
 <span><span class="va">tr</span><span class="op">$</span><span class="va">status</span></span>
 <span><span class="co">#&gt; [1] "completed"</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">duration</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.006779671</span></span>
+<span><span class="co">#&gt; [1] 0.006930828</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">tr</span><span class="op">$</span><span class="va">spans</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2</span></span></code></pre></div>
 </div>

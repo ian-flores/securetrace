@@ -351,7 +351,8 @@ incoming trace context and creates a child trace for its work:</p>
 <span><span class="co">#* @post /analyze</span></span>
 <span><span class="kw">function</span><span class="op">(</span><span class="va">req</span>, <span class="va">res</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># Extract parent trace context from incoming request</span></span>
-<span>  <span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_trace_context.html">extract_trace_context</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">req</span><span class="op">$</span><span class="va">HTTP_TRACEPARENT</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">headers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>traceparent <span class="op">=</span> <span class="va">req</span><span class="op">$</span><span class="va">HTTP_TRACEPARENT</span><span class="op">)</span></span>
+<span>  <span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_trace_context.html">extract_trace_context</a></span><span class="op">(</span><span class="va">headers</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co"># Create a trace that continues the parent context</span></span>
 <span>  <span class="va">tr</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Trace.html">Trace</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"plumber-analyze"</span><span class="op">)</span></span>

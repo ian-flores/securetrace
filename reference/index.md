@@ -64,6 +64,8 @@
   : Export a Trace
 - [`multi_exporter()`](https://ian-flores.github.io/securetrace/reference/multi_exporter.md)
   : Multi-Exporter
+- [`trace_schema()`](https://ian-flores.github.io/securetrace/reference/trace_schema.md)
+  : JSONL Trace Schema
 
 ## OTLP Export
 
@@ -71,6 +73,8 @@
   : OTLP JSON Exporter
 - [`otlp_format_trace()`](https://ian-flores.github.io/securetrace/reference/otlp_format_trace.md)
   : Format a Trace as OTLP JSON
+- [`flush_otlp()`](https://ian-flores.github.io/securetrace/reference/flush_otlp.md)
+  : Flush Buffered OTLP Traces
 
 ## Prometheus
 
@@ -108,3 +112,7 @@
   : Trace a Guardrail Check
 - [`trace_execution()`](https://ian-flores.github.io/securetrace/reference/trace_execution.md)
   : Trace a Secure Code Execution
+- [`trace_graph()`](https://ian-flores.github.io/securetrace/reference/trace_graph.md)
+  : Trace an orchestr Graph Execution
+- [`trace_agent()`](https://ian-flores.github.io/securetrace/reference/trace_agent.md)
+  : Trace an orchestr Agent Invocation

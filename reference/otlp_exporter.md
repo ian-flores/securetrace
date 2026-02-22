@@ -11,7 +11,8 @@ otlp_exporter(
   endpoint = "http://localhost:4318",
   headers = list(),
   service_name = "r-agent",
-  batch_size = 100L
+  batch_size = 100L,
+  max_retries = 3L
 )
 ```
 
@@ -33,8 +34,15 @@ otlp_exporter(
 
 - batch_size:
 
-  Maximum number of spans per export batch (default `100L`). Currently
-  unused; reserved for future batching support.
+  Maximum number of traces to buffer before sending (default `100L`).
+  Traces are accumulated and sent when the buffer reaches this size. Use
+  [`flush_otlp()`](https://ian-flores.github.io/securetrace/reference/flush_otlp.md)
+  to force-send buffered traces.
+
+- max_retries:
+
+  Maximum number of retry attempts for transient HTTP errors (429, 5xx).
+  Default `3L`. Uses exponential backoff (1s, 2s, 4s).
 
 ## Value
 
@@ -57,5 +65,6 @@ s$end()
 tr$add_span(s)
 tr$end()
 export_trace(exp, tr)
+flush_otlp(exp)
 } # }
 ```

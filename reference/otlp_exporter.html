@@ -51,7 +51,8 @@ Jaeger, Grafana Tempo, or any OpenTelemetry Collector.</p>
 <span>  endpoint <span class="op">=</span> <span class="st">"http://localhost:4318"</span>,</span>
 <span>  headers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  service_name <span class="op">=</span> <span class="st">"r-agent"</span>,</span>
-<span>  batch_size <span class="op">=</span> <span class="fl">100L</span></span>
+<span>  batch_size <span class="op">=</span> <span class="fl">100L</span>,</span>
+<span>  max_retries <span class="op">=</span> <span class="fl">3L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -74,8 +75,14 @@ Jaeger, Grafana Tempo, or any OpenTelemetry Collector.</p>
 
 
 <dt id="arg-batch-size">batch_size<a class="anchor" aria-label="anchor" href="#arg-batch-size"></a></dt>
-<dd><p>Maximum number of spans per export batch
-(default <code>100L</code>). Currently unused; reserved for future batching support.</p></dd>
+<dd><p>Maximum number of traces to buffer before sending
+(default <code>100L</code>). Traces are accumulated and sent when the buffer
+reaches this size. Use <code><a href="flush_otlp.html">flush_otlp()</a></code> to force-send buffered traces.</p></dd>
+
+
+<dt id="arg-max-retries">max_retries<a class="anchor" aria-label="anchor" href="#arg-max-retries"></a></dt>
+<dd><p>Maximum number of retry attempts for transient HTTP
+errors (429, 5xx). Default <code>3L</code>. Uses exponential backoff (1s, 2s, 4s).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -99,6 +106,7 @@ Jaeger, Grafana Tempo, or any OpenTelemetry Collector.</p>
 <span class="r-in"><span><span class="va">tr</span><span class="op">$</span><span class="fu">add_span</span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">tr</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="export_trace.html">export_trace</a></span><span class="op">(</span><span class="va">exp</span>, <span class="va">tr</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="flush_otlp.html">flush_otlp</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

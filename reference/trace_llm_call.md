@@ -6,7 +6,7 @@ Requires the ellmer package.
 ## Usage
 
 ``` r
-trace_llm_call(chat, prompt, ...)
+trace_llm_call(chat, prompt, ..., stream = FALSE)
 ```
 
 ## Arguments
@@ -22,6 +22,11 @@ trace_llm_call(chat, prompt, ...)
 - ...:
 
   Additional arguments passed to the chat method.
+
+- stream:
+
+  Logical. If `TRUE`, calls `chat$stream(prompt, ...)` instead of
+  `chat$chat(prompt, ...)`. Default `FALSE`.
 
 ## Value
 

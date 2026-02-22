@@ -317,7 +317,8 @@ library(plumber)
 #* @post /analyze
 function(req, res) {
   # Extract parent trace context from incoming request
-  ctx <- extract_trace_context(as.list(req$HTTP_TRACEPARENT))
+  headers <- list(traceparent = req$HTTP_TRACEPARENT)
+  ctx <- extract_trace_context(headers)
 
   # Create a trace that continues the parent context
   tr <- Trace$new("plumber-analyze")

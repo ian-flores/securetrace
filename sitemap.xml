@@ -20,6 +20,7 @@
 <url><loc>https://ian-flores.github.io/securetrace/reference/current_trace.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/export_trace.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/extract_trace_context.html</loc></url>
+<url><loc>https://ian-flores.github.io/securetrace/reference/flush_otlp.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/format_prometheus.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/index.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/inject_headers.html</loc></url>
@@ -44,10 +45,13 @@
 <url><loc>https://ian-flores.github.io/securetrace/reference/securetrace_exporter.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/serve_prometheus.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/set_default_exporter.html</loc></url>
+<url><loc>https://ian-flores.github.io/securetrace/reference/trace_agent.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/trace_event.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/trace_execution.html</loc></url>
+<url><loc>https://ian-flores.github.io/securetrace/reference/trace_graph.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/trace_guardrail.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/trace_llm_call.html</loc></url>
+<url><loc>https://ian-flores.github.io/securetrace/reference/trace_schema.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/trace_tool_call.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/trace_total_cost.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/traceparent.html</loc></url>

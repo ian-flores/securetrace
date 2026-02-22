@@ -1,7 +1,10 @@
 # Trace a Guardrail Check
 
-Wraps a secureguard guardrail check with a span. Requires the
-secureguard package.
+Wraps a secureguard guardrail check with a span. If `guardrail` is a
+secureguard Guard object (S7 class `secureguard`), its `check_fn` is
+called and structured result metadata (pass/fail, score, guard name) is
+recorded as span events. Otherwise, `guardrail` is called as a plain
+function (backward-compatible behavior).
 
 ## Usage
 

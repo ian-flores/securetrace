@@ -1,7 +1,8 @@
 # Trace a Secure Code Execution
 
-Wraps a securer session execution with a span. Requires the securer
-package.
+Wraps a securer session execution with a span. Records the submitted
+code, captured stdout/stderr, and sets span status to error on execution
+failure. Requires the securer package.
 
 ## Usage
 
