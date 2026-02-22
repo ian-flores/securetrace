@@ -161,3 +161,96 @@ method(print, securetrace_exporter) <- function(x, ...) {
   cat("<securetrace_exporter>\n")
   invisible(x)
 }
+
+#' JSONL Trace Schema
+#'
+#' Returns a list describing the expected JSONL trace format, including
+#' field names, types, and descriptions for all top-level and span-level fields.
+#'
+#' @return A named list where each element describes a field with `type` and
+#'   `description`. The `spans` element additionally contains a `fields` list
+#'   describing the span sub-structure.
+#' @examples
+#' schema <- trace_schema()
+#' names(schema)
+#' schema$trace_id
+#' names(schema$spans$fields)
+#' @export
+trace_schema <- function() {
+  list(
+    trace_id = list(
+      type = "character",
+      description = "Unique identifier for the trace (UUID)"
+    ),
+    name = list(
+      type = "character",
+      description = "Human-readable name for the trace"
+    ),
+    status = list(
+      type = "character",
+      description = "Trace status: 'running', 'completed', or 'error'"
+    ),
+    start_time = list(
+      type = "character",
+      description = "ISO 8601 timestamp when the trace started"
+    ),
+    end_time = list(
+      type = "character",
+      description = "ISO 8601 timestamp when the trace ended"
+    ),
+    duration = list(
+      type = "numeric",
+      description = "Total trace duration in seconds"
+    ),
+    spans = list(
+      type = "array",
+      description = "Array of span objects representing individual operations",
+      fields = list(
+        span_id = list(
+          type = "character",
+          description = "Unique identifier for the span (UUID)"
+        ),
+        name = list(
+          type = "character",
+          description = "Human-readable name for the span"
+        ),
+        type = list(
+          type = "character",
+          description = "Span type: 'llm', 'tool', 'guardrail', or 'custom'"
+        ),
+        status = list(
+          type = "character",
+          description = "Span status: 'running', 'ok', 'completed', or 'error'"
+        ),
+        start_time = list(
+          type = "character",
+          description = "ISO 8601 timestamp when the span started"
+        ),
+        end_time = list(
+          type = "character",
+          description = "ISO 8601 timestamp when the span ended"
+        ),
+        duration_secs = list(
+          type = "numeric",
+          description = "Span duration in seconds"
+        ),
+        parent_id = list(
+          type = "character",
+          description = "Span ID of the parent span, or NULL if root"
+        ),
+        model = list(
+          type = "character",
+          description = "LLM model name (e.g., 'gpt-4o'), NULL for non-LLM spans"
+        ),
+        input_tokens = list(
+          type = "integer",
+          description = "Number of input tokens consumed"
+        ),
+        output_tokens = list(
+          type = "integer",
+          description = "Number of output tokens generated"
+        )
+      )
+    )
+  )
+}

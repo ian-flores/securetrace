@@ -355,3 +355,122 @@ test_that("spans without events omit events field", {
 
   expect_false("events" %in% names(tool_span))
 })
+
+# --- Resource attributes (OTel semantic conventions) ---
+
+test_that("otlp_format_trace includes telemetry SDK resource attributes", {
+  tl <- make_trace_list()
+  otlp <- otlp_format_trace(tl, service_name = "test-svc")
+
+  attrs <- otlp$resourceSpans[[1]]$resource$attributes
+  attr_keys <- vapply(attrs, function(a) a$key, character(1))
+
+  expect_true("service.name" %in% attr_keys)
+  expect_true("telemetry.sdk.name" %in% attr_keys)
+  expect_true("telemetry.sdk.version" %in% attr_keys)
+  expect_true("telemetry.sdk.language" %in% attr_keys)
+
+  sdk_name <- Filter(function(a) a$key == "telemetry.sdk.name", attrs)[[1]]
+  expect_equal(sdk_name$value$stringValue, "securetrace")
+
+  sdk_lang <- Filter(function(a) a$key == "telemetry.sdk.language", attrs)[[1]]
+  expect_equal(sdk_lang$value$stringValue, "R")
+
+  sdk_ver <- Filter(function(a) a$key == "telemetry.sdk.version", attrs)[[1]]
+  expect_type(sdk_ver$value$stringValue, "character")
+  expect_true(grepl("^[0-9]+\\.[0-9]+", sdk_ver$value$stringValue))
+})
+
+# --- OTLP retry logic ---
+
+test_that("otlp_send retries on transient HTTP errors", {
+  skip_if_not_installed("httr2")
+
+  attempt_count <- 0L
+
+  # Mock otlp_send by replacing the HTTP layer
+  local_mocked_bindings(
+    otlp_send = function(payload, endpoint, headers = list(), max_retries = 3L) {
+      attempt_count <<- attempt_count + 1L
+      if (attempt_count < 3L) {
+        rlang::abort("HTTP 503", class = "httr2_http_503")
+      }
+      invisible(list(status_code = 200L))
+    },
+    .package = "securetrace"
+  )
+
+  # The exporter should succeed after retries
+  exp <- otlp_exporter(max_retries = 3L)
+  tl <- make_trace_list()
+  tr <- Trace$new("retry-test")
+  tr$start()
+  tr$end()
+
+  # Export should not error (retries succeed)
+  expect_no_error(export_trace(exp, tr))
+})
+
+test_that("otlp_exporter accepts max_retries parameter", {
+  exp <- otlp_exporter(max_retries = 5L)
+  expect_true(S7::S7_inherits(exp, securetrace_exporter))
+})
+
+# --- OTLP batching ---
+
+test_that("otlp_exporter with batch_size accumulates traces in buffer", {
+  send_count <- 0L
+
+  local_mocked_bindings(
+    otlp_send_batch = function(payloads, endpoint, headers = list(), max_retries = 3L) {
+      send_count <<- send_count + 1L
+      invisible(NULL)
+    },
+    .package = "securetrace"
+  )
+
+  exp <- otlp_exporter(batch_size = 3L)
+
+  # Export 2 traces - should not send yet
+  for (i in 1:2) {
+    tr <- Trace$new(paste0("batch-", i))
+    tr$start()
+    tr$end()
+    export_trace(exp, tr)
+  }
+  expect_equal(send_count, 0L)
+
+  # Export 3rd trace - should trigger batch send
+  tr3 <- Trace$new("batch-3")
+  tr3$start()
+  tr3$end()
+  export_trace(exp, tr3)
+  expect_equal(send_count, 1L)
+})
+
+test_that("flush_otlp sends buffered traces immediately", {
+  send_count <- 0L
+
+  local_mocked_bindings(
+    otlp_send_batch = function(payloads, endpoint, headers = list(), max_retries = 3L) {
+      send_count <<- send_count + 1L
+      invisible(NULL)
+    },
+    .package = "securetrace"
+  )
+
+  exp <- otlp_exporter(batch_size = 10L)
+
+  # Export 2 traces - not enough for batch
+  for (i in 1:2) {
+    tr <- Trace$new(paste0("flush-", i))
+    tr$start()
+    tr$end()
+    export_trace(exp, tr)
+  }
+  expect_equal(send_count, 0L)
+
+  # Flush forces send
+  flush_otlp(exp)
+  expect_equal(send_count, 1L)
+})

@@ -8,7 +8,8 @@ otlp_exporter(
   endpoint = "http://localhost:4318",
   headers = list(),
   service_name = "r-agent",
-  batch_size = 100L
+  batch_size = 100L,
+  max_retries = 3L
 )
 }
 \arguments{
@@ -20,8 +21,12 @@ otlp_exporter(
 \item{service_name}{Service name reported in the resource attributes
 (default \code{"r-agent"}).}
 
-\item{batch_size}{Maximum number of spans per export batch
-(default \code{100L}). Currently unused; reserved for future batching support.}
+\item{batch_size}{Maximum number of traces to buffer before sending
+(default \code{100L}). Traces are accumulated and sent when the buffer
+reaches this size. Use \code{\link[=flush_otlp]{flush_otlp()}} to force-send buffered traces.}
+
+\item{max_retries}{Maximum number of retry attempts for transient HTTP
+errors (429, 5xx). Default \code{3L}. Uses exponential backoff (1s, 2s, 4s).}
 }
 \value{
 An S7 \code{securetrace_exporter} object.
@@ -46,5 +51,6 @@ s$end()
 tr$add_span(s)
 tr$end()
 export_trace(exp, tr)
+flush_otlp(exp)
 }
 }

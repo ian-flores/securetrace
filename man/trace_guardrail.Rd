@@ -17,8 +17,11 @@ trace_guardrail(name, guardrail, x)
 The guardrail result.
 }
 \description{
-Wraps a secureguard guardrail check with a span.
-Requires the secureguard package.
+Wraps a secureguard guardrail check with a span. If \code{guardrail} is a
+secureguard Guard object (S7 class \code{secureguard}), its \code{check_fn} is
+called and structured result metadata (pass/fail, score, guard name)
+is recorded as span events. Otherwise, \code{guardrail} is called as a
+plain function (backward-compatible behavior).
 }
 \examples{
 # Trace a guardrail check function

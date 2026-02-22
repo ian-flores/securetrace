@@ -9,8 +9,11 @@
 #'   (e.g., authentication tokens).
 #' @param service_name Service name reported in the resource attributes
 #'   (default `"r-agent"`).
-#' @param batch_size Maximum number of spans per export batch
-#'   (default `100L`). Currently unused; reserved for future batching support.
+#' @param batch_size Maximum number of traces to buffer before sending
+#'   (default `100L`). Traces are accumulated and sent when the buffer
+#'   reaches this size. Use [flush_otlp()] to force-send buffered traces.
+#' @param max_retries Maximum number of retry attempts for transient HTTP
+#'   errors (429, 5xx). Default `3L`. Uses exponential backoff (1s, 2s, 4s).
 #' @return An S7 `securetrace_exporter` object.
 #'
 #' @examples
@@ -28,16 +31,35 @@
 #' tr$add_span(s)
 #' tr$end()
 #' export_trace(exp, tr)
+#' flush_otlp(exp)
 #' }
 #' @export
 otlp_exporter <- function(endpoint = "http://localhost:4318",
                            headers = list(),
                            service_name = "r-agent",
-                           batch_size = 100L) {
-  new_exporter(function(trace_list) {
+                           batch_size = 100L,
+                           max_retries = 3L) {
+  buffer <- new.env(parent = emptyenv())
+  buffer$traces <- list()
+
+  exp <- new_exporter(function(trace_list) {
     payload <- otlp_format_trace(trace_list, service_name = service_name)
-    otlp_send(payload, endpoint = endpoint, headers = headers)
+    buffer$traces <- c(buffer$traces, list(payload))
+
+    if (length(buffer$traces) >= batch_size) {
+      otlp_send_batch(buffer$traces, endpoint = endpoint, headers = headers,
+                       max_retries = max_retries)
+      buffer$traces <- list()
+    }
   })
+
+  # Attach buffer env for flush_otlp()
+  attr(exp, "otlp_buffer") <- buffer
+  attr(exp, "otlp_endpoint") <- endpoint
+  attr(exp, "otlp_headers") <- headers
+  attr(exp, "otlp_max_retries") <- max_retries
+
+  exp
 }
 
 #' Format a Trace as OTLP JSON
@@ -77,7 +99,10 @@ otlp_format_trace <- function(trace_list, service_name = "r-agent") {
       list(
         resource = list(
           attributes = list(
-            otlp_attr("service.name", service_name)
+            otlp_attr("service.name", service_name),
+            otlp_attr("telemetry.sdk.name", "securetrace"),
+            otlp_attr("telemetry.sdk.version", pkg_version),
+            otlp_attr("telemetry.sdk.language", "R")
           )
         ),
         scopeSpans = list(
@@ -183,21 +208,106 @@ otlp_format_span <- function(span_list, trace_id) {
 }
 
 
+#' Flush Buffered OTLP Traces
+#'
+#' Forces immediate sending of any traces buffered in an OTLP exporter.
+#'
+#' @param exporter An OTLP exporter created by [otlp_exporter()].
+#' @return Invisible `NULL`.
+#' @examples
+#' \dontrun{
+#' exp <- otlp_exporter(batch_size = 50L)
+#' # ... export some traces ...
+#' flush_otlp(exp)
+#' }
+#' @export
+flush_otlp <- function(exporter) {
+  buffer <- attr(exporter, "otlp_buffer")
+  if (is.null(buffer)) {
+    cli::cli_abort("{.arg exporter} is not an OTLP exporter with a buffer.")
+  }
+  if (length(buffer$traces) > 0) {
+    endpoint <- attr(exporter, "otlp_endpoint")
+    headers <- attr(exporter, "otlp_headers")
+    max_retries <- attr(exporter, "otlp_max_retries")
+    otlp_send_batch(buffer$traces, endpoint = endpoint, headers = headers,
+                     max_retries = max_retries)
+    buffer$traces <- list()
+  }
+  invisible(NULL)
+}
+
+#' Send a batch of OTLP payloads
+#' @param payloads List of OTLP payload lists.
+#' @param endpoint Collector endpoint URL.
+#' @param headers Named list of HTTP headers.
+#' @param max_retries Maximum retry attempts.
+#' @keywords internal
+#' @noRd
+otlp_send_batch <- function(payloads, endpoint, headers = list(),
+                             max_retries = 3L) {
+  for (payload in payloads) {
+    otlp_send(payload, endpoint = endpoint, headers = headers,
+              max_retries = max_retries)
+  }
+}
+
 #' Send OTLP JSON payload to a collector
+#'
+#' Sends a single OTLP payload with retry logic for transient HTTP errors
+#' (429, 500, 502, 503, 504). Uses exponential backoff.
+#'
 #' @param payload OTLP JSON payload (list).
 #' @param endpoint Collector endpoint URL.
 #' @param headers Named list of HTTP headers.
+#' @param max_retries Maximum number of retry attempts (default `3L`).
 #' @keywords internal
 #' @noRd
-otlp_send <- function(payload, endpoint, headers = list()) {
+otlp_send <- function(payload, endpoint, headers = list(), max_retries = 3L) {
   rlang::check_installed("httr2", reason = "to send OTLP trace data")
 
-  resp <- httr2::request(endpoint) |>
-    httr2::req_url_path_append("/v1/traces") |>
-    httr2::req_headers(!!!headers) |>
-    httr2::req_body_json(payload, auto_unbox = TRUE) |>
-    httr2::req_perform()
+  transient_codes <- c(429L, 500L, 502L, 503L, 504L)
+  delay <- 1
 
+  for (attempt in seq_len(max_retries)) {
+    resp <- tryCatch(
+      {
+        httr2::request(endpoint) |>
+          httr2::req_url_path_append("/v1/traces") |>
+          httr2::req_headers(!!!headers) |>
+          httr2::req_body_json(payload, auto_unbox = TRUE) |>
+          httr2::req_error(is_error = function(resp) FALSE) |>
+          httr2::req_perform()
+      },
+      error = function(e) {
+        e
+      }
+    )
+
+    # If we got an error condition (network error), retry
+    if (inherits(resp, "error")) {
+      if (attempt < max_retries) {
+        Sys.sleep(delay)
+        delay <- delay * 2
+        next
+      }
+      rlang::abort(conditionMessage(resp))
+    }
+
+    status <- httr2::resp_status(resp)
+    if (!(status %in% transient_codes)) {
+      return(invisible(resp))
+    }
+
+    # Transient error: retry with backoff
+    if (attempt < max_retries) {
+      Sys.sleep(delay)
+      delay <- delay * 2
+    }
+  }
+
+  # Final attempt also failed
+  cli::cli_warn("OTLP send failed after {max_retries} attempts (HTTP {status}).")
   invisible(resp)
 }
 

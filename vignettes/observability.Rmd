@@ -78,10 +78,10 @@ result <- with_trace("nested-workflow", {
     record_tokens(1000, 200, model = "claude-haiku-4-5")
     "Summary complete"
   })
-})
 
-# Inspect the trace structure
-tr <- current_trace()
+  # Capture the trace while still inside with_trace()
+  tr <- current_trace()
+})
 ```
 
 Each span knows its parent. When the trace is serialized with `$to_list()`,

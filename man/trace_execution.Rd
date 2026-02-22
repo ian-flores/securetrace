@@ -17,7 +17,8 @@ trace_execution(session, code, ...)
 The execution result.
 }
 \description{
-Wraps a securer session execution with a span.
+Wraps a securer session execution with a span. Records the submitted code,
+captured stdout/stderr, and sets span status to error on execution failure.
 Requires the securer package.
 }
 \examples{

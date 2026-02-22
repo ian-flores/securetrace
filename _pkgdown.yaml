@@ -43,11 +43,13 @@ reference:
       - console_exporter
       - export_trace
       - multi_exporter
+      - trace_schema
 
   - title: OTLP Export
     contents:
       - otlp_exporter
       - otlp_format_trace
+      - flush_otlp
 
   - title: Prometheus
     contents:
@@ -71,6 +73,8 @@ reference:
       - trace_tool_call
       - trace_guardrail
       - trace_execution
+      - trace_graph
+      - trace_agent
 
 articles:
   - title: Getting Started

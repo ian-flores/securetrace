@@ -64,3 +64,39 @@ test_that("exporter print works", {
   exp <- new_exporter(function(x) NULL)
   expect_output(print(exp), "securetrace_exporter")
 })
+
+# -- trace_schema() tests -------------------------------------------------------
+
+test_that("trace_schema returns a list with expected top-level keys", {
+  schema <- trace_schema()
+  expect_type(schema, "list")
+
+  expected_keys <- c("trace_id", "name", "status", "start_time", "end_time",
+                     "duration", "spans")
+  for (key in expected_keys) {
+    expect_true(key %in% names(schema), info = paste("Missing key:", key))
+  }
+})
+
+test_that("trace_schema span fields include expected entries", {
+  schema <- trace_schema()
+  span_fields <- schema$spans$fields
+
+  expected_span_keys <- c("span_id", "name", "type", "status", "start_time",
+                          "end_time", "duration_secs", "parent_id", "model",
+                          "input_tokens", "output_tokens")
+  for (key in expected_span_keys) {
+    expect_true(key %in% names(span_fields),
+                info = paste("Missing span field:", key))
+  }
+})
+
+test_that("trace_schema fields have type and description", {
+  schema <- trace_schema()
+  # Check a top-level field
+  expect_true("type" %in% names(schema$trace_id))
+  expect_true("description" %in% names(schema$trace_id))
+  # Check a span field
+  expect_true("type" %in% names(schema$spans$fields$span_id))
+  expect_true("description" %in% names(schema$spans$fields$span_id))
+})

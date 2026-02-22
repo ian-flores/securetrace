@@ -15,6 +15,8 @@
 #' @param chat An ellmer chat object.
 #' @param prompt The prompt string to send.
 #' @param ... Additional arguments passed to the chat method.
+#' @param stream Logical. If `TRUE`, calls `chat$stream(prompt, ...)` instead
+#'   of `chat$chat(prompt, ...)`. Default `FALSE`.
 #' @return The chat response.
 #' @examples
 #' \dontrun{
@@ -25,7 +27,7 @@
 #' })
 #' }
 #' @export
-trace_llm_call <- function(chat, prompt, ...) {
+trace_llm_call <- function(chat, prompt, ..., stream = FALSE) {
   if (!requireNamespace("ellmer", quietly = TRUE)) {
     cli::cli_abort("Package {.pkg ellmer} is required for {.fn trace_llm_call}.")
   }
@@ -40,12 +42,21 @@ trace_llm_call <- function(chat, prompt, ...) {
 
   with_span("llm_call", type = "llm", {
     start_time <- Sys.time()
-    result <- chat$chat(prompt, ...)
+    if (isTRUE(stream) && "stream" %in% names(chat)) {
+      result <- chat$stream(prompt, ...)
+    } else {
+      result <- chat$chat(prompt, ...)
+    }
     end_time <- Sys.time()
 
     span <- current_span()
     if (!is.null(span)) {
       record_latency(as.numeric(difftime(end_time, start_time, units = "secs")))
+
+      # Record streaming event
+      if (isTRUE(stream)) {
+        span$add_event(trace_event("streaming", data = list(enabled = TRUE)))
+      }
 
       # Auto-extract model name
       tryCatch(
@@ -87,6 +98,28 @@ trace_llm_call <- function(chat, prompt, ...) {
         },
         error = function(e) NULL
       )
+
+      # Best-effort: extract tool calls from last_turn()
+      tryCatch(
+        {
+          if ("last_turn" %in% names(chat)) {
+            turn <- chat$last_turn()
+            if (!is.null(turn) && !is.null(turn$contents)) {
+              for (content in turn$contents) {
+                if (inherits(content, "ContentToolRequest")) {
+                  tool_name <- content$name %||% "unknown"
+                  tool_args <- content$arguments %||% list()
+                  span$add_event(trace_event("tool_call", data = list(
+                    tool_name = tool_name,
+                    arguments = tool_args
+                  )))
+                }
+              }
+            }
+          }
+        },
+        error = function(e) NULL
+      )
     }
     result
   })
@@ -115,8 +148,11 @@ trace_tool_call <- function(name, fn, ...) {
 
 #' Trace a Guardrail Check
 #'
-#' Wraps a secureguard guardrail check with a span.
-#' Requires the secureguard package.
+#' Wraps a secureguard guardrail check with a span. If `guardrail` is a
+#' secureguard Guard object (S7 class `secureguard`), its `check_fn` is
+#' called and structured result metadata (pass/fail, score, guard name)
+#' is recorded as span events. Otherwise, `guardrail` is called as a
+#' plain function (backward-compatible behavior).
 #'
 #' @param name Name of the guardrail.
 #' @param guardrail The guardrail object or function.
@@ -132,17 +168,42 @@ trace_tool_call <- function(name, fn, ...) {
 #' @export
 trace_guardrail <- function(name, guardrail, x) {
   with_span(name, type = "guardrail", {
-    if (is.function(guardrail)) {
+    # Detect secureguard Guard object
+    is_secureguard <- tryCatch(
+      {
+        requireNamespace("secureguard", quietly = TRUE) &&
+          S7_inherits(guardrail, secureguard::secureguard_class)
+      },
+      error = function(e) FALSE
+    )
+
+    if (is_secureguard) {
+      result <- secureguard::run_guardrail(guardrail, x)
+      span <- current_span()
+      if (!is.null(span)) {
+        event_data <- list(
+          pass = result@pass,
+          guard_name = guardrail@name,
+          guard_type = guardrail@type
+        )
+        if (!is.null(result@reason)) {
+          event_data$reason <- result@reason
+        }
+        span$add_event(trace_event("guardrail.result", data = event_data))
+      }
+      result
+    } else if (is.function(guardrail)) {
       guardrail(x)
     } else {
-      cli::cli_abort("{.arg guardrail} must be a function.")
+      cli::cli_abort("{.arg guardrail} must be a function or secureguard object.")
     }
   })
 }
 
 #' Trace a Secure Code Execution
 #'
-#' Wraps a securer session execution with a span.
+#' Wraps a securer session execution with a span. Records the submitted code,
+#' captured stdout/stderr, and sets span status to error on execution failure.
 #' Requires the securer package.
 #'
 #' @param session A securer SecureSession object.
@@ -165,6 +226,25 @@ trace_execution <- function(session, code, ...) {
   }
 
   with_span("secure_execution", type = "tool", {
-    session$execute(code, ...)
+    span <- current_span()
+
+    # Record the submitted code before execution
+    if (!is.null(span)) {
+      span$add_event(trace_event("code.submitted", data = list(code = code)))
+    }
+
+    result <- session$execute(code, ...)
+
+    # Extract stdout/stderr from the output attribute
+    if (!is.null(span)) {
+      output_lines <- attr(result, "output")
+      if (!is.null(output_lines) && length(output_lines) > 0) {
+        span$add_event(trace_event("execution.stdout", data = list(
+          lines = output_lines
+        )))
+      }
+    }
+
+    result
   })
 }

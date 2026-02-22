@@ -4,7 +4,7 @@
 \alias{trace_llm_call}
 \title{Trace an LLM Call}
 \usage{
-trace_llm_call(chat, prompt, ...)
+trace_llm_call(chat, prompt, ..., stream = FALSE)
 }
 \arguments{
 \item{chat}{An ellmer chat object.}
@@ -12,6 +12,9 @@ trace_llm_call(chat, prompt, ...)
 \item{prompt}{The prompt string to send.}
 
 \item{...}{Additional arguments passed to the chat method.}
+
+\item{stream}{Logical. If \code{TRUE}, calls \code{chat$stream(prompt, ...)} instead
+of \code{chat$chat(prompt, ...)}. Default \code{FALSE}.}
 }
 \value{
 The chat response.

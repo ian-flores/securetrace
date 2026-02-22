@@ -271,3 +271,57 @@ test_that("tokens with different models tracked separately", {
   expect_equal(tokens[['direction="output",model="gpt-4o"']], 50)
   expect_equal(tokens[['direction="output",model="gpt-4o-mini"']], 100)
 })
+
+# -- serve_prometheus() HTTP test -----------------------------------------------
+
+test_that("serve_prometheus serves /metrics via HTTP", {
+  skip_if_not_installed("httpuv")
+
+  reg <- prometheus_registry()
+
+  # Record some data
+  s1 <- make_span("s1", type = "llm", model = "gpt-4o",
+                   input_tokens = 100L, output_tokens = 50L, duration = 1.5)
+  tr <- make_test_trace(spans = list(s1))
+  prometheus_metrics(tr, reg)
+
+  # Find an available port
+  port <- httpuv::randomPort()
+
+  srv <- serve_prometheus(reg, host = "127.0.0.1", port = port)
+  on.exit(httpuv::stopServer(srv), add = TRUE)
+
+  # Use httpuv's built-in request mechanism via curl
+  # We need to service the event loop for httpuv to respond
+  url <- sprintf("http://127.0.0.1:%d/metrics", port)
+
+  # Use a raw socket connection via curl to avoid readLines blocking
+  skip_if_not_installed("curl")
+
+  # Make async-friendly request: start, service httpuv, collect
+  pool <- curl::new_pool()
+  result <- NULL
+  curl::curl_fetch_multi(url, done = function(resp) {
+    result <<- resp
+  }, fail = function(msg) {
+    result <<- NULL
+  }, pool = pool)
+
+  # Service httpuv event loop while curl works
+  deadline <- Sys.time() + 5
+  while (is.null(result) && Sys.time() < deadline) {
+    httpuv::service(100)
+    curl::multi_run(timeout = 0.1, pool = pool)
+  }
+
+  expect_false(is.null(result))
+  expect_equal(result$status_code, 200L)
+  body <- rawToChar(result$content)
+
+  # Verify Prometheus exposition format
+  expect_match(body, "securetrace_spans_total")
+  expect_match(body, "securetrace_tokens_total")
+  expect_match(body, "securetrace_traces_total")
+  expect_match(body, "# HELP")
+  expect_match(body, "# TYPE")
+})

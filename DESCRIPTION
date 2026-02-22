@@ -17,8 +17,9 @@ Imports:
     jsonlite,
     R6,
     rlang (>= 1.0.0),
-    S7
+    S7 (>= 0.1.0)
 Suggests:
+    curl,
     ellmer,
     httpuv,
     httr2,
@@ -27,8 +28,7 @@ Suggests:
     rmarkdown,
     secureguard,
     securer,
-    testthat (>= 3.0.0),
-    withr
+    testthat (>= 3.0.0)
 Remotes:
     ian-flores/securer,
     ian-flores/orchestr,
