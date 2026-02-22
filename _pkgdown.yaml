@@ -40,6 +40,26 @@ reference:
       - export_trace
       - multi_exporter
 
+  - title: OTLP Export
+    contents:
+      - otlp_exporter
+      - otlp_format_trace
+
+  - title: Prometheus
+    contents:
+      - prometheus_registry
+      - prometheus_metrics
+      - prometheus_exporter
+      - format_prometheus
+      - serve_prometheus
+
+  - title: Context Propagation
+    contents:
+      - traceparent
+      - parse_traceparent
+      - inject_headers
+      - extract_trace_context
+
   - title: Integrations
     contents:
       - trace_llm_call
@@ -54,3 +74,4 @@ articles:
   - title: Guides
     contents:
       - observability
+      - cloud-native
