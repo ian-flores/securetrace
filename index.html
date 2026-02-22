@@ -51,10 +51,17 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="securetrace">securetrace<a class="anchor" aria-label="anchor" href="#securetrace"></a>
 </h1></div>
+<!-- badges: start -->
+
 <blockquote>
 <p>[!CAUTION] <strong>Alpha software.</strong> This package is part of a broader effort by <a href="https://github.com/ian-flores" class="external-link">Ian Flores Siaca</a> to develop proper AI infrastructure for the R ecosystem. It is under active development and should <strong>not</strong> be used in production until an official release is published. APIs may change without notice.</p>
 </blockquote>
 <p>Observability and tracing for R LLM agent workflows. Structured traces with spans, token/cost accounting, latency monitoring, and JSONL export.</p>
+<div class="section level2">
+<h2 id="why-securetrace">Why securetrace?<a class="anchor" aria-label="anchor" href="#why-securetrace"></a>
+</h2>
+<p>AI agent workflows are opaque by default – you can’t see which tools ran, how long they took, how many tokens they consumed, or what they cost. securetrace gives you structured tracing with nested spans, automatic token/cost accounting, and export to JSONL or Prometheus – so you get full visibility into every agent step.</p>
+</div>
 <div class="section level2">
 <h2 id="part-of-the-secure-r-dev-ecosystem">Part of the secure-r-dev Ecosystem<a class="anchor" aria-label="anchor" href="#part-of-the-secure-r-dev-ecosystem"></a>
 </h2>
@@ -155,7 +162,142 @@
 </li>
 <li>
 <strong>Integration helpers</strong> – Wrappers for LLM calls, tool executions, and guardrail checks</li>
+<li>
+<strong>Prometheus metrics</strong> – Counters, histograms, and an HTTP <code>/metrics</code> endpoint</li>
 </ul>
+<div class="section level3">
+<h3 id="cost-tracking">Cost Tracking<a class="anchor" aria-label="anchor" href="#cost-tracking"></a>
+</h3>
+<p>securetrace ships with built-in pricing for Claude and GPT models. Record tokens per span and calculate costs automatically:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Record tokens and compute cost within a trace</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"cost-demo"</span>, <span class="op">{</span></span>
+<span>  <span class="fu"><a href="reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"llm-call"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
+<span>    <span class="fu"><a href="reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">1500</span>, <span class="fl">300</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
+<span>    <span class="st">"response text"</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Calculate cost for a single call (price per 1M tokens)</span></span>
+<span><span class="fu"><a href="reference/calculate_cost.html">calculate_cost</a></span><span class="op">(</span><span class="st">"gpt-4o"</span>, input_tokens <span class="op">=</span> <span class="fl">1000</span>, output_tokens <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Register custom model pricing</span></span>
+<span><span class="fu"><a href="reference/add_model_cost.html">add_model_cost</a></span><span class="op">(</span><span class="st">"my-local-model"</span>, input_price <span class="op">=</span> <span class="fl">0</span>, output_price <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Sum costs across all spans in a trace</span></span>
+<span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/current_trace.html">current_trace</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/trace_total_cost.html">trace_total_cost</a></span><span class="op">(</span><span class="va">tr</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="integration-helpers">Integration Helpers<a class="anchor" aria-label="anchor" href="#integration-helpers"></a>
+</h3>
+<p>securetrace provides wrappers that auto-instrument calls to ellmer, securer, and secureguard:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Trace an ellmer LLM call (requires ellmer)</span></span>
+<span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">ellmer</span><span class="fu">::</span><span class="fu"><a href="https://ellmer.tidyverse.org/reference/chat_openai.html" class="external-link">chat_openai</a></span><span class="op">(</span>model <span class="op">=</span> <span class="st">"gpt-4o"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"agent-run"</span>, <span class="op">{</span></span>
+<span>  <span class="va">response</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/trace_llm_call.html">trace_llm_call</a></span><span class="op">(</span><span class="va">chat</span>, <span class="st">"What is 2 + 2?"</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Trace a tool function call</span></span>
+<span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"tool-run"</span>, <span class="op">{</span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/trace_tool_call.html">trace_tool_call</a></span><span class="op">(</span><span class="st">"add"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span><span class="op">)</span> <span class="va">a</span> <span class="op">+</span> <span class="va">b</span>, <span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Trace a guardrail check</span></span>
+<span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"guard-run"</span>, <span class="op">{</span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/trace_guardrail.html">trace_guardrail</a></span><span class="op">(</span><span class="st">"length_check"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nchar</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">1000</span>, <span class="st">"input"</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Trace a securer sandbox execution (requires securer)</span></span>
+<span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu">securer</span><span class="fu">::</span><span class="va"><a href="https://ian-flores.github.io/securer/reference/SecureSession.html" class="external-link">SecureSession</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"sandbox-run"</span>, <span class="op">{</span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/trace_execution.html">trace_execution</a></span><span class="op">(</span><span class="va">session</span>, <span class="st">"1 + 1"</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">session</span><span class="op">$</span><span class="fu">close</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="exporters">Exporters<a class="anchor" aria-label="anchor" href="#exporters"></a>
+</h3>
+<p>Write traces to JSONL files, print to console, or combine multiple exporters:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># JSONL exporter -- one JSON object per line</span></span>
+<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"traces.jsonl"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"my-run"</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
+<span>  <span class="fu"><a href="reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"step-1"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">42</span> <span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Console exporter -- human-readable summary</span></span>
+<span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"my-run"</span>, exporter <span class="op">=</span> <span class="fu"><a href="reference/console_exporter.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="op">{</span></span>
+<span>  <span class="fu"><a href="reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"step-1"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">42</span> <span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Multi-exporter -- fan out to several destinations</span></span>
+<span><span class="va">combined</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/multi_exporter.html">multi_exporter</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="reference/console_exporter.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"traces.jsonl"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"my-run"</span>, exporter <span class="op">=</span> <span class="va">combined</span>, <span class="op">{</span></span>
+<span>  <span class="fu"><a href="reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"step-1"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">42</span> <span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Set a default exporter for all with_trace() calls</span></span>
+<span><span class="fu"><a href="reference/set_default_exporter.html">set_default_exporter</a></span><span class="op">(</span><span class="fu"><a href="reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"all-traces.jsonl"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="prometheus">Prometheus<a class="anchor" aria-label="anchor" href="#prometheus"></a>
+</h3>
+<p>Expose trace metrics in Prometheus text exposition format for scraping by Prometheus, Grafana, or any compatible monitoring system:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Collect metrics from a trace into a registry</span></span>
+<span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/prometheus_registry.html">prometheus_registry</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/Trace.html">Trace</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"demo"</span><span class="op">)</span></span>
+<span><span class="va">tr</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/Span.html">Span</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"llm-step"</span>, type <span class="op">=</span> <span class="st">"llm"</span><span class="op">)</span></span>
+<span><span class="va">s</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">s</span><span class="op">$</span><span class="fu">set_model</span><span class="op">(</span><span class="st">"gpt-4o"</span><span class="op">)</span></span>
+<span><span class="va">s</span><span class="op">$</span><span class="fu">set_tokens</span><span class="op">(</span>input <span class="op">=</span> <span class="fl">100L</span>, output <span class="op">=</span> <span class="fl">50L</span><span class="op">)</span></span>
+<span><span class="va">s</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">tr</span><span class="op">$</span><span class="fu">add_span</span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span><span class="va">tr</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/prometheus_metrics.html">prometheus_metrics</a></span><span class="op">(</span><span class="va">tr</span>, <span class="va">reg</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="reference/format_prometheus.html">format_prometheus</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Or use the prometheus_exporter() with with_trace()</span></span>
+<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/prometheus_exporter.html">prometheus_exporter</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"agent-run"</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
+<span>  <span class="fu"><a href="reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"call"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
+<span>    <span class="fu"><a href="reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">200</span>, model <span class="op">=</span> <span class="st">"gpt-4o"</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Serve a /metrics HTTP endpoint (requires httpuv)</span></span>
+<span><span class="va">srv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/serve_prometheus.html">serve_prometheus</a></span><span class="op">(</span><span class="va">reg</span>, port <span class="op">=</span> <span class="fl">9090</span><span class="op">)</span></span>
+<span><span class="co"># Scrape http://localhost:9090/metrics</span></span>
+<span><span class="fu">httpuv</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/httpuv/man/stopServer.html" class="external-link">stopServer</a></span><span class="op">(</span><span class="va">srv</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<p>securetrace includes three vignettes:</p>
+<ul>
+<li>
+<code><a href="articles/securetrace.html">vignette("securetrace")</a></code> – Getting Started with securetrace</li>
+<li>
+<code><a href="articles/observability.html">vignette("observability")</a></code> – Observability Integration</li>
+<li>
+<code><a href="articles/cloud-native.html">vignette("cloud-native")</a></code> – Cloud-Native Observability</li>
+</ul>
+<p>Full reference documentation is available at the pkgdown site: <a href="https://ian-flores.github.io/securetrace/" class="uri">https://ian-flores.github.io/securetrace/</a></p>
+</div>
+<div class="section level2">
+<h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
+</h2>
+<p>Contributions are welcome! Please file issues on GitHub and submit pull requests.</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
@@ -194,7 +336,15 @@
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/ian-flores/securetrace/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/ian-flores/securetrace/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://app.codecov.io/gh/ian-flores/securetrace" class="external-link"><img src="https://codecov.io/gh/ian-flores/securetrace/graph/badge.svg" alt="Codecov test coverage"></a></li>
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+<li><a href="https://ian-flores.github.io/securetrace/"><img src="https://github.com/ian-flores/securetrace/actions/workflows/pkgdown.yaml/badge.svg" alt="pkgdown"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>

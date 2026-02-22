@@ -119,7 +119,7 @@ tr$end()
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.00707984
+#> [1] 0.006700993
 length(tr$spans)
 #> [1] 2
 ```
