@@ -119,7 +119,7 @@ tr$end()
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.006930828
+#> [1] 0.00678277
 length(tr$spans)
 #> [1] 2
 ```
@@ -583,12 +583,71 @@ result
 #> [1] TRUE
 ```
 
-For
-[`trace_llm_call()`](https://ian-flores.github.io/securetrace/reference/trace_llm_call.md)
-(wrapping ellmer chat objects) and
+### trace_execution() – Secure Code Execution
+
 [`trace_execution()`](https://ian-flores.github.io/securetrace/reference/trace_execution.md)
-(wrapping securer sessions), see the package documentation – these
-require their respective optional dependencies.
+wraps a securer `SecureSession$execute()` call with a span. The
+submitted code is recorded as a `code.submitted` event, and any captured
+stdout is recorded as an `execution.stdout` event:
+
+``` r
+session <- securer::SecureSession$new()
+
+with_trace("sandboxed-run", {
+  result <- trace_execution(session, "cat('hello'); 1 + 1")
+})
+session$close()
+
+# The span contains two events:
+#   1. code.submitted  -- data: list(code = "cat('hello'); 1 + 1")
+#   2. execution.stdout -- data: list(lines = "hello")
+```
+
+### trace_guardrail() – secureguard Integration
+
+When you pass a secureguard Guard object (not just a plain function),
+[`trace_guardrail()`](https://ian-flores.github.io/securetrace/reference/trace_guardrail.md)
+calls
+[`secureguard::run_guardrail()`](https://ian-flores.github.io/secureguard/reference/run_guardrail.html)
+and records structured result metadata as a `guardrail.result` event on
+the span:
+
+``` r
+guard <- secureguard::guard_code_analysis()
+
+with_trace("guarded-input", {
+  result <- trace_guardrail("code-safety", guard, "system('rm -rf /')")
+})
+
+# The span event "guardrail.result" contains:
+#   pass       -- TRUE/FALSE
+#   guard_name -- name from the Guard object
+#   guard_type -- type from the Guard object
+#   reason     -- explanation string (if the check failed)
+```
+
+### trace_schema() – JSONL Format Reference
+
+[`trace_schema()`](https://ian-flores.github.io/securetrace/reference/trace_schema.md)
+returns a list describing every field in the JSONL export format,
+including types and descriptions for both trace-level and span-level
+fields. This is useful for building parsers or validating exported data:
+
+``` r
+schema <- trace_schema()
+names(schema)
+#> [1] "trace_id"   "name"       "status"     "start_time" "end_time"  
+#> [6] "duration"   "spans"
+#> [1] "trace_id" "name" "status" "start_time" "end_time" "duration" "spans"
+
+# Inspect span-level fields
+names(schema$spans$fields)
+#>  [1] "span_id"       "name"          "type"          "status"       
+#>  [5] "start_time"    "end_time"      "duration_secs" "parent_id"    
+#>  [9] "model"         "input_tokens"  "output_tokens"
+#> [1] "span_id" "name" "type" "status" "start_time" "end_time"
+#> [7] "duration_secs" "parent_id" "model" "input_tokens" "output_tokens"
+```
 
 ## Putting It All Together
 

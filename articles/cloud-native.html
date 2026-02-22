@@ -138,6 +138,33 @@ anything:</p>
 <p>This is useful for debugging OTLP payloads or writing them to files
 for offline import.</p>
 </div>
+<div class="section level3">
+<h3 id="otlp-batching-and-retry">OTLP Batching and Retry<a class="anchor" aria-label="anchor" href="#otlp-batching-and-retry"></a>
+</h3>
+<p>By default, traces are buffered in memory and sent to the collector
+when the buffer reaches <code>batch_size</code>. This reduces HTTP
+overhead for high-throughput agents. Use <code><a href="../reference/flush_otlp.html">flush_otlp()</a></code> to
+force-send any buffered traces – for example, at process exit to ensure
+nothing is lost:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span></span>
+<span>  endpoint <span class="op">=</span> <span class="st">"http://localhost:4318"</span>,</span>
+<span>  batch_size <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  max_retries <span class="op">=</span> <span class="fl">3</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Traces accumulate in a buffer...</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"run-"</span>, <span class="va">i</span><span class="op">)</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
+<span>    <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"work"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="va">i</span> <span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Force-send remaining buffered traces before exiting</span></span>
+<span><span class="fu"><a href="../reference/flush_otlp.html">flush_otlp</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span></code></pre></div>
+<p>Transient HTTP errors (429, 5xx) are retried with exponential backoff
+(1s, 2s, 4s, …) up to <code>max_retries</code> attempts.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="prometheus-metrics">Prometheus Metrics<a class="anchor" aria-label="anchor" href="#prometheus-metrics"></a>
@@ -150,7 +177,7 @@ Prometheus text exposition format.</p>
 </h3>
 <p>A registry holds counters and histograms. Create one and feed traces
 into it:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_registry.html">prometheus_registry</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Build a trace</span></span>
@@ -179,7 +206,7 @@ into it:</p>
 </h3>
 <p><code><a href="../reference/format_prometheus.html">format_prometheus()</a></code> renders the registry as a
 Prometheus-compatible text string:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="../reference/format_prometheus.html">format_prometheus</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # HELP securetrace_spans_total Total spans by type and status</span></span>
 <span><span class="co">#&gt; # TYPE securetrace_spans_total counter</span></span>
@@ -201,7 +228,7 @@ histograms. This lets you track metrics across multiple agent runs.</p>
 </h3>
 <p><code><a href="../reference/prometheus_exporter.html">prometheus_exporter()</a></code> returns a securetrace exporter
 that automatically feeds each completed trace into a registry:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_registry.html">prometheus_registry</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">prom_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_exporter.html">prometheus_exporter</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span></span>
 <span></span>
@@ -228,7 +255,7 @@ that automatically feeds each completed trace into a registry:</p>
 </h3>
 <p><code><a href="../reference/serve_prometheus.html">serve_prometheus()</a></code> starts an httpuv HTTP server that
 Prometheus can scrape:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_registry.html">prometheus_registry</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">prom_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_exporter.html">prometheus_exporter</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span></span>
 <span></span>
@@ -248,10 +275,10 @@ Prometheus can scrape:</p>
 <span><span class="co"># When done, stop the server</span></span>
 <span><span class="fu">httpuv</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/httpuv/man/stopServer.html" class="external-link">stopServer</a></span><span class="op">(</span><span class="va">srv</span><span class="op">)</span></span></code></pre></div>
 <p>Add the scrape target to your <code>prometheus.yml</code>:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">scrape_configs</span><span class="kw">:</span></span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">job_name</span><span class="kw">:</span><span class="at"> </span><span class="st">"r-agent"</span></span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="at">    </span><span class="fu">static_configs</span><span class="kw">:</span></span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">targets</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"localhost:9090"</span><span class="kw">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">scrape_configs</span><span class="kw">:</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">job_name</span><span class="kw">:</span><span class="at"> </span><span class="st">"r-agent"</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="at">    </span><span class="fu">static_configs</span><span class="kw">:</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">targets</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"localhost:9090"</span><span class="kw">]</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -266,7 +293,7 @@ standard for this.</p>
 </h3>
 <p><code><a href="../reference/traceparent.html">traceparent()</a></code> builds a W3C-compliant header string from
 trace and span IDs:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/traceparent.html">traceparent</a></span><span class="op">(</span></span>
 <span>  trace_id <span class="op">=</span> <span class="st">"4bf92f3577b34da6a3ce929d0e0e4736"</span>,</span>
 <span>  span_id <span class="op">=</span> <span class="st">"00f067aa0ba902b7"</span></span>
@@ -274,7 +301,7 @@ trace and span IDs:</p>
 <span><span class="va">tp</span></span>
 <span><span class="co">#&gt; [1] "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"</span></span></code></pre></div>
 <p>The <code>sampled</code> parameter controls the trace flags:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/traceparent.html">traceparent</a></span><span class="op">(</span></span>
 <span>  <span class="st">"4bf92f3577b34da6a3ce929d0e0e4736"</span>,</span>
 <span>  <span class="st">"00f067aa0ba902b7"</span>,</span>
@@ -287,7 +314,7 @@ trace and span IDs:</p>
 </h3>
 <p><code><a href="../reference/parse_traceparent.html">parse_traceparent()</a></code> extracts the components from a
 traceparent string:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/parse_traceparent.html">parse_traceparent</a></span><span class="op">(</span></span>
 <span>  <span class="st">"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"</span></span>
 <span><span class="op">)</span></span>
@@ -308,7 +335,7 @@ traceparent string:</p>
 <p>Inside an active trace, <code><a href="../reference/inject_headers.html">inject_headers()</a></code> adds the
 <code>traceparent</code> header automatically from the current trace and
 span context:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"http-client"</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"api-call"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span></span>
 <span>    <span class="va">headers</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/inject_headers.html">inject_headers</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Content-Type"</span> <span class="op">=</span> <span class="st">"application/json"</span><span class="op">)</span><span class="op">)</span></span>
@@ -325,7 +352,7 @@ span context:</p>
 </h3>
 <p><code><a href="../reference/extract_trace_context.html">extract_trace_context()</a></code> finds and parses the traceparent
 header from a named list (case-insensitive lookup):</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Simulate incoming HTTP headers</span></span>
 <span><span class="va">incoming</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Content-Type"</span> <span class="op">=</span> <span class="st">"application/json"</span>,</span>
@@ -344,7 +371,7 @@ header from a named list (case-insensitive lookup):</p>
 </h2>
 <p>Here is a complete example of a Plumber API endpoint that extracts
 incoming trace context and creates a child trace for its work:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.rplumber.io" class="external-link">plumber</a></span><span class="op">)</span></span>
 <span></span>
@@ -385,7 +412,7 @@ incoming trace context and creates a child trace for its work:</p>
 <span>  <span class="va">result</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>On the client side, inject context into your requests:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"client-workflow"</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"call-plumber"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span></span>
 <span>    <span class="va">headers</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/inject_headers.html">inject_headers</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -408,7 +435,7 @@ Jaeger or Tempo.</p>
 <p>In production, you typically want traces going to multiple
 destinations. Use <code><a href="../reference/multi_exporter.html">multi_exporter()</a></code> to combine OTLP,
 Prometheus, and JSONL export:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Set up all three exporters</span></span>
 <span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_registry.html">prometheus_registry</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>

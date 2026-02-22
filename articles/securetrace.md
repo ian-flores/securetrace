@@ -137,6 +137,43 @@ with_trace("guarded", {
 })
 ```
 
+### Streaming LLM Calls
+
+[`trace_llm_call()`](https://ian-flores.github.io/securetrace/reference/trace_llm_call.md)
+supports streaming responses via the `stream` parameter. When
+`stream = TRUE`, the chat object’s `$stream()` method is called instead
+of `$chat()`, and a `streaming` event is recorded on the span:
+
+``` r
+# Stream responses with automatic tracing
+with_trace("streaming-example", {
+  response <- trace_llm_call(chat, "Explain R6 classes", stream = TRUE)
+})
+# The span records: model, tokens, latency, and a "streaming" event
+```
+
+### Tool Call Tracking
+
+When the LLM invokes tools during a chat,
+[`trace_llm_call()`](https://ian-flores.github.io/securetrace/reference/trace_llm_call.md)
+automatically inspects the response turn and records each tool
+invocation as a `tool_call` event on the span. No extra instrumentation
+is needed:
+
+``` r
+# Register tools on the chat object, then trace the call
+chat <- ellmer::chat_openai(model = "gpt-4o")
+chat$register_tool(ellmer::tool(
+  function(x, y) x + y,
+  "Adds two numbers", x = "First number", y = "Second number"
+))
+
+with_trace("agent-with-tools", {
+  response <- trace_llm_call(chat, "What is 3 + 4?")
+})
+# Each tool invocation appears as a "tool_call" event with name and arguments
+```
+
 ## Nested Spans
 
 Spans can be nested to represent hierarchical operations:

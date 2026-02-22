@@ -190,7 +190,7 @@ tr$end()
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.00278306
+#> [1] 0.002835035
 tr$summary()
 #> Trace: my-agent-run (completed) ID: 6ada44bc15ee3f1285a6f4585e9f4103 Duration:
 #> 0.00s Spans: 1 Tokens: 100 input, 50 output Cost: $0.000000

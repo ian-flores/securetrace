@@ -175,7 +175,7 @@ context-manager wrappers:</p>
 <span><span class="va">tr</span><span class="op">$</span><span class="va">status</span></span>
 <span><span class="co">#&gt; [1] "completed"</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">duration</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.006930828</span></span>
+<span><span class="co">#&gt; [1] 0.00678277</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">tr</span><span class="op">$</span><span class="va">spans</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2</span></span></code></pre></div>
 </div>
@@ -599,17 +599,75 @@ patterns. These require <code><a href="../reference/with_trace.html">with_trace(
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="va">result</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
-<p>For <code><a href="../reference/trace_llm_call.html">trace_llm_call()</a></code> (wrapping ellmer chat objects) and
-<code><a href="../reference/trace_execution.html">trace_execution()</a></code> (wrapping securer sessions), see the
-package documentation – these require their respective optional
-dependencies.</p>
+<div class="section level3">
+<h3 id="trace_execution-secure-code-execution">trace_execution() – Secure Code Execution<a class="anchor" aria-label="anchor" href="#trace_execution-secure-code-execution"></a>
+</h3>
+<p><code><a href="../reference/trace_execution.html">trace_execution()</a></code> wraps a securer
+<code>SecureSession$execute()</code> call with a span. The submitted
+code is recorded as a <code>code.submitted</code> event, and any
+captured stdout is recorded as an <code>execution.stdout</code>
+event:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu">securer</span><span class="fu">::</span><span class="va"><a href="https://ian-flores.github.io/securer/reference/SecureSession.html" class="external-link">SecureSession</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"sandboxed-run"</span>, <span class="op">{</span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trace_execution.html">trace_execution</a></span><span class="op">(</span><span class="va">session</span>, <span class="st">"cat('hello'); 1 + 1"</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">session</span><span class="op">$</span><span class="fu">close</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># The span contains two events:</span></span>
+<span><span class="co">#   1. code.submitted  -- data: list(code = "cat('hello'); 1 + 1")</span></span>
+<span><span class="co">#   2. execution.stdout -- data: list(lines = "hello")</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="trace_guardrail-secureguard-integration">trace_guardrail() – secureguard Integration<a class="anchor" aria-label="anchor" href="#trace_guardrail-secureguard-integration"></a>
+</h3>
+<p>When you pass a secureguard Guard object (not just a plain function),
+<code><a href="../reference/trace_guardrail.html">trace_guardrail()</a></code> calls
+<code><a href="https://ian-flores.github.io/secureguard/reference/run_guardrail.html" class="external-link">secureguard::run_guardrail()</a></code> and records structured result
+metadata as a <code>guardrail.result</code> event on the span:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">guard</span> <span class="op">&lt;-</span> <span class="fu">secureguard</span><span class="fu">::</span><span class="fu"><a href="https://ian-flores.github.io/secureguard/reference/guard_code_analysis.html" class="external-link">guard_code_analysis</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"guarded-input"</span>, <span class="op">{</span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trace_guardrail.html">trace_guardrail</a></span><span class="op">(</span><span class="st">"code-safety"</span>, <span class="va">guard</span>, <span class="st">"system('rm -rf /')"</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># The span event "guardrail.result" contains:</span></span>
+<span><span class="co">#   pass       -- TRUE/FALSE</span></span>
+<span><span class="co">#   guard_name -- name from the Guard object</span></span>
+<span><span class="co">#   guard_type -- type from the Guard object</span></span>
+<span><span class="co">#   reason     -- explanation string (if the check failed)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="trace_schema-jsonl-format-reference">trace_schema() – JSONL Format Reference<a class="anchor" aria-label="anchor" href="#trace_schema-jsonl-format-reference"></a>
+</h3>
+<p><code><a href="../reference/trace_schema.html">trace_schema()</a></code> returns a list describing every field in
+the JSONL export format, including types and descriptions for both
+trace-level and span-level fields. This is useful for building parsers
+or validating exported data:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">schema</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trace_schema.html">trace_schema</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">schema</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "trace_id"   "name"       "status"     "start_time" "end_time"  </span></span>
+<span><span class="co">#&gt; [6] "duration"   "spans"</span></span>
+<span><span class="co">#&gt; [1] "trace_id" "name" "status" "start_time" "end_time" "duration" "spans"</span></span>
+<span></span>
+<span><span class="co"># Inspect span-level fields</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">schema</span><span class="op">$</span><span class="va">spans</span><span class="op">$</span><span class="va">fields</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "span_id"       "name"          "type"          "status"       </span></span>
+<span><span class="co">#&gt;  [5] "start_time"    "end_time"      "duration_secs" "parent_id"    </span></span>
+<span><span class="co">#&gt;  [9] "model"         "input_tokens"  "output_tokens"</span></span>
+<span><span class="co">#&gt; [1] "span_id" "name" "type" "status" "start_time" "end_time"</span></span>
+<span><span class="co">#&gt; [7] "duration_secs" "parent_id" "model" "input_tokens" "output_tokens"</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="putting-it-all-together">Putting It All Together<a class="anchor" aria-label="anchor" href="#putting-it-all-together"></a>
 </h2>
 <p>Here is a complete example of an instrumented multi-step agent
 workflow with file export:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trace_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".jsonl"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">combined_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multi_exporter.html">multi_exporter</a></span><span class="op">(</span></span>

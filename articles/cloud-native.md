@@ -87,6 +87,36 @@ str(otlp, max.level = 3)
 This is useful for debugging OTLP payloads or writing them to files for
 offline import.
 
+### OTLP Batching and Retry
+
+By default, traces are buffered in memory and sent to the collector when
+the buffer reaches `batch_size`. This reduces HTTP overhead for
+high-throughput agents. Use
+[`flush_otlp()`](https://ian-flores.github.io/securetrace/reference/flush_otlp.md)
+to force-send any buffered traces – for example, at process exit to
+ensure nothing is lost:
+
+``` r
+exp <- otlp_exporter(
+  endpoint = "http://localhost:4318",
+  batch_size = 10,
+  max_retries = 3
+)
+
+# Traces accumulate in a buffer...
+for (i in seq_len(5)) {
+  with_trace(paste0("run-", i), exporter = exp, {
+    with_span("work", type = "tool", { i })
+  })
+}
+
+# Force-send remaining buffered traces before exiting
+flush_otlp(exp)
+```
+
+Transient HTTP errors (429, 5xx) are retried with exponential backoff
+(1s, 2s, 4s, …) up to `max_retries` attempts.
+
 ## Prometheus Metrics
 
 Prometheus is a pull-based monitoring system. securetrace can expose

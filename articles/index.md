@@ -11,3 +11,5 @@
   Integration](https://ian-flores.github.io/securetrace/articles/observability.md):
 - [Cloud-Native
   Observability](https://ian-flores.github.io/securetrace/articles/cloud-native.md):
+- [Tracing orchestr
+  Workflows](https://ian-flores.github.io/securetrace/articles/orchestr-integration.md):
