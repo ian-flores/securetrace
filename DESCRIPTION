@@ -20,6 +20,8 @@ Imports:
     S7
 Suggests:
     ellmer,
+    httpuv,
+    httr2,
     knitr,
     orchestr,
     rmarkdown,
