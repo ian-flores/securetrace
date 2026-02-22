@@ -32,6 +32,8 @@ reference:
       - calculate_cost
       - add_model_cost
       - trace_total_cost
+      - resolve_model
+      - add_model_alias
 
   - title: Exporters
     contents:

@@ -20,6 +20,16 @@ The chat response.
 Wraps an ellmer chat call with automatic span and token recording.
 Requires the ellmer package.
 }
+\details{
+When the \code{chat} object supports ellmer's \code{get_model()} and \code{get_tokens()}
+methods, the model name and token usage are automatically extracted and
+recorded on the span. Model names are resolved through \code{\link[=resolve_model]{resolve_model()}}
+for proper cost calculation with cloud provider model IDs.
+
+Auto-extraction is best-effort: if the chat object does not support these
+methods (e.g., a non-ellmer Chat object), the span will still be created
+with latency recorded but without model or token data.
+}
 \examples{
 \dontrun{
 # Requires ellmer package

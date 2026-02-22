@@ -54,6 +54,61 @@ calculate_cost("claude-opus-4-6", input_tokens = 5000, output_tokens = 1000)
 add_model_cost("my-fine-tuned-model", input_price = 5, output_price = 20)
 ```
 
+### Multi-Provider Support
+
+securetrace ships with pricing for models across Anthropic, OpenAI, Google
+Gemini, Mistral, and DeepSeek:
+
+```{r}
+# View all known model pricing (per 1M tokens)
+costs <- model_costs()
+head(costs)
+#>                  model input_price output_price
+#> 1     claude-opus-4-6       15.00        75.00
+#> 2   claude-sonnet-4-5        3.00        15.00
+#> 3              gpt-4o        2.50        10.00
+#> 4      gemini-1.5-pro        1.25         5.00
+#> 5      gemini-2.0-flash      0.10         0.40
+#> 6  deepseek-reasoner        0.55         2.19
+```
+
+Cloud provider model IDs (AWS Bedrock, Google Vertex) are resolved
+automatically via built-in aliases:
+
+```{r}
+# Bedrock model ID works transparently
+calculate_cost(
+  "anthropic.claude-3-5-sonnet-20241022-v2:0",
+  input_tokens = 10000,
+  output_tokens = 2000
+)
+
+# Vertex model ID also resolves
+calculate_cost(
+  "publishers/anthropic/models/claude-3-5-sonnet-v2@20241022",
+  input_tokens = 10000,
+  output_tokens = 2000
+)
+```
+
+For custom or self-hosted deployments, register your own aliases:
+
+```{r}
+# Map an internal deployment name to a known model
+add_model_alias("my-company-claude", "claude-sonnet-4-5")
+calculate_cost("my-company-claude", input_tokens = 5000, output_tokens = 1000)
+```
+
+When using `trace_llm_call()` with an ellmer Chat object, model name and token
+counts are extracted automatically:
+
+```{r}
+result <- with_trace("auto-instrumented", {
+  trace_llm_call("analysis", chat, "Summarize the data.")
+})
+# Model and token counts are set on the span without manual recording
+```
+
 ## Exporting Traces
 
 Export completed traces to JSONL files or the console:
