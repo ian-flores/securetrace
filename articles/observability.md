@@ -119,7 +119,7 @@ tr$end()
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.006700993
+#> [1] 0.006779671
 length(tr$spans)
 #> [1] 2
 ```
@@ -206,8 +206,19 @@ securetrace ships with per-1M-token pricing for common models:
 # View all known model prices
 costs <- model_costs()
 names(costs)
-#> [1] "claude-opus-4-6"   "claude-sonnet-4-5" "claude-haiku-4-5" 
-#> [4] "gpt-4o"            "gpt-4o-mini"
+#>  [1] "claude-opus-4-6"            "claude-sonnet-4-5"         
+#>  [3] "claude-haiku-4-5"           "claude-3-5-sonnet-20241022"
+#>  [5] "claude-3-5-haiku-20241022"  "claude-3-opus-20240229"    
+#>  [7] "claude-3-sonnet-20240229"   "claude-3-haiku-20240307"   
+#>  [9] "gpt-4o"                     "gpt-4o-mini"               
+#> [11] "gpt-4o-2024-11-20"          "gpt-4-turbo"               
+#> [13] "gpt-4"                      "gpt-3.5-turbo"             
+#> [15] "o1"                         "o1-mini"                   
+#> [17] "o3-mini"                    "gemini-2.0-flash"          
+#> [19] "gemini-1.5-pro"             "gemini-1.5-flash"          
+#> [21] "gemini-1.5-flash-8b"        "mistral-large-latest"      
+#> [23] "mistral-small-latest"       "codestral-latest"          
+#> [25] "deepseek-chat"              "deepseek-reasoner"
 costs[["claude-sonnet-4-5"]]
 #> $input
 #> [1] 3

@@ -12,6 +12,7 @@
 <url><loc>https://ian-flores.github.io/securetrace/news/index.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/Span.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/Trace.html</loc></url>
+<url><loc>https://ian-flores.github.io/securetrace/reference/add_model_alias.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/add_model_cost.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/calculate_cost.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/console_exporter.html</loc></url>
@@ -37,6 +38,7 @@
 <url><loc>https://ian-flores.github.io/securetrace/reference/record_latency.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/record_metric.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/record_tokens.html</loc></url>
+<url><loc>https://ian-flores.github.io/securetrace/reference/resolve_model.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/securetrace-package.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/securetrace_event.html</loc></url>
 <url><loc>https://ian-flores.github.io/securetrace/reference/securetrace_exporter.html</loc></url>

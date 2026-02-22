@@ -67,6 +67,16 @@ Requires the ellmer package.</p>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>The chat response.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>When the <code>chat</code> object supports ellmer's <code>get_model()</code> and <code>get_tokens()</code>
+methods, the model name and token usage are automatically extracted and
+recorded on the span. Model names are resolved through <code><a href="resolve_model.html">resolve_model()</a></code>
+for proper cost calculation with cloud provider model IDs.</p>
+<p>Auto-extraction is best-effort: if the chat object does not support these
+methods (e.g., a non-ellmer Chat object), the span will still be created
+with latency recorded but without model or token data.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

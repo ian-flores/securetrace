@@ -282,6 +282,10 @@ MIT
   : Add or Update Model Pricing
 - [`trace_total_cost()`](https://ian-flores.github.io/securetrace/reference/trace_total_cost.md)
   : Calculate Total Cost for a Trace
+- [`resolve_model()`](https://ian-flores.github.io/securetrace/reference/resolve_model.md)
+  : Resolve a Model Name
+- [`add_model_alias()`](https://ian-flores.github.io/securetrace/reference/add_model_alias.md)
+  : Add a Model Alias
 
 ## Exporters
 

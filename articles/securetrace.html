@@ -99,12 +99,57 @@ analysis.</p>
 <span></span>
 <span><span class="co"># Register custom model pricing</span></span>
 <span><span class="fu"><a href="../reference/add_model_cost.html">add_model_cost</a></span><span class="op">(</span><span class="st">"my-fine-tuned-model"</span>, input_price <span class="op">=</span> <span class="fl">5</span>, output_price <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="multi-provider-support">Multi-Provider Support<a class="anchor" aria-label="anchor" href="#multi-provider-support"></a>
+</h3>
+<p>securetrace ships with pricing for models across Anthropic, OpenAI,
+Google Gemini, Mistral, and DeepSeek:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># View all known model pricing (per 1M tokens)</span></span>
+<span><span class="va">costs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_costs.html">model_costs</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">costs</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                  model input_price output_price</span></span>
+<span><span class="co">#&gt; 1     claude-opus-4-6       15.00        75.00</span></span>
+<span><span class="co">#&gt; 2   claude-sonnet-4-5        3.00        15.00</span></span>
+<span><span class="co">#&gt; 3              gpt-4o        2.50        10.00</span></span>
+<span><span class="co">#&gt; 4      gemini-1.5-pro        1.25         5.00</span></span>
+<span><span class="co">#&gt; 5      gemini-2.0-flash      0.10         0.40</span></span>
+<span><span class="co">#&gt; 6  deepseek-reasoner        0.55         2.19</span></span></code></pre></div>
+<p>Cloud provider model IDs (AWS Bedrock, Google Vertex) are resolved
+automatically via built-in aliases:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Bedrock model ID works transparently</span></span>
+<span><span class="fu"><a href="../reference/calculate_cost.html">calculate_cost</a></span><span class="op">(</span></span>
+<span>  <span class="st">"anthropic.claude-3-5-sonnet-20241022-v2:0"</span>,</span>
+<span>  input_tokens <span class="op">=</span> <span class="fl">10000</span>,</span>
+<span>  output_tokens <span class="op">=</span> <span class="fl">2000</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Vertex model ID also resolves</span></span>
+<span><span class="fu"><a href="../reference/calculate_cost.html">calculate_cost</a></span><span class="op">(</span></span>
+<span>  <span class="st">"publishers/anthropic/models/claude-3-5-sonnet-v2@20241022"</span>,</span>
+<span>  input_tokens <span class="op">=</span> <span class="fl">10000</span>,</span>
+<span>  output_tokens <span class="op">=</span> <span class="fl">2000</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>For custom or self-hosted deployments, register your own aliases:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Map an internal deployment name to a known model</span></span>
+<span><span class="fu"><a href="../reference/add_model_alias.html">add_model_alias</a></span><span class="op">(</span><span class="st">"my-company-claude"</span>, <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/calculate_cost.html">calculate_cost</a></span><span class="op">(</span><span class="st">"my-company-claude"</span>, input_tokens <span class="op">=</span> <span class="fl">5000</span>, output_tokens <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span></code></pre></div>
+<p>When using <code><a href="../reference/trace_llm_call.html">trace_llm_call()</a></code> with an ellmer Chat object,
+model name and token counts are extracted automatically:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"auto-instrumented"</span>, <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/trace_llm_call.html">trace_llm_call</a></span><span class="op">(</span><span class="st">"analysis"</span>, <span class="va">chat</span>, <span class="st">"Summarize the data."</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co"># Model and token counts are set on the span without manual recording</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="exporting-traces">Exporting Traces<a class="anchor" aria-label="anchor" href="#exporting-traces"></a>
 </h2>
 <p>Export completed traces to JSONL files or the console:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># JSONL file export</span></span>
 <span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"traces.jsonl"</span><span class="op">)</span></span>
 <span></span>
@@ -127,7 +172,7 @@ analysis.</p>
 <h2 id="integration-helpers">Integration Helpers<a class="anchor" aria-label="anchor" href="#integration-helpers"></a>
 </h2>
 <p>securetrace provides helpers for common operations:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Wrap tool calls</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"tools"</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/trace_tool_call.html">trace_tool_call</a></span><span class="op">(</span><span class="st">"calculator"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span> <span class="op">*</span> <span class="fl">2</span>, <span class="fl">21</span><span class="op">)</span></span>
@@ -142,7 +187,7 @@ analysis.</p>
 <h2 id="nested-spans">Nested Spans<a class="anchor" aria-label="anchor" href="#nested-spans"></a>
 </h2>
 <p>Spans can be nested to represent hierarchical operations:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"complex-workflow"</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"planning"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fl">500</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
@@ -163,7 +208,7 @@ analysis.</p>
 <h2 id="trace-summary">Trace Summary<a class="anchor" aria-label="anchor" href="#trace-summary"></a>
 </h2>
 <p>Get a formatted summary of any trace:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Trace.html">Trace</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"manual-trace"</span><span class="op">)</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">s</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Span.html">Span</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"llm"</span>, type <span class="op">=</span> <span class="st">"llm"</span><span class="op">)</span></span>
