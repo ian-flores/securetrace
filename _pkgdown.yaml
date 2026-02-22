@@ -83,5 +83,6 @@ articles:
   - title: Guides
     contents:
       - observability
+      - exporters
       - cloud-native
       - orchestr-integration
