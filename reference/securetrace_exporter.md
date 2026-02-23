@@ -14,6 +14,10 @@ securetrace_exporter(export_fn = function() NULL)
 
   A function that accepts a trace list.
 
+## Value
+
+An S7 object of class `securetrace_exporter`.
+
 ## Examples
 
 ``` r
@@ -26,5 +30,5 @@ exp@export_fn
 #> {
 #>     cat("Exported:", trace_list$name, "\n")
 #> }
-#> <environment: 0x56036241ca50>
+#> <environment: 0x56374a761e48>
 ```

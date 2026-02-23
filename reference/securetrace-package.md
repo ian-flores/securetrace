@@ -1,8 +1,9 @@
-# securetrace: Observability and Tracing for R LLM Agent Workflows
+# securetrace: Observability and Tracing for Large Language Model Agent Workflows
 
 Structured traces with spans, token and cost accounting, latency
-monitoring, and JSONL export for R-based LLM agent workflows. Follows
-OpenTelemetry-inspired patterns adapted for R AI applications.
+monitoring, and JSON Lines ('JSONL') export for Large Language Model
+('LLM') agent workflows. Follows OpenTelemetry-inspired patterns adapted
+for Artificial Intelligence ('AI') applications.
 
 ## See also
 
@@ -16,4 +17,5 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Ian Flores Siaca <iflores.siaca@hey.com>
+**Maintainer**: Ian Flores Siaca <iflores.siaca@hey.com> \[copyright
+holder\]

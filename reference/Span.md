@@ -4,6 +4,10 @@ Span Class
 
 Span Class
 
+## Value
+
+An R6 object of class `Span`.
+
 ## Details
 
 Represents a single operation within a trace, such as an LLM call, tool
@@ -296,7 +300,7 @@ span$end()
 span$status
 #> [1] "ok"
 span$duration()
-#> [1] 0.002969265
+#> [1] 0.003329039
 span$to_list()
 #> $span_id
 #> [1] "be45eee35844e7ec"
@@ -317,13 +321,13 @@ span$to_list()
 #> list()
 #> 
 #> $start_time
-#> [1] "2026-02-22T15:22:45.311Z"
+#> [1] "2026-02-23T02:48:48.388Z"
 #> 
 #> $end_time
-#> [1] "2026-02-22T15:22:45.314Z"
+#> [1] "2026-02-23T02:48:48.391Z"
 #> 
 #> $duration_secs
-#> [1] 0.002969265
+#> [1] 0.003329039
 #> 
 #> $input_tokens
 #> [1] 500
@@ -348,7 +352,7 @@ span$to_list()
 #> 
 #> 
 #> $events[[1]]$timestamp
-#> [1] "2026-02-22T15:22:45.313Z"
+#> [1] "2026-02-23T02:48:48.390Z"
 #> 
 #> 
 #> 

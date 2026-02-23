@@ -4,6 +4,10 @@ Trace Class
 
 Trace Class
 
+## Value
+
+An R6 object of class `Trace`.
+
 ## Details
 
 Root container for a full agent run. A trace contains multiple spans
@@ -190,7 +194,7 @@ tr$end()
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.002340317
+#> [1] 0.002772331
 tr$summary()
 #> Trace: my-agent-run (completed) ID: 6ada44bc15ee3f1285a6f4585e9f4103 Duration:
 #> 0.00s Spans: 1 Tokens: 100 input, 50 output Cost: $0.000000

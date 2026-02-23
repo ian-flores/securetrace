@@ -37,6 +37,16 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="securetrace-010">securetrace 0.1.0<a class="anchor" aria-label="anchor" href="#securetrace-010"></a></h2>
 <ul><li>Initial CRAN release.</li>
+<li>Core tracing: <code>Trace</code> and <code>Span</code> R6 classes for structured observability.</li>
+<li>Trace events via S7-based <code>securetrace_event</code> class.</li>
+<li>Token and cost accounting with built-in pricing for OpenAI, Anthropic, Google Gemini, Mistral, and DeepSeek models.</li>
+<li>Cloud provider model alias resolution (AWS Bedrock, Google Vertex AI).</li>
+<li>Exporters: JSONL, console, multi-exporter, and OTLP JSON for OpenTelemetry-compatible collectors (Jaeger, Grafana Tempo).</li>
+<li>OTLP batching with configurable buffer size and retry with exponential backoff for transient HTTP errors.</li>
+<li>Prometheus metrics: registry, text exposition format, and HTTP <code>/metrics</code> endpoint via httpuv.</li>
+<li>W3C Trace Context propagation: <code><a href="../reference/traceparent.html">traceparent()</a></code>, <code><a href="../reference/parse_traceparent.html">parse_traceparent()</a></code>, <code><a href="../reference/inject_headers.html">inject_headers()</a></code>, and <code><a href="../reference/extract_trace_context.html">extract_trace_context()</a></code>.</li>
+<li>Integration helpers for ellmer (<code><a href="../reference/trace_llm_call.html">trace_llm_call()</a></code>), securer (<code><a href="../reference/trace_execution.html">trace_execution()</a></code>), secureguard (<code><a href="../reference/trace_guardrail.html">trace_guardrail()</a></code>), and orchestr (<code><a href="../reference/trace_graph.html">trace_graph()</a></code>, <code><a href="../reference/trace_agent.html">trace_agent()</a></code>).</li>
+<li>Context management: <code><a href="../reference/with_trace.html">with_trace()</a></code>, <code><a href="../reference/with_span.html">with_span()</a></code>, <code><a href="../reference/current_trace.html">current_trace()</a></code>, <code><a href="../reference/current_span.html">current_span()</a></code>, and <code><a href="../reference/set_default_exporter.html">set_default_exporter()</a></code>.</li>
 </ul></div>
   </main></div>
 
