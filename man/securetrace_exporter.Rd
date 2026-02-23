@@ -9,6 +9,9 @@ securetrace_exporter(export_fn = function() NULL)
 \arguments{
 \item{export_fn}{A function that accepts a trace list.}
 }
+\value{
+An S7 object of class \code{securetrace_exporter}.
+}
 \description{
 Wraps an export function as an S7 exporter object.
 }

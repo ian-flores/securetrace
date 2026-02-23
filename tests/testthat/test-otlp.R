@@ -278,7 +278,7 @@ test_that("otlp_exporter returns a securetrace_exporter S7 object", {
 
 test_that("otlp_exporter with custom parameters returns exporter", {
   exp <- otlp_exporter(
-    endpoint = "http://my-collector:4318",
+    endpoint = "https://my-collector:4318",
     headers = list(Authorization = "Bearer token"),
     service_name = "my-svc",
     batch_size = 50L

@@ -4,6 +4,7 @@
 #' representing individual operations like LLM calls, tool executions,
 #' and guardrail checks.
 #'
+#' @return An R6 object of class `Trace`.
 #' @examples
 #' # Create and use a trace
 #' tr <- Trace$new("my-agent-run", metadata = list(user = "test"))

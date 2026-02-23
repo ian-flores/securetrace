@@ -3,6 +3,7 @@
 #' Represents a single operation within a trace, such as an LLM call,
 #' tool execution, guardrail check, or custom operation.
 #'
+#' @return An R6 object of class `Span`.
 #' @examples
 #' # Create a span for an LLM call
 #' span <- Span$new("gpt-call", type = "llm")

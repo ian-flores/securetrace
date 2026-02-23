@@ -4,9 +4,9 @@
 \name{securetrace-package}
 \alias{securetrace}
 \alias{securetrace-package}
-\title{securetrace: Observability and Tracing for R LLM Agent Workflows}
+\title{securetrace: Observability and Tracing for Large Language Model Agent Workflows}
 \description{
-Structured traces with spans, token and cost accounting, latency monitoring, and JSONL export for R-based LLM agent workflows. Follows OpenTelemetry-inspired patterns adapted for R AI applications.
+Structured traces with spans, token and cost accounting, latency monitoring, and JSON Lines ('JSONL') export for Large Language Model ('LLM') agent workflows. Follows OpenTelemetry-inspired patterns adapted for Artificial Intelligence ('AI') applications.
 }
 \seealso{
 Useful links:
@@ -18,7 +18,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Ian Flores Siaca \email{iflores.siaca@hey.com}
+\strong{Maintainer}: Ian Flores Siaca \email{iflores.siaca@hey.com} [copyright holder]
 
 }
 \keyword{internal}

@@ -3,6 +3,9 @@
 \name{Span}
 \alias{Span}
 \title{Span Class}
+\value{
+An R6 object of class \code{Span}.
+}
 \description{
 Span Class
 

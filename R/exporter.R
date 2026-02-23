@@ -4,6 +4,7 @@
 #'
 #' @param export_fn A function that accepts a trace list.
 #'
+#' @return An S7 object of class `securetrace_exporter`.
 #' @examples
 #' # Create a custom exporter
 #' exp <- securetrace_exporter(export_fn = function(trace_list) {

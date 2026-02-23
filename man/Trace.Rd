@@ -3,6 +3,9 @@
 \name{Trace}
 \alias{Trace}
 \title{Trace Class}
+\value{
+An R6 object of class \code{Trace}.
+}
 \description{
 Trace Class
 
