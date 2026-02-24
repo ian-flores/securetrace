@@ -10,8 +10,7 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
+  comment = "#>"
 )
 ```
 
@@ -126,13 +125,6 @@ across providers without manual configuration.
 # View all known model pricing (per 1M tokens)
 costs <- model_costs()
 head(costs)
-#>                  model input_price output_price
-#> 1     claude-opus-4-6       15.00        75.00
-#> 2   claude-sonnet-4-5        3.00        15.00
-#> 3              gpt-4o        2.50        10.00
-#> 4      gemini-1.5-pro        1.25         5.00
-#> 5      gemini-2.0-flash      0.10         0.40
-#> 6  deepseek-reasoner        0.55         2.19
 ```
 
 When your infrastructure runs models through a cloud provider gateway, the model
@@ -169,7 +161,7 @@ When using `trace_llm_call()` with an ellmer Chat object, the model name and
 token counts are extracted automatically -- you do not need to call
 `record_tokens()` manually:
 
-```{r}
+```{r, eval = FALSE}
 result <- with_trace("auto-instrumented", {
   trace_llm_call("analysis", chat, "Summarize the data.")
 })
@@ -184,7 +176,7 @@ common scenarios, from quick debugging to production observability.
 
 ```{r}
 # JSONL file export
-exp <- jsonl_exporter("traces.jsonl")
+exp <- jsonl_exporter(tempfile("traces", fileext = ".jsonl"))
 
 with_trace("exported-run", exporter = exp, {
   with_span("work", type = "tool", {
@@ -218,6 +210,7 @@ result <- with_trace("tools", {
 })
 
 # Wrap guardrail checks
+user_input <- "Hello, can you help me with a question?"
 with_trace("guarded", {
   trace_guardrail("length-check", function(x) nchar(x) < 1000, user_input)
 })
@@ -229,7 +222,7 @@ with_trace("guarded", {
 When `stream = TRUE`, the chat object's `$stream()` method is called instead
 of `$chat()`, and a `streaming` event is recorded on the span:
 
-```{r}
+```{r, eval = FALSE}
 # Stream responses with automatic tracing
 with_trace("streaming-example", {
   response <- trace_llm_call(chat, "Explain R6 classes", stream = TRUE)
@@ -243,7 +236,7 @@ When the LLM invokes tools during a chat, `trace_llm_call()` automatically
 inspects the response turn and records each tool invocation as a `tool_call`
 event on the span. No extra instrumentation is needed:
 
-```{r}
+```{r, eval = FALSE}
 # Register tools on the chat object, then trace the call
 chat <- ellmer::chat_openai(model = "gpt-4o")
 chat$register_tool(ellmer::tool(

@@ -10,8 +10,7 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
+  comment = "#>"
 )
 ```
 
@@ -72,7 +71,7 @@ Collector. securetrace provides two functions for OTLP integration.
 `otlp_exporter()` creates an exporter that converts traces to OTLP JSON and
 POSTs them to a collector endpoint:
 
-```{r}
+```{r, eval = FALSE}
 library(securetrace)
 
 # Export to a local Jaeger instance (default OTLP HTTP port)
@@ -95,6 +94,8 @@ with_trace("data-pipeline", exporter = exp, {
 For authenticated collectors, pass headers:
 
 ```{r}
+library(securetrace)
+
 exp <- otlp_exporter(
   endpoint = "https://tempo.example.com:4318",
   headers = list(Authorization = "Bearer <token>"),
@@ -127,11 +128,6 @@ tr$end()
 
 otlp <- otlp_format_trace(tr$to_list(), service_name = "my-agent")
 str(otlp, max.level = 3)
-#> List of 1
-#>  $ resourceSpans:List of 1
-#>   ..$ :List of 2
-#>   .. ..$ resource  :List of 1
-#>   .. ..$ scopeSpans:List of 1
 ```
 
 This is useful for debugging OTLP payloads or writing them to files for
@@ -159,7 +155,7 @@ retry logic yourself.
 Use `flush_otlp()` to force-send any buffered traces -- for example, at
 process exit to ensure nothing is lost:
 
-```{r}
+```{r, eval = FALSE}
 exp <- otlp_exporter(
   endpoint = "http://localhost:4318",
   batch_size = 10,
@@ -229,17 +225,6 @@ string:
 
 ```{r}
 cat(format_prometheus(reg))
-#> # HELP securetrace_spans_total Total spans by type and status
-#> # TYPE securetrace_spans_total counter
-#> securetrace_spans_total{type="llm",status="completed"} 1
-#> securetrace_spans_total{type="tool",status="completed"} 1
-#> # HELP securetrace_tokens_total Total tokens by direction and model
-#> # TYPE securetrace_tokens_total counter
-#> securetrace_tokens_total{direction="input",model="claude-sonnet-4-5"} 3000
-#> securetrace_tokens_total{direction="output",model="claude-sonnet-4-5"} 800
-#> # HELP securetrace_traces_total Total traces by status
-#> # TYPE securetrace_traces_total counter
-#> securetrace_traces_total{status="completed"} 1
 ```
 
 The registry is cumulative -- each call to `prometheus_metrics()` adds to the
@@ -278,7 +263,7 @@ cat(format_prometheus(reg))
 
 `serve_prometheus()` starts an httpuv HTTP server that Prometheus can scrape:
 
-```{r}
+```{r, eval = FALSE}
 reg <- prometheus_registry()
 prom_exp <- prometheus_exporter(reg)
 
@@ -325,7 +310,6 @@ tp <- traceparent(
   span_id = "00f067aa0ba902b7"
 )
 tp
-#> [1] "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
 ```
 
 The `sampled` parameter controls the trace flags:
@@ -336,7 +320,6 @@ traceparent(
   "00f067aa0ba902b7",
   sampled = FALSE
 )
-#> [1] "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00"
 ```
 
 ### Parsing Incoming Headers
@@ -348,15 +331,11 @@ ctx <- parse_traceparent(
   "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
 )
 ctx$trace_id
-#> [1] "4bf92f3577b34da6a3ce929d0e0e4736"
 ctx$span_id
-#> [1] "00f067aa0ba902b7"
 ctx$sampled
-#> [1] TRUE
 
 # Invalid headers return NULL
 parse_traceparent("invalid-header")
-#> NULL
 ```
 
 ### Injecting Context into Outgoing Requests
@@ -369,7 +348,6 @@ with_trace("http-client", {
   with_span("api-call", type = "tool", {
     headers <- inject_headers(list("Content-Type" = "application/json"))
     headers$traceparent
-    #> [1] "00-<trace_id>-<span_id>-01"
 
     # Use these headers in your HTTP request
     # httr2::req_headers(req, !!!headers)
@@ -391,9 +369,7 @@ incoming <- list(
 
 ctx <- extract_trace_context(incoming)
 ctx$trace_id
-#> [1] "4bf92f3577b34da6a3ce929d0e0e4736"
 ctx$span_id
-#> [1] "00f067aa0ba902b7"
 ```
 
 ## Distributed Tracing with Plumber
@@ -406,7 +382,7 @@ trace shows the complete journey across both processes.
 Here is a complete example of a Plumber API endpoint that extracts incoming
 trace context and creates a child trace for its work:
 
-```{r}
+```{r, eval = FALSE}
 library(securetrace)
 library(plumber)
 
@@ -450,7 +426,7 @@ function(req, res) {
 
 On the client side, inject context into your requests:
 
-```{r}
+```{r, eval = FALSE}
 with_trace("client-workflow", {
   with_span("call-plumber", type = "tool", {
     headers <- inject_headers()
@@ -473,7 +449,7 @@ as a single distributed trace in Jaeger or Tempo.
 In production, you typically want traces going to multiple destinations. Use
 `multi_exporter()` to combine OTLP, Prometheus, and JSONL export:
 
-```{r}
+```{r, eval = FALSE}
 # Set up all three exporters
 reg <- prometheus_registry()
 

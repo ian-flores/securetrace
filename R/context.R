@@ -31,6 +31,13 @@
 #' result <- with_trace("traced-op", {
 #'   10 * 2
 #' }, exporter = console_exporter(verbose = FALSE))
+#' @section Thread Safety:
+#' The context stack is process-global, following R's standard single-threaded
+#' assumption. Parallel workers spawned via \pkg{future}, \pkg{callr}, or
+#' \pkg{parallel} receive isolated copies of the stack, so spans created in
+#' those workers will **not** appear in the parent trace. This is consistent
+#' with how \code{options()}, \code{par()}, and \code{Sys.setenv()} behave in
+#' base R.
 #' @export
 with_trace <- function(name, expr, ..., exporter = NULL) {
   dots <- list(...)
@@ -79,6 +86,13 @@ with_trace <- function(name, expr, ..., exporter = NULL) {
 #'   })
 #'   result
 #' })
+#' @section Thread Safety:
+#' The context stack is process-global, following R's standard single-threaded
+#' assumption. Parallel workers spawned via \pkg{future}, \pkg{callr}, or
+#' \pkg{parallel} receive isolated copies of the stack, so spans created in
+#' those workers will **not** appear in the parent trace. This is consistent
+#' with how \code{options()}, \code{par()}, and \code{Sys.setenv()} behave in
+#' base R.
 #' @export
 with_span <- function(name, type = "custom", expr, ...) {
   tr <- current_trace()
@@ -175,9 +189,4 @@ set_default_exporter <- function(exporter) {
   }
   .trace_context$default_exporter <- exporter
   invisible(NULL)
-}
-
-#' @noRd
-`%||%` <- function(x, y) {
-  if (is.null(x)) y else x
 }

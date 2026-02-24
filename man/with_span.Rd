@@ -23,6 +23,16 @@ Creates a new span within the current trace, evaluates the expression,
 and ends the span. The span is available via \code{\link[=current_span]{current_span()}}
 during evaluation.
 }
+\section{Thread Safety}{
+
+The context stack is process-global, following R's standard single-threaded
+assumption. Parallel workers spawned via \pkg{future}, \pkg{callr}, or
+\pkg{parallel} receive isolated copies of the stack, so spans created in
+those workers will \strong{not} appear in the parent trace. This is consistent
+with how \code{options()}, \code{par()}, and \code{Sys.setenv()} behave in
+base R.
+}
+
 \examples{
 # Use with_span inside a trace
 with_trace("example", {

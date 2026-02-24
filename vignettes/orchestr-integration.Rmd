@@ -8,10 +8,11 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+has_orchestr <- requireNamespace("orchestr", quietly = TRUE)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  eval = has_orchestr
 )
 ```
 
@@ -92,7 +93,7 @@ recording the node name and step number.
 `trace_agent()` wraps a single `agent$invoke()` call. It auto-extracts the
 model name and token usage from the underlying ellmer Chat object:
 
-```{r}
+```{r, eval = FALSE}
 chat <- ellmer::chat_openai(model = "gpt-4o")
 assistant <- agent("assistant", chat)
 
@@ -107,11 +108,12 @@ the invocation, so multi-turn agents report only the tokens used per call.
 Pass an exporter to `trace_graph()` to persist the full trace as JSONL:
 
 ```{r}
-exp <- jsonl_exporter("graph-traces.jsonl")
+exp <- jsonl_exporter(tempfile(fileext = ".jsonl"))
 result <- trace_graph(graph, list(data = NULL, summary = NULL), exporter = exp)
 
 # Or set a default exporter for all traces
-set_default_exporter(exp)
+exp2 <- jsonl_exporter(tempfile(fileext = ".jsonl"))
+set_default_exporter(exp2)
 result <- trace_graph(graph, list(data = NULL, summary = NULL))
 ```
 
@@ -121,7 +123,7 @@ When graph nodes make LLM calls that record model and token information,
 `trace_total_cost()` aggregates costs across all spans. This is particularly
 valuable for ReAct loops where the number of LLM calls is unpredictable:
 
-```{r}
+```{r, eval = FALSE}
 chat <- ellmer::chat_openai(model = "gpt-4o")
 graph <- react_graph(agent("analyst", chat))
 

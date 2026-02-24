@@ -24,6 +24,16 @@ Creates a new trace, evaluates the expression, ends the trace, and
 optionally exports it. The trace is available via \code{\link[=current_trace]{current_trace()}}
 during evaluation.
 }
+\section{Thread Safety}{
+
+The context stack is process-global, following R's standard single-threaded
+assumption. Parallel workers spawned via \pkg{future}, \pkg{callr}, or
+\pkg{parallel} receive isolated copies of the stack, so spans created in
+those workers will \strong{not} appear in the parent trace. This is consistent
+with how \code{options()}, \code{par()}, and \code{Sys.setenv()} behave in
+base R.
+}
+
 \examples{
 # Trace a block of code
 result <- with_trace("my-operation", {

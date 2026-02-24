@@ -108,14 +108,11 @@ Trace <- R6::R6Class(
     summary = function() {
       total_input <- 0L
       total_output <- 0L
-      total_cost <- 0
       for (s in self$spans) {
         total_input <- total_input + s$input_tokens
         total_output <- total_output + s$output_tokens
-        if (!is.null(s$model)) {
-          total_cost <- total_cost + calculate_cost(s$model, s$input_tokens, s$output_tokens)
-        }
       }
+      total_cost <- trace_total_cost(self)
       dur <- self$duration()
       dur_str <- if (is.null(dur)) "N/A" else sprintf("%.2fs", dur)
 
