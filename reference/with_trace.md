@@ -33,6 +33,17 @@ with_trace(name, expr, ..., exporter = NULL)
 
 The result of evaluating `expr`.
 
+## Thread Safety
+
+The context stack is process-global, following R's standard
+single-threaded assumption. Parallel workers spawned via future, callr,
+or parallel receive isolated copies of the stack, so spans created in
+those workers will **not** appear in the parent trace. This is
+consistent with how [`options()`](https://rdrr.io/r/base/options.html),
+[`par()`](https://rdrr.io/r/graphics/par.html), and
+[`Sys.setenv()`](https://rdrr.io/r/base/Sys.setenv.html) behave in base
+R.
+
 ## Examples
 
 ``` r

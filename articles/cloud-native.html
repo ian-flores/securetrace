@@ -135,7 +135,9 @@ to OTLP JSON and POSTs them to a collector endpoint:</p>
 <span><span class="co">#&gt; Trace exported to http://localhost:4318/v1/traces</span></span></code></pre></div>
 <p>For authenticated collectors, pass headers:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span></span>
 <span>  endpoint <span class="op">=</span> <span class="st">"https://tempo.example.com:4318"</span>,</span>
 <span>  headers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Authorization <span class="op">=</span> <span class="st">"Bearer &lt;token&gt;"</span><span class="op">)</span>,</span>
 <span>  service_name <span class="op">=</span> <span class="st">"my-r-agent"</span></span>
@@ -265,17 +267,50 @@ into it:</p>
 Prometheus-compatible text string:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="../reference/format_prometheus.html">format_prometheus</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # HELP securetrace_cost_total Total cost by model in USD</span></span>
+<span><span class="co">#&gt; # TYPE securetrace_cost_total counter</span></span>
+<span><span class="co">#&gt; securetrace_cost_total{model="claude-sonnet-4-5"} 0.021</span></span>
 <span><span class="co">#&gt; # HELP securetrace_spans_total Total spans by type and status</span></span>
 <span><span class="co">#&gt; # TYPE securetrace_spans_total counter</span></span>
-<span><span class="co">#&gt; securetrace_spans_total{type="llm",status="completed"} 1</span></span>
-<span><span class="co">#&gt; securetrace_spans_total{type="tool",status="completed"} 1</span></span>
+<span><span class="co">#&gt; securetrace_spans_total{type="llm",status="ok"} 1</span></span>
+<span><span class="co">#&gt; securetrace_spans_total{type="tool",status="ok"} 1</span></span>
 <span><span class="co">#&gt; # HELP securetrace_tokens_total Total tokens by direction and model</span></span>
 <span><span class="co">#&gt; # TYPE securetrace_tokens_total counter</span></span>
 <span><span class="co">#&gt; securetrace_tokens_total{direction="input",model="claude-sonnet-4-5"} 3000</span></span>
 <span><span class="co">#&gt; securetrace_tokens_total{direction="output",model="claude-sonnet-4-5"} 800</span></span>
 <span><span class="co">#&gt; # HELP securetrace_traces_total Total traces by status</span></span>
 <span><span class="co">#&gt; # TYPE securetrace_traces_total counter</span></span>
-<span><span class="co">#&gt; securetrace_traces_total{status="completed"} 1</span></span></code></pre></div>
+<span><span class="co">#&gt; securetrace_traces_total{status="completed"} 1</span></span>
+<span><span class="co">#&gt; # HELP securetrace_span_duration_seconds Span duration histogram</span></span>
+<span><span class="co">#&gt; # TYPE securetrace_span_duration_seconds histogram</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="0.01"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="0.05"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="0.1"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="0.5"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="1"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="5"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="10"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="30"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="60"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="120"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="300"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.001459599</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="llm"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.01"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.05"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.1"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.5"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="1"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="5"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="10"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="30"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="60"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="120"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="300"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="+Inf"} 1</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="tool"} 0.0005524158</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="tool"} 1</span></span></code></pre></div>
 <p>The registry is cumulative – each call to
 <code><a href="../reference/prometheus_metrics.html">prometheus_metrics()</a></code> adds to the existing counters and
 histograms. This lets you track metrics across multiple agent runs.</p>
@@ -296,6 +331,7 @@ that automatically feeds each completed trace into a registry:</p>
 <span>    <span class="st">"done"</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "done"</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"run-2"</span>, exporter <span class="op">=</span> <span class="va">prom_exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"llm"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
@@ -303,9 +339,42 @@ that automatically feeds each completed trace into a registry:</p>
 <span>    <span class="st">"done"</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "done"</span></span>
 <span></span>
 <span><span class="co"># Registry now has cumulative metrics from both runs</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="../reference/format_prometheus.html">format_prometheus</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="../reference/format_prometheus.html">format_prometheus</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # HELP securetrace_cost_total Total cost by model in USD</span></span>
+<span><span class="co">#&gt; # TYPE securetrace_cost_total counter</span></span>
+<span><span class="co">#&gt; securetrace_cost_total{model="claude-haiku-4-5"} 0.0016</span></span>
+<span><span class="co">#&gt; securetrace_cost_total{model="claude-sonnet-4-5"} 0.012</span></span>
+<span><span class="co">#&gt; # HELP securetrace_spans_total Total spans by type and status</span></span>
+<span><span class="co">#&gt; # TYPE securetrace_spans_total counter</span></span>
+<span><span class="co">#&gt; securetrace_spans_total{type="llm",status="ok"} 2</span></span>
+<span><span class="co">#&gt; # HELP securetrace_tokens_total Total tokens by direction and model</span></span>
+<span><span class="co">#&gt; # TYPE securetrace_tokens_total counter</span></span>
+<span><span class="co">#&gt; securetrace_tokens_total{direction="input",model="claude-haiku-4-5"} 1000</span></span>
+<span><span class="co">#&gt; securetrace_tokens_total{direction="input",model="claude-sonnet-4-5"} 2000</span></span>
+<span><span class="co">#&gt; securetrace_tokens_total{direction="output",model="claude-haiku-4-5"} 200</span></span>
+<span><span class="co">#&gt; securetrace_tokens_total{direction="output",model="claude-sonnet-4-5"} 400</span></span>
+<span><span class="co">#&gt; # HELP securetrace_traces_total Total traces by status</span></span>
+<span><span class="co">#&gt; # TYPE securetrace_traces_total counter</span></span>
+<span><span class="co">#&gt; securetrace_traces_total{status="completed"} 2</span></span>
+<span><span class="co">#&gt; # HELP securetrace_span_duration_seconds Span duration histogram</span></span>
+<span><span class="co">#&gt; # TYPE securetrace_span_duration_seconds histogram</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="0.01"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="0.05"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="0.1"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="0.5"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="1"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="5"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="10"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="30"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="60"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="120"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="300"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 2</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.0001220703</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="llm"} 2</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="serving-a-metrics-endpoint">Serving a /metrics Endpoint<a class="anchor" aria-label="anchor" href="#serving-a-metrics-endpoint"></a>
@@ -384,6 +453,7 @@ traceparent string:</p>
 <span></span>
 <span><span class="co"># Invalid headers return NULL</span></span>
 <span><span class="fu"><a href="../reference/parse_traceparent.html">parse_traceparent</a></span><span class="op">(</span><span class="st">"invalid-header"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Invalid traceparent header format: <span style="color: #0000BB;">"invalid-header"</span></span></span>
 <span><span class="co">#&gt; NULL</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -397,12 +467,12 @@ span context:</p>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"api-call"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span></span>
 <span>    <span class="va">headers</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/inject_headers.html">inject_headers</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Content-Type"</span> <span class="op">=</span> <span class="st">"application/json"</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">headers</span><span class="op">$</span><span class="va">traceparent</span></span>
-<span>    <span class="co">#&gt; [1] "00-&lt;trace_id&gt;-&lt;span_id&gt;-01"</span></span>
 <span></span>
 <span>    <span class="co"># Use these headers in your HTTP request</span></span>
 <span>    <span class="co"># httr2::req_headers(req, !!!headers)</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "00-ec379768f898282ec0ee6483eaae57b6-2b7b2f7b71619fb0-01"</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="extracting-context-from-incoming-requests">Extracting Context from Incoming Requests<a class="anchor" aria-label="anchor" href="#extracting-context-from-incoming-requests"></a>

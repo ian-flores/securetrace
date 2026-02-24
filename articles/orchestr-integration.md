@@ -101,11 +101,12 @@ Pass an exporter to
 to persist the full trace as JSONL:
 
 ``` r
-exp <- jsonl_exporter("graph-traces.jsonl")
+exp <- jsonl_exporter(tempfile(fileext = ".jsonl"))
 result <- trace_graph(graph, list(data = NULL, summary = NULL), exporter = exp)
 
 # Or set a default exporter for all traces
-set_default_exporter(exp)
+exp2 <- jsonl_exporter(tempfile(fileext = ".jsonl"))
+set_default_exporter(exp2)
 result <- trace_graph(graph, list(data = NULL, summary = NULL))
 ```
 
@@ -177,6 +178,8 @@ graph <- gb$compile()
 with_trace("custom-graph-run", {
   graph$invoke(list(result = NULL))
 })
+#> $result
+#> [1] "analysis complete"
 ```
 
 This lets you control span names, types, and metadata at each step, and

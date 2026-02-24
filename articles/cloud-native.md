@@ -81,6 +81,8 @@ with_trace("data-pipeline", exporter = exp, {
 For authenticated collectors, pass headers:
 
 ``` r
+library(securetrace)
+
 exp <- otlp_exporter(
   endpoint = "https://tempo.example.com:4318",
   headers = list(Authorization = "Bearer <token>"),
@@ -224,10 +226,13 @@ renders the registry as a Prometheus-compatible text string:
 
 ``` r
 cat(format_prometheus(reg))
+#> # HELP securetrace_cost_total Total cost by model in USD
+#> # TYPE securetrace_cost_total counter
+#> securetrace_cost_total{model="claude-sonnet-4-5"} 0.021
 #> # HELP securetrace_spans_total Total spans by type and status
 #> # TYPE securetrace_spans_total counter
-#> securetrace_spans_total{type="llm",status="completed"} 1
-#> securetrace_spans_total{type="tool",status="completed"} 1
+#> securetrace_spans_total{type="llm",status="ok"} 1
+#> securetrace_spans_total{type="tool",status="ok"} 1
 #> # HELP securetrace_tokens_total Total tokens by direction and model
 #> # TYPE securetrace_tokens_total counter
 #> securetrace_tokens_total{direction="input",model="claude-sonnet-4-5"} 3000
@@ -235,6 +240,36 @@ cat(format_prometheus(reg))
 #> # HELP securetrace_traces_total Total traces by status
 #> # TYPE securetrace_traces_total counter
 #> securetrace_traces_total{status="completed"} 1
+#> # HELP securetrace_span_duration_seconds Span duration histogram
+#> # TYPE securetrace_span_duration_seconds histogram
+#> securetrace_span_duration_seconds_bucket{type="llm",le="0.01"} 1
+#> securetrace_span_duration_seconds_bucket{type="llm",le="0.05"} 1
+#> securetrace_span_duration_seconds_bucket{type="llm",le="0.1"} 1
+#> securetrace_span_duration_seconds_bucket{type="llm",le="0.5"} 1
+#> securetrace_span_duration_seconds_bucket{type="llm",le="1"} 1
+#> securetrace_span_duration_seconds_bucket{type="llm",le="5"} 1
+#> securetrace_span_duration_seconds_bucket{type="llm",le="10"} 1
+#> securetrace_span_duration_seconds_bucket{type="llm",le="30"} 1
+#> securetrace_span_duration_seconds_bucket{type="llm",le="60"} 1
+#> securetrace_span_duration_seconds_bucket{type="llm",le="120"} 1
+#> securetrace_span_duration_seconds_bucket{type="llm",le="300"} 1
+#> securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 1
+#> securetrace_span_duration_seconds_sum{type="llm"} 0.001459599
+#> securetrace_span_duration_seconds_count{type="llm"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="0.01"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="0.05"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="0.1"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="0.5"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="1"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="5"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="10"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="30"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="60"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="120"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="300"} 1
+#> securetrace_span_duration_seconds_bucket{type="tool",le="+Inf"} 1
+#> securetrace_span_duration_seconds_sum{type="tool"} 0.0005524158
+#> securetrace_span_duration_seconds_count{type="tool"} 1
 ```
 
 The registry is cumulative – each call to
@@ -259,6 +294,7 @@ with_trace("run-1", exporter = prom_exp, {
     "done"
   })
 })
+#> [1] "done"
 
 with_trace("run-2", exporter = prom_exp, {
   with_span("llm", type = "llm", {
@@ -266,9 +302,42 @@ with_trace("run-2", exporter = prom_exp, {
     "done"
   })
 })
+#> [1] "done"
 
 # Registry now has cumulative metrics from both runs
 cat(format_prometheus(reg))
+#> # HELP securetrace_cost_total Total cost by model in USD
+#> # TYPE securetrace_cost_total counter
+#> securetrace_cost_total{model="claude-haiku-4-5"} 0.0016
+#> securetrace_cost_total{model="claude-sonnet-4-5"} 0.012
+#> # HELP securetrace_spans_total Total spans by type and status
+#> # TYPE securetrace_spans_total counter
+#> securetrace_spans_total{type="llm",status="ok"} 2
+#> # HELP securetrace_tokens_total Total tokens by direction and model
+#> # TYPE securetrace_tokens_total counter
+#> securetrace_tokens_total{direction="input",model="claude-haiku-4-5"} 1000
+#> securetrace_tokens_total{direction="input",model="claude-sonnet-4-5"} 2000
+#> securetrace_tokens_total{direction="output",model="claude-haiku-4-5"} 200
+#> securetrace_tokens_total{direction="output",model="claude-sonnet-4-5"} 400
+#> # HELP securetrace_traces_total Total traces by status
+#> # TYPE securetrace_traces_total counter
+#> securetrace_traces_total{status="completed"} 2
+#> # HELP securetrace_span_duration_seconds Span duration histogram
+#> # TYPE securetrace_span_duration_seconds histogram
+#> securetrace_span_duration_seconds_bucket{type="llm",le="0.01"} 2
+#> securetrace_span_duration_seconds_bucket{type="llm",le="0.05"} 2
+#> securetrace_span_duration_seconds_bucket{type="llm",le="0.1"} 2
+#> securetrace_span_duration_seconds_bucket{type="llm",le="0.5"} 2
+#> securetrace_span_duration_seconds_bucket{type="llm",le="1"} 2
+#> securetrace_span_duration_seconds_bucket{type="llm",le="5"} 2
+#> securetrace_span_duration_seconds_bucket{type="llm",le="10"} 2
+#> securetrace_span_duration_seconds_bucket{type="llm",le="30"} 2
+#> securetrace_span_duration_seconds_bucket{type="llm",le="60"} 2
+#> securetrace_span_duration_seconds_bucket{type="llm",le="120"} 2
+#> securetrace_span_duration_seconds_bucket{type="llm",le="300"} 2
+#> securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 2
+#> securetrace_span_duration_seconds_sum{type="llm"} 0.0001220703
+#> securetrace_span_duration_seconds_count{type="llm"} 2
 ```
 
 ### Serving a /metrics Endpoint
@@ -356,6 +425,7 @@ ctx$sampled
 
 # Invalid headers return NULL
 parse_traceparent("invalid-header")
+#> Warning: Invalid traceparent header format: "invalid-header"
 #> NULL
 ```
 
@@ -371,12 +441,12 @@ with_trace("http-client", {
   with_span("api-call", type = "tool", {
     headers <- inject_headers(list("Content-Type" = "application/json"))
     headers$traceparent
-    #> [1] "00-<trace_id>-<span_id>-01"
 
     # Use these headers in your HTTP request
     # httr2::req_headers(req, !!!headers)
   })
 })
+#> [1] "00-ec379768f898282ec0ee6483eaae57b6-2b7b2f7b71619fb0-01"
 ```
 
 ### Extracting Context from Incoming Requests

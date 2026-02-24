@@ -100,9 +100,216 @@ pricing tables.
 ``` r
 # View known model pricing (per 1M tokens)
 model_costs()
+#> $`claude-opus-4-6`
+#> $`claude-opus-4-6`$input
+#> [1] 15
+#> 
+#> $`claude-opus-4-6`$output
+#> [1] 75
+#> 
+#> 
+#> $`claude-sonnet-4-5`
+#> $`claude-sonnet-4-5`$input
+#> [1] 3
+#> 
+#> $`claude-sonnet-4-5`$output
+#> [1] 15
+#> 
+#> 
+#> $`claude-haiku-4-5`
+#> $`claude-haiku-4-5`$input
+#> [1] 0.8
+#> 
+#> $`claude-haiku-4-5`$output
+#> [1] 4
+#> 
+#> 
+#> $`claude-3-5-sonnet-20241022`
+#> $`claude-3-5-sonnet-20241022`$input
+#> [1] 3
+#> 
+#> $`claude-3-5-sonnet-20241022`$output
+#> [1] 15
+#> 
+#> 
+#> $`claude-3-5-haiku-20241022`
+#> $`claude-3-5-haiku-20241022`$input
+#> [1] 0.8
+#> 
+#> $`claude-3-5-haiku-20241022`$output
+#> [1] 4
+#> 
+#> 
+#> $`claude-3-opus-20240229`
+#> $`claude-3-opus-20240229`$input
+#> [1] 15
+#> 
+#> $`claude-3-opus-20240229`$output
+#> [1] 75
+#> 
+#> 
+#> $`claude-3-sonnet-20240229`
+#> $`claude-3-sonnet-20240229`$input
+#> [1] 3
+#> 
+#> $`claude-3-sonnet-20240229`$output
+#> [1] 15
+#> 
+#> 
+#> $`claude-3-haiku-20240307`
+#> $`claude-3-haiku-20240307`$input
+#> [1] 0.25
+#> 
+#> $`claude-3-haiku-20240307`$output
+#> [1] 1.25
+#> 
+#> 
+#> $`gpt-4o`
+#> $`gpt-4o`$input
+#> [1] 2.5
+#> 
+#> $`gpt-4o`$output
+#> [1] 10
+#> 
+#> 
+#> $`gpt-4o-mini`
+#> $`gpt-4o-mini`$input
+#> [1] 0.15
+#> 
+#> $`gpt-4o-mini`$output
+#> [1] 0.6
+#> 
+#> 
+#> $`gpt-4o-2024-11-20`
+#> $`gpt-4o-2024-11-20`$input
+#> [1] 2.5
+#> 
+#> $`gpt-4o-2024-11-20`$output
+#> [1] 10
+#> 
+#> 
+#> $`gpt-4-turbo`
+#> $`gpt-4-turbo`$input
+#> [1] 10
+#> 
+#> $`gpt-4-turbo`$output
+#> [1] 30
+#> 
+#> 
+#> $`gpt-4`
+#> $`gpt-4`$input
+#> [1] 30
+#> 
+#> $`gpt-4`$output
+#> [1] 60
+#> 
+#> 
+#> $`gpt-3.5-turbo`
+#> $`gpt-3.5-turbo`$input
+#> [1] 0.5
+#> 
+#> $`gpt-3.5-turbo`$output
+#> [1] 1.5
+#> 
+#> 
+#> $o1
+#> $o1$input
+#> [1] 15
+#> 
+#> $o1$output
+#> [1] 60
+#> 
+#> 
+#> $`o1-mini`
+#> $`o1-mini`$input
+#> [1] 3
+#> 
+#> $`o1-mini`$output
+#> [1] 12
+#> 
+#> 
+#> $`o3-mini`
+#> $`o3-mini`$input
+#> [1] 1.1
+#> 
+#> $`o3-mini`$output
+#> [1] 4.4
+#> 
+#> 
+#> $`gemini-2.0-flash`
+#> $`gemini-2.0-flash`$input
+#> [1] 0.1
+#> 
+#> $`gemini-2.0-flash`$output
+#> [1] 0.4
+#> 
+#> 
+#> $`gemini-1.5-pro`
+#> $`gemini-1.5-pro`$input
+#> [1] 1.25
+#> 
+#> $`gemini-1.5-pro`$output
+#> [1] 5
+#> 
+#> 
+#> $`gemini-1.5-flash`
+#> $`gemini-1.5-flash`$input
+#> [1] 0.075
+#> 
+#> $`gemini-1.5-flash`$output
+#> [1] 0.3
+#> 
+#> 
+#> $`gemini-1.5-flash-8b`
+#> $`gemini-1.5-flash-8b`$input
+#> [1] 0.0375
+#> 
+#> $`gemini-1.5-flash-8b`$output
+#> [1] 0.15
+#> 
+#> 
+#> $`mistral-large-latest`
+#> $`mistral-large-latest`$input
+#> [1] 2
+#> 
+#> $`mistral-large-latest`$output
+#> [1] 6
+#> 
+#> 
+#> $`mistral-small-latest`
+#> $`mistral-small-latest`$input
+#> [1] 0.2
+#> 
+#> $`mistral-small-latest`$output
+#> [1] 0.6
+#> 
+#> 
+#> $`codestral-latest`
+#> $`codestral-latest`$input
+#> [1] 0.3
+#> 
+#> $`codestral-latest`$output
+#> [1] 0.9
+#> 
+#> 
+#> $`deepseek-chat`
+#> $`deepseek-chat`$input
+#> [1] 0.27
+#> 
+#> $`deepseek-chat`$output
+#> [1] 1.1
+#> 
+#> 
+#> $`deepseek-reasoner`
+#> $`deepseek-reasoner`$input
+#> [1] 0.55
+#> 
+#> $`deepseek-reasoner`$output
+#> [1] 2.19
 
 # Calculate cost for a specific call
 calculate_cost("claude-opus-4-6", input_tokens = 5000, output_tokens = 1000)
+#> [1] 0.15
 
 # Register custom model pricing
 add_model_cost("my-fine-tuned-model", input_price = 5, output_price = 20)
@@ -121,13 +328,52 @@ manual configuration.
 # View all known model pricing (per 1M tokens)
 costs <- model_costs()
 head(costs)
-#>                  model input_price output_price
-#> 1     claude-opus-4-6       15.00        75.00
-#> 2   claude-sonnet-4-5        3.00        15.00
-#> 3              gpt-4o        2.50        10.00
-#> 4      gemini-1.5-pro        1.25         5.00
-#> 5      gemini-2.0-flash      0.10         0.40
-#> 6  deepseek-reasoner        0.55         2.19
+#> $`claude-opus-4-6`
+#> $`claude-opus-4-6`$input
+#> [1] 15
+#> 
+#> $`claude-opus-4-6`$output
+#> [1] 75
+#> 
+#> 
+#> $`claude-sonnet-4-5`
+#> $`claude-sonnet-4-5`$input
+#> [1] 3
+#> 
+#> $`claude-sonnet-4-5`$output
+#> [1] 15
+#> 
+#> 
+#> $`claude-haiku-4-5`
+#> $`claude-haiku-4-5`$input
+#> [1] 0.8
+#> 
+#> $`claude-haiku-4-5`$output
+#> [1] 4
+#> 
+#> 
+#> $`claude-3-5-sonnet-20241022`
+#> $`claude-3-5-sonnet-20241022`$input
+#> [1] 3
+#> 
+#> $`claude-3-5-sonnet-20241022`$output
+#> [1] 15
+#> 
+#> 
+#> $`claude-3-5-haiku-20241022`
+#> $`claude-3-5-haiku-20241022`$input
+#> [1] 0.8
+#> 
+#> $`claude-3-5-haiku-20241022`$output
+#> [1] 4
+#> 
+#> 
+#> $`claude-3-opus-20240229`
+#> $`claude-3-opus-20240229`$input
+#> [1] 15
+#> 
+#> $`claude-3-opus-20240229`$output
+#> [1] 75
 ```
 
 When your infrastructure runs models through a cloud provider gateway,
@@ -143,6 +389,7 @@ calculate_cost(
   input_tokens = 10000,
   output_tokens = 2000
 )
+#> [1] 0.06
 
 # Vertex model ID also resolves
 calculate_cost(
@@ -150,6 +397,7 @@ calculate_cost(
   input_tokens = 10000,
   output_tokens = 2000
 )
+#> [1] 0.06
 ```
 
 For custom or self-hosted deployments, register your own aliases to map
@@ -159,6 +407,7 @@ internal names to known pricing:
 # Map an internal deployment name to a known model
 add_model_alias("my-company-claude", "claude-sonnet-4-5")
 calculate_cost("my-company-claude", input_tokens = 5000, output_tokens = 1000)
+#> [1] 0.03
 ```
 
 When using
@@ -184,13 +433,14 @@ observability.
 
 ``` r
 # JSONL file export
-exp <- jsonl_exporter("traces.jsonl")
+exp <- jsonl_exporter(tempfile("traces", fileext = ".jsonl"))
 
 with_trace("exported-run", exporter = exp, {
   with_span("work", type = "tool", {
     42
   })
 })
+#> [1] 42
 
 # Console export for debugging
 debug_exp <- console_exporter(verbose = TRUE)
@@ -220,9 +470,11 @@ result <- with_trace("tools", {
 })
 
 # Wrap guardrail checks
+user_input <- "Hello, can you help me with a question?"
 with_trace("guarded", {
   trace_guardrail("length-check", function(x) nchar(x) < 1000, user_input)
 })
+#> [1] TRUE
 ```
 
 ### Streaming LLM Calls
@@ -285,6 +537,7 @@ with_trace("complex-workflow", {
     "Summary complete"
   })
 })
+#> [1] "Summary complete"
 ```
 
 ## Trace Summary
@@ -304,6 +557,8 @@ tr$add_span(s)
 tr$end()
 
 tr$summary()
+#> Trace: manual-trace (completed) ID: b88c9ae35eb1e9ed1991423dd1445207 Duration:
+#> 0.00s Spans: 1 Tokens: 5000 input, 1000 output Cost: $0.150000
 # Trace: manual-trace (completed)
 #   Duration: 0.01s
 #   Spans: 1

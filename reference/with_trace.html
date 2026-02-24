@@ -75,6 +75,17 @@ during evaluation.</p>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>The result of evaluating <code>expr</code>.</p>
     </div>
+    <div class="section level2">
+    <h2 id="thread-safety">Thread Safety<a class="anchor" aria-label="anchor" href="#thread-safety"></a></h2>
+
+
+<p>The context stack is process-global, following R's standard single-threaded
+assumption. Parallel workers spawned via <span class="pkg">future</span>, <span class="pkg">callr</span>, or
+<span class="pkg">parallel</span> receive isolated copies of the stack, so spans created in
+those workers will <strong>not</strong> appear in the parent trace. This is consistent
+with how <code><a href="https://rdrr.io/r/base/options.html" class="external-link">options()</a></code>, <code><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par()</a></code>, and <code><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv()</a></code> behave in
+base R.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
