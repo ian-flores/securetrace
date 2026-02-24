@@ -1,552 +1,138 @@
 # Getting Started with securetrace
 
-## Why Observability for AI Agents?
+securetrace gives you structured tracing, token accounting, and cost
+tracking for LLM agent workflows in R.
 
-Traditional software is deterministic: the same input produces the same
-output, and when something goes wrong you can reproduce the failure. AI
-agents break this contract. A language model might return a different
-plan each time it runs, choose different tools, consume wildly different
-numbers of tokens, and produce outputs that are plausible but wrong.
-Without structured observability, debugging an agent workflow becomes
-guesswork.
+## Quick start
 
-Observability means capturing what happened *inside* an agent run – not
-just the final answer, but every LLM call, every tool invocation, every
-guardrail check, along with the tokens consumed, latency incurred, and
-costs accrued. With this data you can answer questions that matter in
-production: Why did this run cost \$2.40 instead of \$0.15? Why did the
-agent call the same tool four times? Where did the guardrail reject a
-valid input?
-
-securetrace brings this discipline to R. It provides structured traces
-with nested spans, automatic token and cost accounting, and multiple
-export formats so you can feed trace data into whatever analysis
-pipeline you already use – from a simple JSONL file to Jaeger,
-Prometheus, or Grafana Tempo.
-
-## Trace Anatomy
-
-Every securetrace observation follows a hierarchical model inspired by
-OpenTelemetry, adapted for the specific needs of AI agent workflows:
-
-    Trace: "agent-run-042"
-    |
-    |-- Span: "planning" (type: llm)
-    |   |-- tokens: 2000 in / 500 out
-    |   |-- model: claude-sonnet-4-5
-    |   |-- cost: $0.0135
-    |   |-- Event: "model_selected"
-    |   |-- Event: "prompt_sent"
-    |   |
-    |   '-- Span: "calculator" (type: tool)     <-- nested child
-    |       '-- metric: rows_processed = 150
-    |
-    |-- Span: "guardrail" (type: guardrail)
-    |   '-- Event: "guardrail.result" { pass: TRUE }
-    |
-    '-- Span: "summarize" (type: llm)
-        |-- tokens: 1000 in / 200 out
-        |-- model: claude-haiku-4-5
-        '-- cost: $0.0013
-
-- **Trace** – The root container for a complete agent run. Holds
-  metadata, timing, and a collection of spans.
-- **Span** – A single operation: an LLM call, a tool invocation, a
-  guardrail check, or any custom step. Spans nest to represent
-  parent-child relationships.
-- **Event** – A discrete point-in-time occurrence within a span (model
-  selection, prompt dispatch, guardrail result).
-- **Metrics** – Numeric measurements attached to spans: token counts,
-  latency, cost, or any custom value you define.
-
-## Basic Usage
-
-Create a trace with spans to track an agent workflow:
+Wrap your workflow in
+[`with_trace()`](https://ian-flores.github.io/securetrace/reference/with_trace.md),
+break it into spans, and record tokens:
 
 ``` r
 library(securetrace)
 
-# Wrap your workflow in a trace
 result <- with_trace("my-agent-run", {
-
-  # Each operation gets its own span
-  with_span("llm-call", type = "llm", {
+  with_span("planning", type = "llm", {
     record_tokens(1500, 300, model = "claude-sonnet-4-5")
     "The answer is 42"
   })
 })
 ```
 
-[`with_trace()`](https://ian-flores.github.io/securetrace/reference/with_trace.md)
-handles the lifecycle for you: it creates a Trace object, starts the
-clock, evaluates your code, ends the trace, and optionally exports it.
-Inside,
-[`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md)
-works the same way for individual operations. At any point during
-evaluation,
+- [`with_trace()`](https://ian-flores.github.io/securetrace/reference/with_trace.md)
+  creates a `Trace`, starts the clock, evaluates your code, and ends the
+  trace.
+- [`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md)
+  wraps a single operation (LLM call, tool use, etc.).
+- [`record_tokens()`](https://ian-flores.github.io/securetrace/reference/record_tokens.md)
+  logs input/output tokens and model on the current span.
+
+Use
 [`current_trace()`](https://ian-flores.github.io/securetrace/reference/current_trace.md)
 and
 [`current_span()`](https://ian-flores.github.io/securetrace/reference/current_span.md)
-give you access to the active objects so you can record tokens, events,
-or metrics.
+to access active objects anywhere inside the block.
 
-## Token and Cost Tracking
+## Token and cost tracking
 
-Understanding token consumption is critical for managing AI agent costs.
-securetrace includes built-in pricing for popular LLM models so you can
-see exactly how much each operation costs without maintaining your own
-pricing tables.
+Built-in pricing covers Anthropic, OpenAI, Gemini, Mistral, and
+DeepSeek.
 
 ``` r
-# View known model pricing (per 1M tokens)
-model_costs()
-#> $`claude-opus-4-6`
-#> $`claude-opus-4-6`$input
-#> [1] 15
-#> 
-#> $`claude-opus-4-6`$output
-#> [1] 75
-#> 
-#> 
-#> $`claude-sonnet-4-5`
-#> $`claude-sonnet-4-5`$input
-#> [1] 3
-#> 
-#> $`claude-sonnet-4-5`$output
-#> [1] 15
-#> 
-#> 
-#> $`claude-haiku-4-5`
-#> $`claude-haiku-4-5`$input
-#> [1] 0.8
-#> 
-#> $`claude-haiku-4-5`$output
-#> [1] 4
-#> 
-#> 
-#> $`claude-3-5-sonnet-20241022`
-#> $`claude-3-5-sonnet-20241022`$input
-#> [1] 3
-#> 
-#> $`claude-3-5-sonnet-20241022`$output
-#> [1] 15
-#> 
-#> 
-#> $`claude-3-5-haiku-20241022`
-#> $`claude-3-5-haiku-20241022`$input
-#> [1] 0.8
-#> 
-#> $`claude-3-5-haiku-20241022`$output
-#> [1] 4
-#> 
-#> 
-#> $`claude-3-opus-20240229`
-#> $`claude-3-opus-20240229`$input
-#> [1] 15
-#> 
-#> $`claude-3-opus-20240229`$output
-#> [1] 75
-#> 
-#> 
-#> $`claude-3-sonnet-20240229`
-#> $`claude-3-sonnet-20240229`$input
-#> [1] 3
-#> 
-#> $`claude-3-sonnet-20240229`$output
-#> [1] 15
-#> 
-#> 
-#> $`claude-3-haiku-20240307`
-#> $`claude-3-haiku-20240307`$input
-#> [1] 0.25
-#> 
-#> $`claude-3-haiku-20240307`$output
-#> [1] 1.25
-#> 
-#> 
-#> $`gpt-4o`
-#> $`gpt-4o`$input
-#> [1] 2.5
-#> 
-#> $`gpt-4o`$output
-#> [1] 10
-#> 
-#> 
-#> $`gpt-4o-mini`
-#> $`gpt-4o-mini`$input
-#> [1] 0.15
-#> 
-#> $`gpt-4o-mini`$output
-#> [1] 0.6
-#> 
-#> 
-#> $`gpt-4o-2024-11-20`
-#> $`gpt-4o-2024-11-20`$input
-#> [1] 2.5
-#> 
-#> $`gpt-4o-2024-11-20`$output
-#> [1] 10
-#> 
-#> 
-#> $`gpt-4-turbo`
-#> $`gpt-4-turbo`$input
-#> [1] 10
-#> 
-#> $`gpt-4-turbo`$output
-#> [1] 30
-#> 
-#> 
-#> $`gpt-4`
-#> $`gpt-4`$input
-#> [1] 30
-#> 
-#> $`gpt-4`$output
-#> [1] 60
-#> 
-#> 
-#> $`gpt-3.5-turbo`
-#> $`gpt-3.5-turbo`$input
-#> [1] 0.5
-#> 
-#> $`gpt-3.5-turbo`$output
-#> [1] 1.5
-#> 
-#> 
-#> $o1
-#> $o1$input
-#> [1] 15
-#> 
-#> $o1$output
-#> [1] 60
-#> 
-#> 
-#> $`o1-mini`
-#> $`o1-mini`$input
-#> [1] 3
-#> 
-#> $`o1-mini`$output
-#> [1] 12
-#> 
-#> 
-#> $`o3-mini`
-#> $`o3-mini`$input
-#> [1] 1.1
-#> 
-#> $`o3-mini`$output
-#> [1] 4.4
-#> 
-#> 
-#> $`gemini-2.0-flash`
-#> $`gemini-2.0-flash`$input
-#> [1] 0.1
-#> 
-#> $`gemini-2.0-flash`$output
-#> [1] 0.4
-#> 
-#> 
-#> $`gemini-1.5-pro`
-#> $`gemini-1.5-pro`$input
-#> [1] 1.25
-#> 
-#> $`gemini-1.5-pro`$output
-#> [1] 5
-#> 
-#> 
-#> $`gemini-1.5-flash`
-#> $`gemini-1.5-flash`$input
-#> [1] 0.075
-#> 
-#> $`gemini-1.5-flash`$output
-#> [1] 0.3
-#> 
-#> 
-#> $`gemini-1.5-flash-8b`
-#> $`gemini-1.5-flash-8b`$input
-#> [1] 0.0375
-#> 
-#> $`gemini-1.5-flash-8b`$output
-#> [1] 0.15
-#> 
-#> 
-#> $`mistral-large-latest`
-#> $`mistral-large-latest`$input
-#> [1] 2
-#> 
-#> $`mistral-large-latest`$output
-#> [1] 6
-#> 
-#> 
-#> $`mistral-small-latest`
-#> $`mistral-small-latest`$input
-#> [1] 0.2
-#> 
-#> $`mistral-small-latest`$output
-#> [1] 0.6
-#> 
-#> 
-#> $`codestral-latest`
-#> $`codestral-latest`$input
-#> [1] 0.3
-#> 
-#> $`codestral-latest`$output
-#> [1] 0.9
-#> 
-#> 
-#> $`deepseek-chat`
-#> $`deepseek-chat`$input
-#> [1] 0.27
-#> 
-#> $`deepseek-chat`$output
-#> [1] 1.1
-#> 
-#> 
-#> $`deepseek-reasoner`
-#> $`deepseek-reasoner`$input
-#> [1] 0.55
-#> 
-#> $`deepseek-reasoner`$output
-#> [1] 2.19
-
-# Calculate cost for a specific call
-calculate_cost("claude-opus-4-6", input_tokens = 5000, output_tokens = 1000)
-#> [1] 0.15
-
-# Register custom model pricing
-add_model_cost("my-fine-tuned-model", input_price = 5, output_price = 20)
-```
-
-### Multi-Provider Support
-
-Real-world agent systems rarely use a single model. A planning step
-might use a powerful model like Claude Opus, while a simple
-classification step uses a cheaper model like Haiku. securetrace ships
-with pricing for models across Anthropic, OpenAI, Google Gemini,
-Mistral, and DeepSeek, so you can track costs across providers without
-manual configuration.
-
-``` r
-# View all known model pricing (per 1M tokens)
+# All known pricing (per 1M tokens)
 costs <- model_costs()
-head(costs)
-#> $`claude-opus-4-6`
-#> $`claude-opus-4-6`$input
-#> [1] 15
-#> 
-#> $`claude-opus-4-6`$output
-#> [1] 75
-#> 
-#> 
-#> $`claude-sonnet-4-5`
-#> $`claude-sonnet-4-5`$input
-#> [1] 3
-#> 
-#> $`claude-sonnet-4-5`$output
-#> [1] 15
-#> 
-#> 
-#> $`claude-haiku-4-5`
-#> $`claude-haiku-4-5`$input
-#> [1] 0.8
-#> 
-#> $`claude-haiku-4-5`$output
-#> [1] 4
-#> 
-#> 
-#> $`claude-3-5-sonnet-20241022`
-#> $`claude-3-5-sonnet-20241022`$input
-#> [1] 3
-#> 
-#> $`claude-3-5-sonnet-20241022`$output
-#> [1] 15
-#> 
-#> 
-#> $`claude-3-5-haiku-20241022`
-#> $`claude-3-5-haiku-20241022`$input
-#> [1] 0.8
-#> 
-#> $`claude-3-5-haiku-20241022`$output
-#> [1] 4
-#> 
-#> 
-#> $`claude-3-opus-20240229`
-#> $`claude-3-opus-20240229`$input
-#> [1] 15
-#> 
-#> $`claude-3-opus-20240229`$output
-#> [1] 75
+head(names(costs))
+#> [1] "claude-opus-4-6"            "claude-sonnet-4-5"         
+#> [3] "claude-haiku-4-5"           "claude-3-5-sonnet-20241022"
+#> [5] "claude-3-5-haiku-20241022"  "claude-3-opus-20240229"
 ```
 
-When your infrastructure runs models through a cloud provider gateway,
-the model IDs look different from the canonical names. securetrace
-resolves cloud provider model IDs (AWS Bedrock, Google Vertex)
-automatically via built-in aliases, so you do not need to maintain a
-mapping yourself:
+``` r
+# Cost for a single call
+calculate_cost("claude-sonnet-4-5", input_tokens = 5000, output_tokens = 1000)
+#> [1] 0.03
+```
+
+Register your own models:
 
 ``` r
-# Bedrock model ID works transparently
+add_model_cost("my-fine-tuned", input_price = 5, output_price = 20)
+calculate_cost("my-fine-tuned", input_tokens = 10000, output_tokens = 2000)
+#> [1] 0.09
+```
+
+Cloud provider model IDs (Bedrock, Vertex) resolve automatically via
+[`resolve_model()`](https://ian-flores.github.io/securetrace/reference/resolve_model.md):
+
+``` r
 calculate_cost(
   "anthropic.claude-3-5-sonnet-20241022-v2:0",
-  input_tokens = 10000,
-  output_tokens = 2000
-)
-#> [1] 0.06
-
-# Vertex model ID also resolves
-calculate_cost(
-  "publishers/anthropic/models/claude-3-5-sonnet-v2@20241022",
-  input_tokens = 10000,
-  output_tokens = 2000
+  input_tokens = 10000, output_tokens = 2000
 )
 #> [1] 0.06
 ```
 
-For custom or self-hosted deployments, register your own aliases to map
-internal names to known pricing:
+Map internal deployment names with
+[`add_model_alias()`](https://ian-flores.github.io/securetrace/reference/add_model_alias.md):
 
 ``` r
-# Map an internal deployment name to a known model
 add_model_alias("my-company-claude", "claude-sonnet-4-5")
 calculate_cost("my-company-claude", input_tokens = 5000, output_tokens = 1000)
 #> [1] 0.03
 ```
 
-When using
-[`trace_llm_call()`](https://ian-flores.github.io/securetrace/reference/trace_llm_call.md)
-with an ellmer Chat object, the model name and token counts are
-extracted automatically – you do not need to call
-[`record_tokens()`](https://ian-flores.github.io/securetrace/reference/record_tokens.md)
-manually:
+## Exporting traces
+
+Write traces to JSONL for downstream analysis:
 
 ``` r
-result <- with_trace("auto-instrumented", {
-  trace_llm_call("analysis", chat, "Summarize the data.")
-})
-# Model and token counts are set on the span without manual recording
-```
-
-## Exporting Traces
-
-Traces are only useful if you can get them out of R and into your
-analysis pipeline. securetrace provides several built-in exporters that
-cover the most common scenarios, from quick debugging to production
-observability.
-
-``` r
-# JSONL file export
 exp <- jsonl_exporter(tempfile("traces", fileext = ".jsonl"))
 
 with_trace("exported-run", exporter = exp, {
-  with_span("work", type = "tool", {
-    42
-  })
+  with_span("work", type = "tool", { 42 })
 })
 #> [1] 42
+```
 
-# Console export for debugging
+Print to console while debugging:
+
+``` r
 debug_exp <- console_exporter(verbose = TRUE)
 
-# Combine multiple exporters
-both <- multi_exporter(exp, debug_exp)
+with_trace("debug-run", exporter = debug_exp, {
+  with_span("step", type = "custom", { 1 + 1 })
+})
+#> --- Trace: debug-run ---
+#> Status: completed
+#> Duration: 0.00s
+#> Spans: 1
+#> -- Spans --
+#>   * step [custom] (ok) - 0.000s
+#> [1] 2
+```
 
-# Or set a default exporter for all traces
+Set a default exporter so every
+[`with_trace()`](https://ian-flores.github.io/securetrace/reference/with_trace.md)
+auto-exports:
+
+``` r
 set_default_exporter(exp)
 ```
 
-For a deep dive into exporters – JSONL format, console output, custom
-exporters, and the trace schema – see
-[`vignette("exporters")`](https://ian-flores.github.io/securetrace/articles/exporters.md).
+See
+[`vignette("exporters")`](https://ian-flores.github.io/securetrace/articles/exporters.md)
+for custom exporters,
+[`multi_exporter()`](https://ian-flores.github.io/securetrace/reference/multi_exporter.md),
+and the JSONL schema reference.
 
-## Integration Helpers
+## Trace summary
 
-Instrumenting every LLM call and tool invocation manually would be
-tedious. securetrace provides convenience wrappers that create
-properly-typed spans, record the right metadata, and handle errors
-automatically.
-
-``` r
-# Wrap tool calls
-result <- with_trace("tools", {
-  trace_tool_call("calculator", function(x) x * 2, 21)
-})
-
-# Wrap guardrail checks
-user_input <- "Hello, can you help me with a question?"
-with_trace("guarded", {
-  trace_guardrail("length-check", function(x) nchar(x) < 1000, user_input)
-})
-#> [1] TRUE
-```
-
-### Streaming LLM Calls
-
-[`trace_llm_call()`](https://ian-flores.github.io/securetrace/reference/trace_llm_call.md)
-supports streaming responses via the `stream` parameter. When
-`stream = TRUE`, the chat object’s `$stream()` method is called instead
-of `$chat()`, and a `streaming` event is recorded on the span:
+Call `$summary()` on a completed trace to see duration, span count,
+tokens, and cost at a glance:
 
 ``` r
-# Stream responses with automatic tracing
-with_trace("streaming-example", {
-  response <- trace_llm_call(chat, "Explain R6 classes", stream = TRUE)
-})
-# The span records: model, tokens, latency, and a "streaming" event
-```
-
-### Tool Call Tracking
-
-When the LLM invokes tools during a chat,
-[`trace_llm_call()`](https://ian-flores.github.io/securetrace/reference/trace_llm_call.md)
-automatically inspects the response turn and records each tool
-invocation as a `tool_call` event on the span. No extra instrumentation
-is needed:
-
-``` r
-# Register tools on the chat object, then trace the call
-chat <- ellmer::chat_openai(model = "gpt-4o")
-chat$register_tool(ellmer::tool(
-  function(x, y) x + y,
-  "Adds two numbers", x = "First number", y = "Second number"
-))
-
-with_trace("agent-with-tools", {
-  response <- trace_llm_call(chat, "What is 3 + 4?")
-})
-# Each tool invocation appears as a "tool_call" event with name and arguments
-```
-
-## Nested Spans
-
-Agent workflows are rarely flat. A planning step might invoke a tool,
-which itself calls an LLM for sub-reasoning. Spans nest naturally to
-capture this hierarchy – inner spans record the outer span’s ID as their
-`parent_id`, preserving the full call tree when the trace is serialized.
-
-``` r
-with_trace("complex-workflow", {
-  with_span("planning", type = "llm", {
-    record_tokens(2000, 500, model = "claude-sonnet-4-5")
-
-    with_span("tool-use", type = "tool", {
-      # Tool execution within the planning step
-      42
-    })
-  })
-
-  with_span("summarize", type = "llm", {
-    record_tokens(1000, 200, model = "claude-haiku-4-5")
-    "Summary complete"
-  })
-})
-#> [1] "Summary complete"
-```
-
-## Trace Summary
-
-Get a formatted summary of any trace to quickly understand what
-happened:
-
-``` r
-tr <- Trace$new("manual-trace")
+tr <- Trace$new("summarized-run")
 tr$start()
 s <- Span$new("llm", type = "llm")
 s$start()
@@ -557,26 +143,15 @@ tr$add_span(s)
 tr$end()
 
 tr$summary()
-#> Trace: manual-trace (completed) ID: b88c9ae35eb1e9ed1991423dd1445207 Duration:
-#> 0.00s Spans: 1 Tokens: 5000 input, 1000 output Cost: $0.150000
-# Trace: manual-trace (completed)
-#   Duration: 0.01s
-#   Spans: 1
-#   Tokens: 5000 input, 1000 output
-#   Cost: $0.150000
+#> Trace: summarized-run (completed) ID: 163a3181d2b2f09bcf64302605ab6a97
+#> Duration: 0.00s Spans: 1 Tokens: 5000 input, 1000 output Cost: $0.150000
 ```
 
-## Next Steps
+## Next steps
 
 - [`vignette("observability")`](https://ian-flores.github.io/securetrace/articles/observability.md)
-  – Core concepts: traces, spans, events, metrics, error handling, and a
-  full “Putting It All Together” example.
+  – spans, events, metrics, error handling, nested workflows.
 - [`vignette("exporters")`](https://ian-flores.github.io/securetrace/articles/exporters.md)
-  – JSONL export, console exporter, custom exporters, and the trace
-  schema reference.
+  – JSONL schema, console exporter, custom exporters.
 - [`vignette("cloud-native")`](https://ian-flores.github.io/securetrace/articles/cloud-native.md)
-  – OTLP export to Jaeger/Tempo, Prometheus metrics, W3C Trace Context
-  propagation.
-- [`vignette("orchestr-integration")`](https://ian-flores.github.io/securetrace/articles/orchestr-integration.md)
-  – Automatic tracing of orchestr graph executions and agent
-  invocations.
+  – OTLP, Prometheus, W3C Trace Context.

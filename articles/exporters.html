@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Exporting and Analyzing Traces • securetrace</title>
+<title>Exporters • securetrace</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Exporting and Analyzing Traces">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Exporters">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -52,7 +52,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Exporting and Analyzing Traces</h1>
+      <h1>Exporters</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/ian-flores/securetrace/blob/main/vignettes/exporters.Rmd" class="external-link"><code>vignettes/exporters.Rmd</code></a></small>
@@ -62,101 +62,45 @@
     
     
 <div class="section level2">
-<h2 id="getting-traces-out-of-r">Getting Traces Out of R<a class="anchor" aria-label="anchor" href="#getting-traces-out-of-r"></a>
+<h2 id="jsonl-exporter">JSONL exporter<a class="anchor" aria-label="anchor" href="#jsonl-exporter"></a>
 </h2>
-<p>A trace is only valuable if it can be analyzed. During development
-you might print traces to the console to see what an agent did. In
-production you want traces written to files for post-hoc analysis or
-piped to an observability platform. securetrace separates trace
-<em>collection</em> from trace <em>export</em> so that the same
-instrumentation code works everywhere – only the exporter changes.</p>
-<p>The export pipeline looks like this:</p>
-<pre><code>with_trace("run", exporter = exp, {
-  ...your agent code...
-})
-    |
-    v
-Trace$to_list()            # Serialize R6 object to plain list
-    |
-    v
-exporter@export(trace_list) # Deliver to destination
-    |
-    +---&gt; jsonl_exporter    --&gt; append JSON line to file
-    +---&gt; console_exporter  --&gt; print summary to console
-    +---&gt; multi_exporter    --&gt; fan out to N exporters
-    +---&gt; new_exporter(fn)  --&gt; your custom logic</code></pre>
-<p>Every exporter receives the same serialized trace list, so they are
-fully composable. You can wrap any combination of exporters in a
-<code><a href="../reference/multi_exporter.html">multi_exporter()</a></code> and every trace goes to every
-destination.</p>
-</div>
-<div class="section level2">
-<h2 id="jsonl-export">JSONL Export<a class="anchor" aria-label="anchor" href="#jsonl-export"></a>
-</h2>
-<p>The <code><a href="../reference/jsonl_exporter.html">jsonl_exporter()</a></code> writes each completed trace as a
-single JSON line to a file. This is the workhorse exporter for
-production use – it produces a compact, append-only log that is easy to
-parse with <code>jsonlite</code>, <code>jq</code>, or any data pipeline
-tool.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>Write each trace as one JSON line to an append-only file.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Create a temporary file for this example</span></span>
 <span><span class="va">trace_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".jsonl"</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Traces are exported automatically when with_trace() completes</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"exported-run"</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"llm-call"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">1500</span>, <span class="fl">300</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
 <span>    <span class="st">"response"</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"tool-call"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span></span>
-<span>    <span class="fl">42</span></span>
-<span>  <span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"tool-call"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">42</span> <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 42</span></span>
-<span></span>
-<span><span class="co"># Read back the exported data</span></span>
-<span><span class="va">lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">lines</span><span class="op">)</span>  <span class="co"># 1 line per trace</span></span>
+<span><span class="co">#&gt; [1] 42</span></span></code></pre></div>
+<p>Read back with <code>jsonlite</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">lines</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 1</span></span>
-<span></span>
-<span><span class="co"># Parse and inspect</span></span>
 <span><span class="va">trace_data</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span><span class="va">lines</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">trace_data</span><span class="op">$</span><span class="va">name</span></span>
 <span><span class="co">#&gt; [1] "exported-run"</span></span>
-<span><span class="va">trace_data</span><span class="op">$</span><span class="va">status</span></span>
-<span><span class="co">#&gt; [1] "completed"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">trace_data</span><span class="op">$</span><span class="va">spans</span><span class="op">$</span><span class="va">span_id</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2</span></span>
-<span></span>
-<span><span class="co"># Clean up</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span></code></pre></div>
-<p>Each JSONL line contains the full trace structure: trace ID, name,
-status, timestamps, duration, and all spans with their tokens, events,
-and metrics.</p>
 </div>
 <div class="section level2">
-<h2 id="console-exporter">Console Exporter<a class="anchor" aria-label="anchor" href="#console-exporter"></a>
+<h2 id="console-exporter">Console exporter<a class="anchor" aria-label="anchor" href="#console-exporter"></a>
 </h2>
-<p>The <code><a href="../reference/console_exporter.html">console_exporter()</a></code> prints trace summaries directly
-to the console. This is the fastest way to see what an agent did during
-interactive development, without writing any files.</p>
+<p>Print trace summaries during interactive development.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">debug_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/console_exporter.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"debug-run"</span>, exporter <span class="op">=</span> <span class="va">debug_exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"planning"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fl">500</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
 <span>    <span class="st">"plan"</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"execution"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span></span>
-<span>    <span class="fl">100</span></span>
-<span>  <span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"execution"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">100</span> <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt; --- Trace: debug-run ---</span></span>
 <span><span class="co">#&gt; Status: completed</span></span>
@@ -166,26 +110,18 @@ interactive development, without writing any files.</p>
 <span><span class="co">#&gt;   * planning [llm] (ok) - 0.000s</span></span>
 <span><span class="co">#&gt;   * execution [tool] (ok) - 0.000s</span></span>
 <span><span class="co">#&gt; [1] 100</span></span></code></pre></div>
-<p>Set <code>verbose = FALSE</code> to print only the trace header
-without individual span details. This is useful in loops or batch runs
-where you want confirmation that traces completed without flooding the
-console.</p>
+<p>Set <code>verbose = FALSE</code> for headers only.</p>
 </div>
 <div class="section level2">
-<h2 id="multi-exporter-setup">Multi-Exporter Setup<a class="anchor" aria-label="anchor" href="#multi-exporter-setup"></a>
+<h2 id="multiple-exporters">Multiple exporters<a class="anchor" aria-label="anchor" href="#multiple-exporters"></a>
 </h2>
-<p>In practice you usually want traces going to more than one place – a
-file for the audit trail, the console for visibility, and perhaps a
-cloud exporter for production monitoring. <code><a href="../reference/multi_exporter.html">multi_exporter()</a></code>
-fans out to any number of exporters:</p>
+<p>Fan out to N destinations with <code><a href="../reference/multi_exporter.html">multi_exporter()</a></code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trace_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".jsonl"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Combine a file exporter and a console exporter</span></span>
-<span><span class="va">file_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span>
-<span><span class="va">console_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/console_exporter.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">combined</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multi_exporter.html">multi_exporter</a></span><span class="op">(</span><span class="va">file_exp</span>, <span class="va">console_exp</span><span class="op">)</span></span>
-<span></span>
+<span><span class="va">combined</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multi_exporter.html">multi_exporter</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="../reference/console_exporter.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"multi-export-run"</span>, exporter <span class="op">=</span> <span class="va">combined</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"llm-call"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">3000</span>, <span class="fl">600</span>, model <span class="op">=</span> <span class="st">"claude-opus-4-6"</span><span class="op">)</span></span>
@@ -199,61 +135,36 @@ fans out to any number of exporters:</p>
 <span><span class="co">#&gt; -- Spans --</span></span>
 <span><span class="co">#&gt;   * llm-call [llm] (ok) - 0.000s</span></span>
 <span><span class="co">#&gt; [1] "result"</span></span>
-<span></span>
-<span><span class="co"># The trace was written to the file AND printed to console</span></span>
-<span><span class="va">lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">lines</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 1</span></span>
-<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="default-exporter">Default Exporter<a class="anchor" aria-label="anchor" href="#default-exporter"></a>
+<h2 id="default-exporter">Default exporter<a class="anchor" aria-label="anchor" href="#default-exporter"></a>
 </h2>
-<p>Rather than passing an exporter to every <code><a href="../reference/with_trace.html">with_trace()</a></code>
-call, set a session-wide default. This is especially useful in
-production scripts where every trace should go to the same
-destination.</p>
+<p>Set a session-wide exporter instead of passing one per
+<code><a href="../reference/with_trace.html">with_trace()</a></code> call.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trace_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".jsonl"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/set_default_exporter.html">set_default_exporter</a></span><span class="op">(</span><span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># All subsequent traces are automatically exported</span></span>
-<span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"auto-exported-1"</span>, <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"work"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">1</span> <span class="op">}</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"auto-1"</span>, <span class="op">{</span> <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"work"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">1</span> <span class="op">}</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"auto-exported-2"</span>, <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"more-work"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">2</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">}</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"auto-2"</span>, <span class="op">{</span> <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"more-work"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">2</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">}</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 4</span></span>
-<span></span>
-<span><span class="va">lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">lines</span><span class="op">)</span>  <span class="co"># 2 traces exported</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2</span></span>
-<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="custom-exporters">Custom Exporters<a class="anchor" aria-label="anchor" href="#custom-exporters"></a>
+<h2 id="custom-exporters">Custom exporters<a class="anchor" aria-label="anchor" href="#custom-exporters"></a>
 </h2>
-<p>The built-in exporters cover the most common cases, but you can build
-your own for any destination. Pass a function to
-<code><a href="../reference/new_exporter.html">new_exporter()</a></code> – the function receives the serialized trace
-list (from <code>$to_list()</code>) as its single argument.</p>
-<p>This makes it straightforward to integrate with databases, message
-queues, HTTP APIs, or any custom logging system:</p>
+<p>Pass any function to <code><a href="../reference/new_exporter.html">new_exporter()</a></code>. It receives the
+serialized trace list.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># A simple exporter that counts spans per trace</span></span>
-<span><span class="va">span_counter</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_exporter.html">new_exporter</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">trace_list</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span></span>
-<span>    <span class="st">"Trace '%s' completed with %d spans\n"</span>,</span>
-<span>    <span class="va">trace_list</span><span class="op">$</span><span class="va">name</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">trace_list</span><span class="op">$</span><span class="va">spans</span><span class="op">)</span></span>
-<span>  <span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">span_counter</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_exporter.html">new_exporter</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">trace_list</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Trace '%s': %d spans\n"</span>,</span>
+<span>              <span class="va">trace_list</span><span class="op">$</span><span class="va">name</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">trace_list</span><span class="op">$</span><span class="va">spans</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"custom-export"</span>, exporter <span class="op">=</span> <span class="va">span_counter</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"a"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">1</span> <span class="op">}</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"b"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">2</span> <span class="op">}</span><span class="op">)</span></span>
@@ -262,34 +173,27 @@ queues, HTTP APIs, or any custom logging system:</p>
 <span>    <span class="fl">3</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Trace 'custom-export' completed with 3 spans</span></span>
+<span><span class="co">#&gt; Trace 'custom-export': 3 spans</span></span>
 <span><span class="co">#&gt; [1] 3</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="serialization">Serialization<a class="anchor" aria-label="anchor" href="#serialization"></a>
 </h2>
-<p>Every trace and span can be serialized to a plain R list with
-<code>$to_list()</code>. This is what exporters receive internally, and
-it is the right format for programmatic analysis – you get standard R
-data structures instead of R6 reference objects.</p>
+<p>Convert any trace to a plain list with <code>$to_list()</code> – this
+is what exporters receive.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Trace.html">Trace</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"serialize-demo"</span><span class="op">)</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">s</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Span.html">Span</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"work"</span>, type <span class="op">=</span> <span class="st">"custom"</span><span class="op">)</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="fu">add_metric</span><span class="op">(</span><span class="st">"quality"</span>, <span class="fl">0.95</span><span class="op">)</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">add_span</span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">trace_list</span> <span class="op">&lt;-</span> <span class="va">tr</span><span class="op">$</span><span class="fu">to_list</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">trace_list</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "trace_id"      "name"          "status"        "metadata"     </span></span>
 <span><span class="co">#&gt; [5] "start_time"    "end_time"      "duration_secs" "spans"</span></span>
-<span><span class="va">trace_list</span><span class="op">$</span><span class="va">name</span></span>
-<span><span class="co">#&gt; [1] "serialize-demo"</span></span>
 <span><span class="va">trace_list</span><span class="op">$</span><span class="va">spans</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">metrics</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; [[1]]$name</span></span>
@@ -297,42 +201,16 @@ data structures instead of R6 reference objects.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[1]]$value</span></span>
 <span><span class="co">#&gt; [1] 0.95</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="trace_schema-jsonl-format-reference">trace_schema() – JSONL Format Reference<a class="anchor" aria-label="anchor" href="#trace_schema-jsonl-format-reference"></a>
-</h2>
-<p>When building parsers, dashboards, or validation pipelines for
-exported trace data, you need to know exactly what fields to expect.
-<code><a href="../reference/trace_schema.html">trace_schema()</a></code> returns a list describing every field in the
-JSONL export format, including types and descriptions for both
-trace-level and span-level fields:</p>
+<p>Discover all JSONL fields with <code><a href="../reference/trace_schema.html">trace_schema()</a></code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">schema</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trace_schema.html">trace_schema</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">schema</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "trace_id"   "name"       "status"     "start_time" "end_time"  </span></span>
 <span><span class="co">#&gt; [6] "duration"   "spans"</span></span>
-<span><span class="co">#&gt; [1] "trace_id" "name" "status" "start_time" "end_time" "duration" "spans"</span></span>
-<span></span>
-<span><span class="co"># Inspect span-level fields</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">schema</span><span class="op">$</span><span class="va">spans</span><span class="op">$</span><span class="va">fields</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "span_id"       "name"          "type"          "status"       </span></span>
 <span><span class="co">#&gt;  [5] "start_time"    "end_time"      "duration_secs" "parent_id"    </span></span>
-<span><span class="co">#&gt;  [9] "model"         "input_tokens"  "output_tokens"</span></span>
-<span><span class="co">#&gt; [1] "span_id" "name" "type" "status" "start_time" "end_time"</span></span>
-<span><span class="co">#&gt; [7] "duration_secs" "parent_id" "model" "input_tokens" "output_tokens"</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="next-steps">Next Steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
-</h2>
-<ul>
-<li>
-<code><a href="../articles/cloud-native.html">vignette("cloud-native")</a></code> – OTLP export to Jaeger/Tempo,
-Prometheus metrics, and W3C Trace Context propagation for distributed
-tracing.</li>
-<li>
-<code><a href="../articles/orchestr-integration.html">vignette("orchestr-integration")</a></code> – Automatic tracing of
-orchestr graph executions and agent invocations.</li>
-</ul>
+<span><span class="co">#&gt;  [9] "model"         "input_tokens"  "output_tokens"</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

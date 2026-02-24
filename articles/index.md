@@ -7,10 +7,9 @@
 
 ### Guides
 
-- [Core Observability
-  Concepts](https://ian-flores.github.io/securetrace/articles/observability.md):
-- [Exporting and Analyzing
-  Traces](https://ian-flores.github.io/securetrace/articles/exporters.md):
+- [Traces, Spans, and
+  Events](https://ian-flores.github.io/securetrace/articles/observability.md):
+- [Exporters](https://ian-flores.github.io/securetrace/articles/exporters.md):
 - [Cloud-Native
   Observability](https://ian-flores.github.io/securetrace/articles/cloud-native.md):
 - [Tracing orchestr

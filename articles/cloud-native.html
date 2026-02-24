@@ -61,110 +61,25 @@
 
     
     
-<p>securetrace ships with cloud-native observability features that
-integrate R agent workflows into modern infrastructure stacks. This
-vignette covers OTLP export (Jaeger, Grafana Tempo), Prometheus metrics,
-and W3C Trace Context propagation for distributed tracing.</p>
-<p>For core tracing concepts (traces, spans, events, exporters), see
+<p>Integrate securetrace with OTLP collectors, Prometheus, and
+distributed tracing via W3C Trace Context. For core tracing, see
 <code><a href="../articles/observability.html">vignette("observability")</a></code>.</p>
-<div class="section level2">
-<h2 id="how-it-all-fits-together">How It All Fits Together<a class="anchor" aria-label="anchor" href="#how-it-all-fits-together"></a>
-</h2>
-<p>In a production deployment, traces flow from your R agent through
-several systems. The following diagram shows the typical data path:</p>
-<pre><code>  R Agent Process                    Infrastructure
-  ================                   ==============
-
-  with_trace("run", {
-    with_span("llm", ...)   --.
-    with_span("tool", ...)  --+--&gt; OTLP exporter
-  })                           |       |
-                               |       v
-                               |   Jaeger / Grafana Tempo
-                               |   (distributed trace viewer)
-                               |
-                               +--&gt; Prometheus exporter
-                               |       |
-                               |       v
-                               |   Prometheus server
-                               |   (scrapes /metrics endpoint)
-                               |       |
-                               |       v
-                               |   Grafana dashboards
-                               |   (token usage, cost, latency)
-                               |
-                               +--&gt; JSONL exporter
-                                       |
-                                       v
-                                   Local file
-                                   (audit trail, post-hoc analysis)</code></pre>
-<p>Each export path serves a different purpose: OTLP gives you trace
-visualization with span hierarchy, Prometheus gives you time-series
-metrics for alerting, and JSONL gives you a durable local record for
-compliance or batch analysis.</p>
-</div>
 <div class="section level2">
 <h2 id="otlp-export">OTLP Export<a class="anchor" aria-label="anchor" href="#otlp-export"></a>
 </h2>
-<p>The OpenTelemetry Protocol (OTLP) is the standard wire format for
-sending traces to collectors like Jaeger, Grafana Tempo, and the
-OpenTelemetry Collector. securetrace provides two functions for OTLP
-integration.</p>
-<div class="section level3">
-<h3 id="sending-traces-to-a-collector">Sending Traces to a Collector<a class="anchor" aria-label="anchor" href="#sending-traces-to-a-collector"></a>
-</h3>
-<p><code><a href="../reference/otlp_exporter.html">otlp_exporter()</a></code> creates an exporter that converts traces
-to OTLP JSON and POSTs them to a collector endpoint:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>Inspect the OTLP payload locally with
+<code><a href="../reference/otlp_format_trace.html">otlp_format_trace()</a></code>.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Export to a local Jaeger instance (default OTLP HTTP port)</span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">"http://localhost:4318"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"data-pipeline"</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"fetch"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/record_latency.html">record_latency</a></span><span class="op">(</span><span class="fl">0.25</span><span class="op">)</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">)</span></span>
-<span>  <span class="op">}</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"analyze"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fl">500</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
-<span>    <span class="st">"analysis complete"</span></span>
-<span>  <span class="op">}</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Trace exported to http://localhost:4318/v1/traces</span></span></code></pre></div>
-<p>For authenticated collectors, pass headers:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span></span>
-<span>  endpoint <span class="op">=</span> <span class="st">"https://tempo.example.com:4318"</span>,</span>
-<span>  headers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Authorization <span class="op">=</span> <span class="st">"Bearer &lt;token&gt;"</span><span class="op">)</span>,</span>
-<span>  service_name <span class="op">=</span> <span class="st">"my-r-agent"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>The <code>service_name</code> parameter sets the
-<code>service.name</code> resource attribute in the OTLP payload, which
-is how Jaeger and Tempo group traces by service.</p>
-</div>
-<div class="section level3">
-<h3 id="inspecting-otlp-output">Inspecting OTLP Output<a class="anchor" aria-label="anchor" href="#inspecting-otlp-output"></a>
-</h3>
-<p>Before pointing at a live collector, you may want to inspect what
-securetrace actually sends. <code><a href="../reference/otlp_format_trace.html">otlp_format_trace()</a></code> is the pure
-function underneath the exporter. It converts a trace list into the OTLP
-<code>ExportTraceServiceRequest</code> JSON structure without sending
-anything:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Trace.html">Trace</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"format-demo"</span><span class="op">)</span></span>
+<span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Trace.html">Trace</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"format-demo"</span><span class="op">)</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">s</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Span.html">Span</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"llm-call"</span>, type <span class="op">=</span> <span class="st">"llm"</span><span class="op">)</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="fu">set_model</span><span class="op">(</span><span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="fu">set_tokens</span><span class="op">(</span>input <span class="op">=</span> <span class="fl">1500L</span>, output <span class="op">=</span> <span class="fl">300L</span><span class="op">)</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">add_span</span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">otlp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_format_trace.html">otlp_format_trace</a></span><span class="op">(</span><span class="va">tr</span><span class="op">$</span><span class="fu">to_list</span><span class="op">(</span><span class="op">)</span>, service_name <span class="op">=</span> <span class="st">"my-agent"</span><span class="op">)</span></span>
@@ -174,99 +89,54 @@ anything:</p>
 <span><span class="co">#&gt;   ..$ :List of 2</span></span>
 <span><span class="co">#&gt;   .. ..$ resource  :List of 1</span></span>
 <span><span class="co">#&gt;   .. ..$ scopeSpans:List of 1</span></span></code></pre></div>
-<p>This is useful for debugging OTLP payloads or writing them to files
-for offline import.</p>
-</div>
-<div class="section level3">
-<h3 id="otlp-batching-and-retry">OTLP Batching and Retry<a class="anchor" aria-label="anchor" href="#otlp-batching-and-retry"></a>
-</h3>
-<p>Sending an HTTP request for every single trace is expensive,
-especially in high-throughput agent workflows where you might complete
-dozens of traces per minute. The OTLP exporter addresses this with two
-production-essential features: batching and retry.</p>
-<p><strong>Batching</strong> reduces network overhead by buffering
-traces in memory and sending them to the collector in groups. By
-default, traces are buffered until the buffer reaches
-<code>batch_size</code>, at which point a single HTTP POST delivers the
-entire batch. This means 10 traces cost one HTTP round-trip instead of
-10.</p>
-<p><strong>Retry with exponential backoff</strong> handles the reality
-that collectors sometimes return transient errors – rate limits (429),
-server errors (5xx), or momentary network failures. Instead of silently
-dropping traces, the exporter retries with increasing delays (1s, 2s,
-4s, …) up to <code>max_retries</code> attempts. This makes trace
-delivery robust without requiring you to build retry logic yourself.</p>
-<p>Use <code><a href="../reference/flush_otlp.html">flush_otlp()</a></code> to force-send any buffered traces – for
-example, at process exit to ensure nothing is lost:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>Point <code><a href="../reference/otlp_exporter.html">otlp_exporter()</a></code> at any OTLP-HTTP endpoint.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">"http://localhost:4318"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"data-pipeline"</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"fetch"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fu"><a href="../reference/record_latency.html">record_latency</a></span><span class="op">(</span><span class="fl">0.25</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"analyze"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
+<span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fl">500</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<p>Pass headers for authenticated collectors.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span></span>
-<span>  endpoint <span class="op">=</span> <span class="st">"http://localhost:4318"</span>,</span>
-<span>  batch_size <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>  max_retries <span class="op">=</span> <span class="fl">3</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Traces accumulate in a buffer...</span></span>
+<span>  endpoint <span class="op">=</span> <span class="st">"https://tempo.example.com:4318"</span>,</span>
+<span>  headers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Authorization <span class="op">=</span> <span class="st">"Bearer &lt;token&gt;"</span><span class="op">)</span>,</span>
+<span>  service_name <span class="op">=</span> <span class="st">"my-r-agent"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Buffer traces with <code>batch_size</code>; call
+<code><a href="../reference/flush_otlp.html">flush_otlp()</a></code> at exit to drain.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span><span class="st">"http://localhost:4318"</span>, batch_size <span class="op">=</span> <span class="fl">10</span>, max_retries <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"run-"</span>, <span class="va">i</span><span class="op">)</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"work"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="va">i</span> <span class="op">}</span><span class="op">)</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span></span>
-<span><span class="co"># Force-send remaining buffered traces before exiting</span></span>
 <span><span class="fu"><a href="../reference/flush_otlp.html">flush_otlp</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span></code></pre></div>
-<p>A good practice is to call <code><a href="../reference/flush_otlp.html">flush_otlp()</a></code> in an
-<code><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit()</a></code> handler or a <code>tryCatch(finally = ...)</code>
-block so that traces are delivered even if your script terminates
-unexpectedly.</p>
-</div>
 </div>
 <div class="section level2">
-<h2 id="prometheus-metrics">Prometheus Metrics<a class="anchor" aria-label="anchor" href="#prometheus-metrics"></a>
+<h2 id="prometheus">Prometheus<a class="anchor" aria-label="anchor" href="#prometheus"></a>
 </h2>
-<p>Prometheus is a pull-based monitoring system. While OTLP sends full
-trace detail to a collector, Prometheus works differently: your
-application exposes an HTTP endpoint with aggregated metrics, and
-Prometheus scrapes it at a regular interval. This makes Prometheus ideal
-for dashboards and alerting – “how many tokens did we use in the last
-hour?” or “alert if error rate exceeds 5%.”</p>
-<p>securetrace bridges the gap by extracting metrics from traces and
-exposing them in Prometheus text exposition format.</p>
-<div class="section level3">
-<h3 id="creating-a-registry">Creating a Registry<a class="anchor" aria-label="anchor" href="#creating-a-registry"></a>
-</h3>
-<p>A registry holds counters and histograms. Create one and feed traces
-into it:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>Create a registry, feed it a trace, render text format.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_registry.html">prometheus_registry</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Build a trace</span></span>
 <span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Trace.html">Trace</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"agent-run"</span><span class="op">)</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">s1</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Span.html">Span</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"planning"</span>, type <span class="op">=</span> <span class="st">"llm"</span><span class="op">)</span></span>
 <span><span class="va">s1</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">s1</span><span class="op">$</span><span class="fu">set_model</span><span class="op">(</span><span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
 <span><span class="va">s1</span><span class="op">$</span><span class="fu">set_tokens</span><span class="op">(</span>input <span class="op">=</span> <span class="fl">3000L</span>, output <span class="op">=</span> <span class="fl">800L</span><span class="op">)</span></span>
 <span><span class="va">s1</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">add_span</span><span class="op">(</span><span class="va">s1</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Span.html">Span</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"execute"</span>, type <span class="op">=</span> <span class="st">"tool"</span><span class="op">)</span></span>
 <span><span class="va">s2</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">s2</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">add_span</span><span class="op">(</span><span class="va">s2</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Extract metrics from the trace into the registry</span></span>
-<span><span class="fu"><a href="../reference/prometheus_metrics.html">prometheus_metrics</a></span><span class="op">(</span><span class="va">tr</span>, <span class="va">reg</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="viewing-metrics">Viewing Metrics<a class="anchor" aria-label="anchor" href="#viewing-metrics"></a>
-</h3>
-<p><code><a href="../reference/format_prometheus.html">format_prometheus()</a></code> renders the registry as a
-Prometheus-compatible text string:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="../reference/format_prometheus.html">format_prometheus</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/prometheus_metrics.html">prometheus_metrics</a></span><span class="op">(</span><span class="va">tr</span>, <span class="va">reg</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="../reference/format_prometheus.html">format_prometheus</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # HELP securetrace_cost_total Total cost by model in USD</span></span>
 <span><span class="co">#&gt; # TYPE securetrace_cost_total counter</span></span>
 <span><span class="co">#&gt; securetrace_cost_total{model="claude-sonnet-4-5"} 0.021</span></span>
@@ -295,7 +165,7 @@ Prometheus-compatible text string:</p>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="120"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="300"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 1</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.001543522</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.001640081</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="llm"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.01"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.05"} 1</span></span>
@@ -309,22 +179,13 @@ Prometheus-compatible text string:</p>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="120"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="300"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="+Inf"} 1</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="tool"} 0.0005056858</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="tool"} 0.0005953312</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="tool"} 1</span></span></code></pre></div>
-<p>The registry is cumulative – each call to
-<code><a href="../reference/prometheus_metrics.html">prometheus_metrics()</a></code> adds to the existing counters and
-histograms. This lets you track metrics across multiple agent runs.</p>
-</div>
-<div class="section level3">
-<h3 id="using-the-prometheus-exporter">Using the Prometheus Exporter<a class="anchor" aria-label="anchor" href="#using-the-prometheus-exporter"></a>
-</h3>
-<p><code><a href="../reference/prometheus_exporter.html">prometheus_exporter()</a></code> returns a securetrace exporter
-that automatically feeds each completed trace into a registry:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<p>Use <code><a href="../reference/prometheus_exporter.html">prometheus_exporter()</a></code> so completed traces
+auto-populate the registry.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_registry.html">prometheus_registry</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">prom_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_exporter.html">prometheus_exporter</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Traces auto-populate the registry on completion</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"run-1"</span>, exporter <span class="op">=</span> <span class="va">prom_exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"llm"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">200</span>, model <span class="op">=</span> <span class="st">"claude-haiku-4-5"</span><span class="op">)</span></span>
@@ -332,7 +193,6 @@ that automatically feeds each completed trace into a registry:</p>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "done"</span></span>
-<span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"run-2"</span>, exporter <span class="op">=</span> <span class="va">prom_exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"llm"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fl">400</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
@@ -340,8 +200,6 @@ that automatically feeds each completed trace into a registry:</p>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "done"</span></span>
-<span></span>
-<span><span class="co"># Registry now has cumulative metrics from both runs</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="../reference/format_prometheus.html">format_prometheus</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # HELP securetrace_cost_total Total cost by model in USD</span></span>
 <span><span class="co">#&gt; # TYPE securetrace_cost_total counter</span></span>
@@ -373,241 +231,96 @@ that automatically feeds each completed trace into a registry:</p>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="120"} 2</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="300"} 2</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 2</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.0001404285</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.0001199245</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="llm"} 2</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="serving-a-metrics-endpoint">Serving a /metrics Endpoint<a class="anchor" aria-label="anchor" href="#serving-a-metrics-endpoint"></a>
-</h3>
-<p><code><a href="../reference/serve_prometheus.html">serve_prometheus()</a></code> starts an httpuv HTTP server that
-Prometheus can scrape:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_registry.html">prometheus_registry</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">prom_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_exporter.html">prometheus_exporter</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Start the metrics server</span></span>
-<span><span class="va">srv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/serve_prometheus.html">serve_prometheus</a></span><span class="op">(</span><span class="va">reg</span>, host <span class="op">=</span> <span class="st">"0.0.0.0"</span>, port <span class="op">=</span> <span class="fl">9090</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Run your agent -- metrics accumulate automatically</span></span>
-<span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"production-run"</span>, exporter <span class="op">=</span> <span class="va">prom_exp</span>, <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"work"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">5000</span>, <span class="fl">1000</span>, model <span class="op">=</span> <span class="st">"claude-opus-4-6"</span><span class="op">)</span></span>
-<span>    <span class="st">"result"</span></span>
-<span>  <span class="op">}</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Prometheus scrapes http://localhost:9090/metrics</span></span>
-<span></span>
-<span><span class="co"># When done, stop the server</span></span>
+<p>Serve <code>/metrics</code> for Prometheus to scrape.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">srv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/serve_prometheus.html">serve_prometheus</a></span><span class="op">(</span><span class="va">reg</span>, host <span class="op">=</span> <span class="st">"0.0.0.0"</span>, port <span class="op">=</span> <span class="fl">9090</span><span class="op">)</span></span>
+<span><span class="co"># ... run traced workloads ...</span></span>
 <span><span class="fu">httpuv</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/httpuv/man/stopServer.html" class="external-link">stopServer</a></span><span class="op">(</span><span class="va">srv</span><span class="op">)</span></span></code></pre></div>
-<p>Add the scrape target to your <code>prometheus.yml</code>:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">scrape_configs</span><span class="kw">:</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">job_name</span><span class="kw">:</span><span class="at"> </span><span class="st">"r-agent"</span></span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="at">    </span><span class="fu">static_configs</span><span class="kw">:</span></span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">targets</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"localhost:9090"</span><span class="kw">]</span></span></code></pre></div>
-</div>
 </div>
 <div class="section level2">
-<h2 id="w3c-trace-context-propagation">W3C Trace Context Propagation<a class="anchor" aria-label="anchor" href="#w3c-trace-context-propagation"></a>
+<h2 id="w3c-trace-context">W3C Trace Context<a class="anchor" aria-label="anchor" href="#w3c-trace-context"></a>
 </h2>
-<p>When R agents call external services (or are called by them), trace
-context must propagate across process boundaries so that the full
-distributed trace can be reconstructed. securetrace implements the <a href="https://www.w3.org/TR/trace-context/" class="external-link">W3C Trace Context</a>
-standard for this.</p>
-<div class="section level3">
-<h3 id="generating-traceparent-headers">Generating Traceparent Headers<a class="anchor" aria-label="anchor" href="#generating-traceparent-headers"></a>
-</h3>
-<p><code><a href="../reference/traceparent.html">traceparent()</a></code> builds a W3C-compliant header string from
-trace and span IDs:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<p>Generate and parse W3C <code>traceparent</code> headers.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/traceparent.html">traceparent</a></span><span class="op">(</span></span>
 <span>  trace_id <span class="op">=</span> <span class="st">"4bf92f3577b34da6a3ce929d0e0e4736"</span>,</span>
 <span>  span_id <span class="op">=</span> <span class="st">"00f067aa0ba902b7"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">tp</span></span>
-<span><span class="co">#&gt; [1] "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"</span></span></code></pre></div>
-<p>The <code>sampled</code> parameter controls the trace flags:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/traceparent.html">traceparent</a></span><span class="op">(</span></span>
-<span>  <span class="st">"4bf92f3577b34da6a3ce929d0e0e4736"</span>,</span>
-<span>  <span class="st">"00f067aa0ba902b7"</span>,</span>
-<span>  sampled <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"</span></span>
+<span><span class="fu"><a href="../reference/traceparent.html">traceparent</a></span><span class="op">(</span><span class="st">"4bf92f3577b34da6a3ce929d0e0e4736"</span>, <span class="st">"00f067aa0ba902b7"</span>, sampled <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00"</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="parsing-incoming-headers">Parsing Incoming Headers<a class="anchor" aria-label="anchor" href="#parsing-incoming-headers"></a>
-</h3>
-<p><code><a href="../reference/parse_traceparent.html">parse_traceparent()</a></code> extracts the components from a
-traceparent string:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/parse_traceparent.html">parse_traceparent</a></span><span class="op">(</span></span>
-<span>  <span class="st">"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"</span></span>
-<span><span class="op">)</span></span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/parse_traceparent.html">parse_traceparent</a></span><span class="op">(</span><span class="st">"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"</span><span class="op">)</span></span>
 <span><span class="va">ctx</span><span class="op">$</span><span class="va">trace_id</span></span>
 <span><span class="co">#&gt; [1] "4bf92f3577b34da6a3ce929d0e0e4736"</span></span>
 <span><span class="va">ctx</span><span class="op">$</span><span class="va">span_id</span></span>
 <span><span class="co">#&gt; [1] "00f067aa0ba902b7"</span></span>
 <span><span class="va">ctx</span><span class="op">$</span><span class="va">sampled</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
-<span></span>
-<span><span class="co"># Invalid headers return NULL</span></span>
 <span><span class="fu"><a href="../reference/parse_traceparent.html">parse_traceparent</a></span><span class="op">(</span><span class="st">"invalid-header"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: Invalid traceparent header format: <span style="color: #0000BB;">"invalid-header"</span></span></span>
 <span><span class="co">#&gt; NULL</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="injecting-context-into-outgoing-requests">Injecting Context into Outgoing Requests<a class="anchor" aria-label="anchor" href="#injecting-context-into-outgoing-requests"></a>
-</h3>
-<p>Inside an active trace, <code><a href="../reference/inject_headers.html">inject_headers()</a></code> adds the
-<code>traceparent</code> header automatically from the current trace and
-span context:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<p>Inject <code>traceparent</code> into outgoing requests from inside an
+active trace.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"http-client"</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"api-call"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span></span>
 <span>    <span class="va">headers</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/inject_headers.html">inject_headers</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Content-Type"</span> <span class="op">=</span> <span class="st">"application/json"</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">headers</span><span class="op">$</span><span class="va">traceparent</span></span>
-<span></span>
-<span>    <span class="co"># Use these headers in your HTTP request</span></span>
-<span>    <span class="co"># httr2::req_headers(req, !!!headers)</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "00-ec379768f898282ec0ee6483eaae57b6-2b7b2f7b71619fb0-01"</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="extracting-context-from-incoming-requests">Extracting Context from Incoming Requests<a class="anchor" aria-label="anchor" href="#extracting-context-from-incoming-requests"></a>
-</h3>
-<p><code><a href="../reference/extract_trace_context.html">extract_trace_context()</a></code> finds and parses the traceparent
-header from a named list (case-insensitive lookup):</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Simulate incoming HTTP headers</span></span>
-<span><span class="va">incoming</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<p>Extract trace context from incoming headers (case-insensitive).</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">incoming</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Content-Type"</span> <span class="op">=</span> <span class="st">"application/json"</span>,</span>
 <span>  traceparent <span class="op">=</span> <span class="st">"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"</span></span>
 <span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_trace_context.html">extract_trace_context</a></span><span class="op">(</span><span class="va">incoming</span><span class="op">)</span></span>
 <span><span class="va">ctx</span><span class="op">$</span><span class="va">trace_id</span></span>
 <span><span class="co">#&gt; [1] "4bf92f3577b34da6a3ce929d0e0e4736"</span></span>
 <span><span class="va">ctx</span><span class="op">$</span><span class="va">span_id</span></span>
 <span><span class="co">#&gt; [1] "00f067aa0ba902b7"</span></span></code></pre></div>
 </div>
-</div>
 <div class="section level2">
 <h2 id="distributed-tracing-with-plumber">Distributed Tracing with Plumber<a class="anchor" aria-label="anchor" href="#distributed-tracing-with-plumber"></a>
 </h2>
-<p>Distributed tracing becomes concrete when two services – a client and
-a server – share the same trace ID. The client injects context into its
-request, the server extracts it and creates child spans, and the
-resulting trace shows the complete journey across both processes.</p>
-<p>Here is a complete example of a Plumber API endpoint that extracts
-incoming trace context and creates a child trace for its work:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<p>Server: extract parent context and create child spans.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.rplumber.io" class="external-link">plumber</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#* @post /analyze</span></span>
 <span><span class="kw">function</span><span class="op">(</span><span class="va">req</span>, <span class="va">res</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="co"># Extract parent trace context from incoming request</span></span>
-<span>  <span class="va">headers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>traceparent <span class="op">=</span> <span class="va">req</span><span class="op">$</span><span class="va">HTTP_TRACEPARENT</span><span class="op">)</span></span>
-<span>  <span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_trace_context.html">extract_trace_context</a></span><span class="op">(</span><span class="va">headers</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="co"># Create a trace that continues the parent context</span></span>
+<span>  <span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_trace_context.html">extract_trace_context</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>traceparent <span class="op">=</span> <span class="va">req</span><span class="op">$</span><span class="va">HTTP_TRACEPARENT</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">tr</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Trace.html">Trace</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"plumber-analyze"</span><span class="op">)</span></span>
 <span>  <span class="va">tr</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="co"># Create a span linked to the parent</span></span>
-<span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Span.html">Span</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"analyze"</span>, type <span class="op">=</span> <span class="st">"llm"</span>,</span>
-<span>                parent_id <span class="op">=</span> <span class="va">ctx</span><span class="op">$</span><span class="va">span_id</span><span class="op">)</span></span>
+<span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Span.html">Span</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"analyze"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, parent_id <span class="op">=</span> <span class="va">ctx</span><span class="op">$</span><span class="va">span_id</span><span class="op">)</span></span>
 <span>  <span class="va">s</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="va">s</span><span class="op">$</span><span class="fu">set_model</span><span class="op">(</span><span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
 <span>  <span class="va">s</span><span class="op">$</span><span class="fu">set_tokens</span><span class="op">(</span>input <span class="op">=</span> <span class="fl">2000L</span>, output <span class="op">=</span> <span class="fl">500L</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="co"># Do work...</span></span>
 <span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>status <span class="op">=</span> <span class="st">"ok"</span>, answer <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
-<span></span>
 <span>  <span class="va">s</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="va">tr</span><span class="op">$</span><span class="fu">add_span</span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
 <span>  <span class="va">tr</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="co"># Export to the same collector as the caller</span></span>
-<span>  <span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span><span class="st">"http://localhost:4318"</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="../reference/export_trace.html">export_trace</a></span><span class="op">(</span><span class="va">exp</span>, <span class="va">tr</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="co"># Inject context into response headers for downstream</span></span>
-<span>  <span class="va">res</span><span class="op">$</span><span class="fu">setHeader</span><span class="op">(</span></span>
-<span>    <span class="st">"traceparent"</span>,</span>
-<span>    <span class="fu"><a href="../reference/traceparent.html">traceparent</a></span><span class="op">(</span><span class="va">tr</span><span class="op">$</span><span class="va">trace_id</span>, <span class="va">s</span><span class="op">$</span><span class="va">span_id</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
+<span>  <span class="fu"><a href="../reference/export_trace.html">export_trace</a></span><span class="op">(</span><span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span><span class="st">"http://localhost:4318"</span><span class="op">)</span>, <span class="va">tr</span><span class="op">)</span></span>
+<span>  <span class="va">res</span><span class="op">$</span><span class="fu">setHeader</span><span class="op">(</span><span class="st">"traceparent"</span>, <span class="fu"><a href="../reference/traceparent.html">traceparent</a></span><span class="op">(</span><span class="va">tr</span><span class="op">$</span><span class="va">trace_id</span>, <span class="va">s</span><span class="op">$</span><span class="va">span_id</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">result</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>On the client side, inject context into your requests:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<p>Client: inject context so both sides share one trace.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"client-workflow"</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"call-plumber"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span></span>
-<span>    <span class="va">headers</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/inject_headers.html">inject_headers</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
 <span>    <span class="va">resp</span> <span class="op">&lt;-</span> <span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html" class="external-link">request</a></span><span class="op">(</span><span class="st">"http://localhost:8000/analyze"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>      <span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/req_headers.html" class="external-link">req_headers</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="va">headers</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/req_headers.html" class="external-link">req_headers</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="fu"><a href="../reference/inject_headers.html">inject_headers</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>      <span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/req_method.html" class="external-link">req_method</a></span><span class="op">(</span><span class="st">"POST"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>      <span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html" class="external-link">req_perform</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
 <span>    <span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html" class="external-link">resp_body_json</a></span><span class="op">(</span><span class="va">resp</span><span class="op">)</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<p>Both the client and server traces share the same
-<code>trace_id</code>, so they appear as a single distributed trace in
-Jaeger or Tempo.</p>
-</div>
-<div class="section level2">
-<h2 id="multi-exporter-setup">Multi-Exporter Setup<a class="anchor" aria-label="anchor" href="#multi-exporter-setup"></a>
-</h2>
-<p>In production, you typically want traces going to multiple
-destinations. Use <code><a href="../reference/multi_exporter.html">multi_exporter()</a></code> to combine OTLP,
-Prometheus, and JSONL export:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Set up all three exporters</span></span>
-<span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_registry.html">prometheus_registry</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">combined</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multi_exporter.html">multi_exporter</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span><span class="st">"http://localhost:4318"</span>, service_name <span class="op">=</span> <span class="st">"r-agent"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="../reference/prometheus_exporter.html">prometheus_exporter</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"traces.jsonl"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Start Prometheus scrape endpoint</span></span>
-<span><span class="va">srv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/serve_prometheus.html">serve_prometheus</a></span><span class="op">(</span><span class="va">reg</span>, port <span class="op">=</span> <span class="fl">9090</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># All traces go to Jaeger + Prometheus + local file</span></span>
-<span><span class="fu"><a href="../reference/set_default_exporter.html">set_default_exporter</a></span><span class="op">(</span><span class="va">combined</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"production-workflow"</span>, <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"planning"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">3000</span>, <span class="fl">800</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
-<span>    <span class="st">"plan ready"</span></span>
-<span>  <span class="op">}</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"execution"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/record_latency.html">record_latency</a></span><span class="op">(</span><span class="fl">1.2</span><span class="op">)</span></span>
-<span>    <span class="fl">42</span></span>
-<span>  <span class="op">}</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Clean up</span></span>
-<span><span class="fu">httpuv</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/httpuv/man/stopServer.html" class="external-link">stopServer</a></span><span class="op">(</span><span class="va">srv</span><span class="op">)</span></span></code></pre></div>
-<p>This gives you:</p>
-<ul>
-<li>
-<strong>Jaeger/Tempo</strong> – full distributed traces with span
-hierarchy</li>
-<li>
-<strong>Prometheus</strong> – time-series metrics for dashboards and
-alerting</li>
-<li>
-<strong>JSONL</strong> – local audit trail for compliance and
-post-hoc analysis</li>
-</ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
