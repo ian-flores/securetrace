@@ -295,7 +295,7 @@ Prometheus-compatible text string:</p>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="120"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="300"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 1</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.001459599</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.001543522</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="llm"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.01"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.05"} 1</span></span>
@@ -309,7 +309,7 @@ Prometheus-compatible text string:</p>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="120"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="300"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="+Inf"} 1</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="tool"} 0.0005524158</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="tool"} 0.0005056858</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="tool"} 1</span></span></code></pre></div>
 <p>The registry is cumulative – each call to
 <code><a href="../reference/prometheus_metrics.html">prometheus_metrics()</a></code> adds to the existing counters and
@@ -373,7 +373,7 @@ that automatically feeds each completed trace into a registry:</p>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="120"} 2</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="300"} 2</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 2</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.0001220703</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.0001404285</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="llm"} 2</span></span></code></pre></div>
 </div>
 <div class="section level3">
