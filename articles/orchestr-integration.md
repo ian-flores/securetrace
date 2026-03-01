@@ -7,7 +7,7 @@ library(orchestr)
 
 ## trace_graph()
 
-Auto-instrument every node in a compiled graph – one span per node, zero
+Auto-instrument every node in a compiled graph: one span per node, zero
 handler changes.
 
 ``` r

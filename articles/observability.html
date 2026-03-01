@@ -61,14 +61,14 @@
 
     
     
-<p>This vignette covers the manual R6 API, events, custom metrics,
-nested spans, error handling, and integration helpers. For
+<p>The R6 API gives you direct access to events, custom metrics, nested
+spans, error handling, and integration helpers. For
 <code><a href="../reference/with_trace.html">with_trace()</a></code> basics and token tracking, see
 <code><a href="../articles/securetrace.html">vignette("securetrace")</a></code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
-<h2 id="span-types">Span Types<a class="anchor" aria-label="anchor" href="#span-types"></a>
+<h2 id="span-types">Span types<a class="anchor" aria-label="anchor" href="#span-types"></a>
 </h2>
 <table class="table">
 <colgroup>
@@ -106,7 +106,7 @@ nested spans, error handling, and integration helpers. For
 </table>
 </div>
 <div class="section level2">
-<h2 id="nested-spans">Nested Spans<a class="anchor" aria-label="anchor" href="#nested-spans"></a>
+<h2 id="nested-spans">Nested spans<a class="anchor" aria-label="anchor" href="#nested-spans"></a>
 </h2>
 <p>Inner spans record the outer span’s ID as <code>parent_id</code>:</p>
 <pre><code>Trace: "pipeline"
@@ -128,7 +128,7 @@ nested spans, error handling, and integration helpers. For
 <code>parent_id</code> fields.</p>
 </div>
 <div class="section level2">
-<h2 id="manual-construction">Manual Construction<a class="anchor" aria-label="anchor" href="#manual-construction"></a>
+<h2 id="manual-construction">Manual construction<a class="anchor" aria-label="anchor" href="#manual-construction"></a>
 </h2>
 <p>Use the R6 classes when spans are created in one function and ended
 in another, or when building traces from recorded data.</p>
@@ -151,7 +151,7 @@ in another, or when building traces from recorded data.</p>
 <code class="sourceCode R"><span><span class="va">tr</span><span class="op">$</span><span class="va">status</span></span>
 <span><span class="co">#&gt; [1] "completed"</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">duration</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.006370544</span></span>
+<span><span class="co">#&gt; [1] 0.006781101</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">tr</span><span class="op">$</span><span class="va">spans</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2</span></span></code></pre></div>
 </div>
@@ -181,7 +181,7 @@ in another, or when building traces from recorded data.</p>
 <span><span class="co">#&gt; [1] "claude-sonnet-4-5"</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="custom-metrics">Custom Metrics<a class="anchor" aria-label="anchor" href="#custom-metrics"></a>
+<h2 id="custom-metrics">Custom metrics<a class="anchor" aria-label="anchor" href="#custom-metrics"></a>
 </h2>
 <p>Use <code><a href="../reference/record_metric.html">record_metric()</a></code> / <code><a href="../reference/record_latency.html">record_latency()</a></code>
 inside <code><a href="../reference/with_span.html">with_span()</a></code>, or <code>$add_metric()</code> on the R6
@@ -203,7 +203,7 @@ object:</p>
 <span><span class="co">#&gt; NULL</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="error-handling">Error Handling<a class="anchor" aria-label="anchor" href="#error-handling"></a>
+<h2 id="error-handling">Error handling<a class="anchor" aria-label="anchor" href="#error-handling"></a>
 </h2>
 <p>Errors inside <code><a href="../reference/with_span.html">with_span()</a></code> set status to
 <code>"error"</code> and record the message. The trace still exports,
@@ -230,7 +230,7 @@ then re-raises.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="integration-helpers">Integration Helpers<a class="anchor" aria-label="anchor" href="#integration-helpers"></a>
+<h2 id="integration-helpers">Integration helpers<a class="anchor" aria-label="anchor" href="#integration-helpers"></a>
 </h2>
 <p><code><a href="../reference/trace_tool_call.html">trace_tool_call()</a></code> and <code><a href="../reference/trace_guardrail.html">trace_guardrail()</a></code>
 create typed spans automatically. Both require an active
@@ -246,7 +246,7 @@ create typed spans automatically. Both require an active
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="secure-execution">Secure Execution<a class="anchor" aria-label="anchor" href="#secure-execution"></a>
+<h3 id="secure-execution">Secure execution<a class="anchor" aria-label="anchor" href="#secure-execution"></a>
 </h3>
 <p><code><a href="../reference/trace_execution.html">trace_execution()</a></code> wraps
 <code>securer::SecureSession$execute()</code> with a span, recording
@@ -259,7 +259,7 @@ code and stdout as events:</p>
 <span><span class="va">session</span><span class="op">$</span><span class="fu">close</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="secureguard-integration">secureguard Integration<a class="anchor" aria-label="anchor" href="#secureguard-integration"></a>
+<h3 id="secureguard-integration">secureguard integration<a class="anchor" aria-label="anchor" href="#secureguard-integration"></a>
 </h3>
 <p>Pass a Guard object to <code><a href="../reference/trace_guardrail.html">trace_guardrail()</a></code> for structured
 result metadata:</p>
@@ -271,7 +271,7 @@ result metadata:</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="full-example">Full Example<a class="anchor" aria-label="anchor" href="#full-example"></a>
+<h2 id="full-example">Full example<a class="anchor" aria-label="anchor" href="#full-example"></a>
 </h2>
 <p>Multi-step workflow: nested spans, tokens, events, metrics, and JSONL
 export.</p>
@@ -317,17 +317,17 @@ export.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="next-steps">Next Steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
+<h2 id="next-steps">Next steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
 </h2>
 <ul>
 <li>
-<code><a href="../articles/exporters.html">vignette("exporters")</a></code> – JSONL, console, custom
+<code><a href="../articles/exporters.html">vignette("exporters")</a></code>: JSONL, console, custom
 exporters, and trace schema.</li>
 <li>
-<code><a href="../articles/cloud-native.html">vignette("cloud-native")</a></code> – OTLP, Prometheus, W3C Trace
+<code><a href="../articles/cloud-native.html">vignette("cloud-native")</a></code>: OTLP, Prometheus, W3C Trace
 Context.</li>
 <li>
-<code><a href="../articles/orchestr-integration.html">vignette("orchestr-integration")</a></code> – Automatic tracing of
+<code><a href="../articles/orchestr-integration.html">vignette("orchestr-integration")</a></code>: automatic tracing of
 orchestr graphs.</li>
 </ul>
 </div>

@@ -52,6 +52,6 @@ cat(format_prometheus(reg))
 #> securetrace_span_duration_seconds_bucket{type="llm",le="120"} 1
 #> securetrace_span_duration_seconds_bucket{type="llm",le="300"} 1
 #> securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 1
-#> securetrace_span_duration_seconds_sum{type="llm"} 0.0004427433
+#> securetrace_span_duration_seconds_sum{type="llm"} 0.0004205704
 #> securetrace_span_duration_seconds_count{type="llm"} 1
 ```

@@ -1,6 +1,6 @@
 # Traces, Spans, and Events
 
-This vignette covers the manual R6 API, events, custom metrics, nested
+The R6 API gives you direct access to events, custom metrics, nested
 spans, error handling, and integration helpers. For
 [`with_trace()`](https://ian-flores.github.io/securetrace/reference/with_trace.md)
 basics and token tracking, see
@@ -10,7 +10,7 @@ basics and token tracking, see
 library(securetrace)
 ```
 
-## Span Types
+## Span types
 
 | Type          | Use for                   | Example                                     |
 |---------------|---------------------------|---------------------------------------------|
@@ -19,7 +19,7 @@ library(securetrace)
 | `"guardrail"` | Input/output validation   | `Span$new("pii-check", type = "guardrail")` |
 | `"custom"`    | Anything else             | `Span$new("transform", type = "custom")`    |
 
-## Nested Spans
+## Nested spans
 
 Inner spans record the outer span’s ID as `parent_id`:
 
@@ -44,7 +44,7 @@ result <- with_trace("pipeline", {
 Parent-child relationships persist in exported JSON via `parent_id`
 fields.
 
-## Manual Construction
+## Manual construction
 
 Use the R6 classes when spans are created in one function and ended in
 another, or when building traces from recorded data.
@@ -70,7 +70,7 @@ tr$end()
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.006370544
+#> [1] 0.006781101
 length(tr$spans)
 #> [1] 2
 ```
@@ -104,7 +104,7 @@ s$events[[1]]@data
 #> [1] "claude-sonnet-4-5"
 ```
 
-## Custom Metrics
+## Custom metrics
 
 Use
 [`record_metric()`](https://ian-flores.github.io/securetrace/reference/record_metric.md)
@@ -133,7 +133,7 @@ s$metrics
 #> NULL
 ```
 
-## Error Handling
+## Error handling
 
 Errors inside
 [`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md)
@@ -164,7 +164,7 @@ trace_data$spans$error
 unlink(trace_file)
 ```
 
-## Integration Helpers
+## Integration helpers
 
 [`trace_tool_call()`](https://ian-flores.github.io/securetrace/reference/trace_tool_call.md)
 and
@@ -186,7 +186,7 @@ with_trace("guard-integration", {
 #> [1] TRUE
 ```
 
-### Secure Execution
+### Secure execution
 
 [`trace_execution()`](https://ian-flores.github.io/securetrace/reference/trace_execution.md)
 wraps `securer::SecureSession$execute()` with a span, recording code and
@@ -200,7 +200,7 @@ with_trace("sandboxed-run", {
 session$close()
 ```
 
-### secureguard Integration
+### secureguard integration
 
 Pass a Guard object to
 [`trace_guardrail()`](https://ian-flores.github.io/securetrace/reference/trace_guardrail.md)
@@ -213,7 +213,7 @@ with_trace("guarded-input", {
 })
 ```
 
-## Full Example
+## Full example
 
 Multi-step workflow: nested spans, tokens, events, metrics, and JSONL
 export.
@@ -260,11 +260,11 @@ sprintf("Trace '%s': %d spans, status = %s",
 unlink(trace_file)
 ```
 
-## Next Steps
+## Next steps
 
-- [`vignette("exporters")`](https://ian-flores.github.io/securetrace/articles/exporters.md)
-  – JSONL, console, custom exporters, and trace schema.
-- [`vignette("cloud-native")`](https://ian-flores.github.io/securetrace/articles/cloud-native.md)
-  – OTLP, Prometheus, W3C Trace Context.
-- [`vignette("orchestr-integration")`](https://ian-flores.github.io/securetrace/articles/orchestr-integration.md)
-  – Automatic tracing of orchestr graphs.
+- [`vignette("exporters")`](https://ian-flores.github.io/securetrace/articles/exporters.md):
+  JSONL, console, custom exporters, and trace schema.
+- [`vignette("cloud-native")`](https://ian-flores.github.io/securetrace/articles/cloud-native.md):
+  OTLP, Prometheus, W3C Trace Context.
+- [`vignette("orchestr-integration")`](https://ian-flores.github.io/securetrace/articles/orchestr-integration.md):
+  automatic tracing of orchestr graphs.

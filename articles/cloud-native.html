@@ -165,7 +165,7 @@ distributed tracing via W3C Trace Context. For core tracing, see
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="120"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="300"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 1</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.001614332</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.001645327</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="llm"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.01"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.05"} 1</span></span>
@@ -179,7 +179,7 @@ distributed tracing via W3C Trace Context. For core tracing, see
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="120"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="300"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="+Inf"} 1</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="tool"} 0.0005252361</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="tool"} 0.0004987717</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="tool"} 1</span></span></code></pre></div>
 <p>Use <code><a href="../reference/prometheus_exporter.html">prometheus_exporter()</a></code> so completed traces
 auto-populate the registry.</p>
@@ -231,7 +231,7 @@ auto-populate the registry.</p>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="120"} 2</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="300"} 2</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 2</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.0001018047</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.00010252</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="llm"} 2</span></span></code></pre></div>
 <p>Serve <code>/metrics</code> for Prometheus to scrape.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">

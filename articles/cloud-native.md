@@ -118,7 +118,7 @@ cat(format_prometheus(reg))
 #> securetrace_span_duration_seconds_bucket{type="llm",le="120"} 1
 #> securetrace_span_duration_seconds_bucket{type="llm",le="300"} 1
 #> securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 1
-#> securetrace_span_duration_seconds_sum{type="llm"} 0.001614332
+#> securetrace_span_duration_seconds_sum{type="llm"} 0.001645327
 #> securetrace_span_duration_seconds_count{type="llm"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="0.01"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="0.05"} 1
@@ -132,7 +132,7 @@ cat(format_prometheus(reg))
 #> securetrace_span_duration_seconds_bucket{type="tool",le="120"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="300"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="+Inf"} 1
-#> securetrace_span_duration_seconds_sum{type="tool"} 0.0005252361
+#> securetrace_span_duration_seconds_sum{type="tool"} 0.0004987717
 #> securetrace_span_duration_seconds_count{type="tool"} 1
 ```
 
@@ -188,7 +188,7 @@ cat(format_prometheus(reg))
 #> securetrace_span_duration_seconds_bucket{type="llm",le="120"} 2
 #> securetrace_span_duration_seconds_bucket{type="llm",le="300"} 2
 #> securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 2
-#> securetrace_span_duration_seconds_sum{type="llm"} 0.0001018047
+#> securetrace_span_duration_seconds_sum{type="llm"} 0.00010252
 #> securetrace_span_duration_seconds_count{type="llm"} 2
 ```
 
