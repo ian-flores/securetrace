@@ -158,6 +158,64 @@ multi_exporter <- function(...) {
   })
 }
 
+#' JSON stdout Exporter
+#'
+#' Creates an exporter that writes one structured JSON line per span to
+#' standard output. This is useful for cloud-native environments where
+#' structured logs are collected from stdout by a log aggregator
+#' (e.g., Fluentd, Vector, CloudWatch Logs).
+#'
+#' Each line is a self-contained JSON object containing span-level fields:
+#' `trace_id`, `span_id`, `parent_id`, `name`, `type`, `start_time`,
+#' `end_time`, `status`, `duration_secs`, plus any token/cost data and
+#' attributes.
+#'
+#' @return An S7 `securetrace_exporter` object.
+#' @examples
+#' exp <- json_stdout_exporter()
+#'
+#' tr <- Trace$new("demo")
+#' tr$start()
+#' s <- Span$new("step1", type = "tool")
+#' s$start()
+#' s$end()
+#' tr$add_span(s)
+#' tr$end()
+#' export_trace(exp, tr)
+#' @export
+json_stdout_exporter <- function() {
+  new_exporter(function(trace_list) {
+    trace_id <- trace_list$trace_id
+    for (s in trace_list$spans) {
+      line <- list(
+        trace_id = trace_id,
+        span_id = s$span_id,
+        parent_id = s$parent_id,
+        name = s$name,
+        type = s$type,
+        start_time = s$start_time,
+        end_time = s$end_time,
+        status = s$status,
+        duration_secs = s$duration_secs,
+        input_tokens = s$input_tokens,
+        output_tokens = s$output_tokens,
+        model = s$model,
+        error = s$error
+      )
+      # Include metrics if present
+      if (length(s$metrics) > 0) {
+        line$metrics <- s$metrics
+      }
+      # Include metadata if present
+      if (length(s$metadata) > 0) {
+        line$metadata <- s$metadata
+      }
+      cat(jsonlite::toJSON(line, auto_unbox = TRUE, null = "null"), "\n",
+          sep = "")
+    }
+  })
+}
+
 method(print, securetrace_exporter) <- function(x, ...) {
   cat("<securetrace_exporter>\n")
   invisible(x)

@@ -5,21 +5,24 @@
 \title{OTLP JSON Exporter}
 \usage{
 otlp_exporter(
-  endpoint = "http://localhost:4318",
+  endpoint = Sys.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318"),
   headers = list(),
-  service_name = "r-agent",
+  service_name = Sys.getenv("OTEL_SERVICE_NAME", "r-agent"),
   batch_size = 100L,
   max_retries = 3L
 )
 }
 \arguments{
-\item{endpoint}{OTLP HTTP endpoint URL (default \code{"http://localhost:4318"}).}
+\item{endpoint}{OTLP HTTP endpoint URL. Defaults to the
+\code{OTEL_EXPORTER_OTLP_ENDPOINT} environment variable, or
+\code{"http://localhost:4318"} if unset.}
 
 \item{headers}{Named list of HTTP headers to include in requests
 (e.g., authentication tokens).}
 
-\item{service_name}{Service name reported in the resource attributes
-(default \code{"r-agent"}).}
+\item{service_name}{Service name reported in the resource attributes.
+Defaults to the \code{OTEL_SERVICE_NAME} environment variable, or
+\code{"r-agent"} if unset.}
 
 \item{batch_size}{Maximum number of traces to buffer before sending
 (default \code{100L}). Traces are accumulated and sent when the buffer

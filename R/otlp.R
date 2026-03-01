@@ -4,11 +4,14 @@
 #' JSON format and sends them to an OTLP-compatible collector such as
 #' Jaeger, Grafana Tempo, or any OpenTelemetry Collector.
 #'
-#' @param endpoint OTLP HTTP endpoint URL (default `"http://localhost:4318"`).
+#' @param endpoint OTLP HTTP endpoint URL. Defaults to the
+#'   `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable, or
+#'   `"http://localhost:4318"` if unset.
 #' @param headers Named list of HTTP headers to include in requests
 #'   (e.g., authentication tokens).
-#' @param service_name Service name reported in the resource attributes
-#'   (default `"r-agent"`).
+#' @param service_name Service name reported in the resource attributes.
+#'   Defaults to the `OTEL_SERVICE_NAME` environment variable, or
+#'   `"r-agent"` if unset.
 #' @param batch_size Maximum number of traces to buffer before sending
 #'   (default `100L`). Traces are accumulated and sent when the buffer
 #'   reaches this size. Use [flush_otlp()] to force-send buffered traces.
@@ -34,9 +37,11 @@
 #' flush_otlp(exp)
 #' }
 #' @export
-otlp_exporter <- function(endpoint = "http://localhost:4318",
+otlp_exporter <- function(endpoint = Sys.getenv("OTEL_EXPORTER_OTLP_ENDPOINT",
+                                                              "http://localhost:4318"),
                            headers = list(),
-                           service_name = "r-agent",
+                           service_name = Sys.getenv("OTEL_SERVICE_NAME",
+                                                     "r-agent"),
                            batch_size = 100L,
                            max_retries = 3L) {
   buffer <- new.env(parent = emptyenv())
