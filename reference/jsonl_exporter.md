@@ -32,6 +32,6 @@ tr$end()
 export_trace(exp, tr)
 
 readLines(tmp)
-#> [1] "{\"trace_id\":\"504e4bb58ceb0083f17f6df6fa965498\",\"name\":\"demo\",\"status\":\"completed\",\"metadata\":[],\"start_time\":\"2026-03-01T14:42:06.912Z\",\"end_time\":\"2026-03-01T14:42:06.912Z\",\"duration_secs\":0.0004,\"spans\":[]}"
+#> [1] "{\"trace_id\":\"504e4bb58ceb0083f17f6df6fa965498\",\"name\":\"demo\",\"status\":\"completed\",\"metadata\":[],\"start_time\":\"2026-03-01T14:47:02.286Z\",\"end_time\":\"2026-03-01T14:47:02.287Z\",\"duration_secs\":0.0004,\"spans\":[]}"
 unlink(tmp)
 ```
