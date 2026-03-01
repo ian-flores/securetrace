@@ -43,6 +43,7 @@ reference:
       - console_exporter
       - export_trace
       - multi_exporter
+      - json_stdout_exporter
       - trace_schema
 
   - title: OTLP Export
@@ -66,6 +67,11 @@ reference:
       - parse_traceparent
       - inject_headers
       - extract_trace_context
+
+  - title: Log Correlation
+    contents:
+      - trace_log_prefix
+      - with_trace_logging
 
   - title: Integrations
     contents:
