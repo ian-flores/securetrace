@@ -30,7 +30,8 @@ Suggests:
     rmarkdown,
     secureguard,
     securer,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 Remotes:
     ian-flores/securer,
     ian-flores/orchestr,
