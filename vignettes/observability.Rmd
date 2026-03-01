@@ -14,13 +14,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette covers the manual R6 API, events, custom metrics, nested spans, error handling, and integration helpers. For `with_trace()` basics and token tracking, see `vignette("securetrace")`.
+The R6 API gives you direct access to events, custom metrics, nested spans, error handling, and integration helpers. For `with_trace()` basics and token tracking, see `vignette("securetrace")`.
 
 ```{r}
 library(securetrace)
 ```
 
-## Span Types
+## Span types
 
 | Type | Use for | Example |
 |------|---------|---------|
@@ -29,7 +29,7 @@ library(securetrace)
 | `"guardrail"` | Input/output validation | `Span$new("pii-check", type = "guardrail")` |
 | `"custom"` | Anything else | `Span$new("transform", type = "custom")` |
 
-## Nested Spans
+## Nested spans
 
 Inner spans record the outer span's ID as `parent_id`:
 
@@ -55,7 +55,7 @@ result <- with_trace("pipeline", {
 
 Parent-child relationships persist in exported JSON via `parent_id` fields.
 
-## Manual Construction
+## Manual construction
 
 Use the R6 classes when spans are created in one function and ended in another, or when building traces from recorded data.
 
@@ -105,7 +105,7 @@ s$events[[1]]@name
 s$events[[1]]@data
 ```
 
-## Custom Metrics
+## Custom metrics
 
 Use `record_metric()` / `record_latency()` inside `with_span()`, or `$add_metric()` on the R6 object:
 
@@ -127,7 +127,7 @@ s$end()
 s$metrics
 ```
 
-## Error Handling
+## Error handling
 
 Errors inside `with_span()` set status to `"error"` and record the message. The trace still exports, then re-raises.
 
@@ -150,7 +150,7 @@ trace_data$spans$error
 unlink(trace_file)
 ```
 
-## Integration Helpers
+## Integration helpers
 
 `trace_tool_call()` and `trace_guardrail()` create typed spans automatically. Both require an active `with_trace()`.
 
@@ -166,7 +166,7 @@ with_trace("guard-integration", {
 })
 ```
 
-### Secure Execution
+### Secure execution
 
 `trace_execution()` wraps `securer::SecureSession$execute()` with a span, recording code and stdout as events:
 
@@ -178,7 +178,7 @@ with_trace("sandboxed-run", {
 session$close()
 ```
 
-### secureguard Integration
+### secureguard integration
 
 Pass a Guard object to `trace_guardrail()` for structured result metadata:
 
@@ -189,7 +189,7 @@ with_trace("guarded-input", {
 })
 ```
 
-## Full Example
+## Full example
 
 Multi-step workflow: nested spans, tokens, events, metrics, and JSONL export.
 
@@ -223,8 +223,8 @@ sprintf("Trace '%s': %d spans, status = %s",
 unlink(trace_file)
 ```
 
-## Next Steps
+## Next steps
 
-- `vignette("exporters")` -- JSONL, console, custom exporters, and trace schema.
-- `vignette("cloud-native")` -- OTLP, Prometheus, W3C Trace Context.
-- `vignette("orchestr-integration")` -- Automatic tracing of orchestr graphs.
+- `vignette("exporters")`: JSONL, console, custom exporters, and trace schema.
+- `vignette("cloud-native")`: OTLP, Prometheus, W3C Trace Context.
+- `vignette("orchestr-integration")`: automatic tracing of orchestr graphs.
