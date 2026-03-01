@@ -70,7 +70,7 @@ tr$end()
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.007170916
+#> [1] 0.006510735
 length(tr$spans)
 #> [1] 2
 ```
@@ -248,7 +248,7 @@ result <- with_trace("full-workflow", exporter = exp, {
 #> -- Spans --
 #>   * planning [llm] (ok) - 0.000s
 #>   * fetch-data [tool] (ok) - 0.000s
-#>   * compute [custom] (ok) - 0.001s
+#>   * compute [custom] (ok) - 0.000s
 #>   * validate [guardrail] (ok) - 0.000s
 #>   * transform [tool] (ok) - 0.000s
 #>   * summarize [llm] (ok) - 0.000s

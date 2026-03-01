@@ -36,5 +36,5 @@ export_trace(exp, tr)
 #> Duration: 0.00s
 #> Spans: 1
 #> -- Spans --
-#>   * step1 [custom] (ok) - 0.001s
+#>   * step1 [custom] (ok) - 0.000s
 ```

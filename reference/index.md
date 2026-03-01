@@ -64,6 +64,8 @@
   : Export a Trace
 - [`multi_exporter()`](https://ian-flores.github.io/securetrace/reference/multi_exporter.md)
   : Multi-Exporter
+- [`json_stdout_exporter()`](https://ian-flores.github.io/securetrace/reference/json_stdout_exporter.md)
+  : JSON stdout Exporter
 - [`trace_schema()`](https://ian-flores.github.io/securetrace/reference/trace_schema.md)
   : JSONL Trace Schema
 
@@ -101,6 +103,13 @@
   : Inject Trace Context into HTTP Headers
 - [`extract_trace_context()`](https://ian-flores.github.io/securetrace/reference/extract_trace_context.md)
   : Extract Trace Context from HTTP Headers
+
+## Log Correlation
+
+- [`trace_log_prefix()`](https://ian-flores.github.io/securetrace/reference/trace_log_prefix.md)
+  : Get Trace Context Prefix for Log Messages
+- [`with_trace_logging()`](https://ian-flores.github.io/securetrace/reference/with_trace_logging.md)
+  : Execute Expression with Trace-Correlated Logging
 
 ## Integrations
 

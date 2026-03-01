@@ -8,9 +8,9 @@ as Jaeger, Grafana Tempo, or any OpenTelemetry Collector.
 
 ``` r
 otlp_exporter(
-  endpoint = "http://localhost:4318",
+  endpoint = Sys.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318"),
   headers = list(),
-  service_name = "r-agent",
+  service_name = Sys.getenv("OTEL_SERVICE_NAME", "r-agent"),
   batch_size = 100L,
   max_retries = 3L
 )
@@ -20,7 +20,8 @@ otlp_exporter(
 
 - endpoint:
 
-  OTLP HTTP endpoint URL (default `"http://localhost:4318"`).
+  OTLP HTTP endpoint URL. Defaults to the `OTEL_EXPORTER_OTLP_ENDPOINT`
+  environment variable, or `"http://localhost:4318"` if unset.
 
 - headers:
 
@@ -29,8 +30,8 @@ otlp_exporter(
 
 - service_name:
 
-  Service name reported in the resource attributes (default
-  `"r-agent"`).
+  Service name reported in the resource attributes. Defaults to the
+  `OTEL_SERVICE_NAME` environment variable, or `"r-agent"` if unset.
 
 - batch_size:
 
