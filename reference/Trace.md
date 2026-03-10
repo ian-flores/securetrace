@@ -32,6 +32,10 @@ guardrail checks.
 
   Current status: "running", "completed", or "error".
 
+- `resource`:
+
+  Resource attributes for this trace.
+
 ## Active bindings
 
 - `spans`:
@@ -194,9 +198,9 @@ tr$end()
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.00278616
+#> [1] 0.002908945
 tr$summary()
-#> Trace: my-agent-run (completed) ID: 6ada44bc15ee3f1285a6f4585e9f4103 Duration:
+#> Trace: my-agent-run (completed) ID: ec1d6ada44bc15ee3f1285a6f4585e9f Duration:
 #> 0.00s Spans: 1 Tokens: 100 input, 50 output Cost: $0.000000
 
 # Serialize to list for export

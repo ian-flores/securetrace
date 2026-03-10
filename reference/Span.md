@@ -75,6 +75,8 @@ execution, guardrail check, or custom operation.
 
 - [`Span$set_error()`](#method-Span-set_error)
 
+- [`Span$set_attribute()`](#method-Span-set_attribute)
+
 - [`Span$duration()`](#method-Span-duration)
 
 - [`Span$add_metric()`](#method-Span-add_metric)
@@ -216,6 +218,26 @@ Record an error and set status to "error".
 
 ------------------------------------------------------------------------
 
+### Method `set_attribute()`
+
+Set a span attribute (key-value pair).
+
+#### Usage
+
+    Span$set_attribute(key, value)
+
+#### Arguments
+
+- `key`:
+
+  Character string attribute name.
+
+- `value`:
+
+  Attribute value (scalar or vector).
+
+------------------------------------------------------------------------
+
 ### Method `duration()`
 
 Get the duration in seconds.
@@ -300,10 +322,10 @@ span$end()
 span$status
 #> [1] "ok"
 span$duration()
-#> [1] 0.003395557
+#> [1] 0.003454685
 span$to_list()
 #> $span_id
-#> [1] "be45eee35844e7ec"
+#> [1] "c6be45eee35844e7"
 #> 
 #> $name
 #> [1] "gpt-call"
@@ -320,14 +342,17 @@ span$to_list()
 #> $metadata
 #> list()
 #> 
+#> $attributes
+#> list()
+#> 
 #> $start_time
-#> [1] "2026-03-01T20:36:15.980Z"
+#> [1] "2026-03-10T16:23:38.139Z"
 #> 
 #> $end_time
-#> [1] "2026-03-01T20:36:15.984Z"
+#> [1] "2026-03-10T16:23:38.143Z"
 #> 
 #> $duration_secs
-#> [1] 0.003395557
+#> [1] 0.003454685
 #> 
 #> $input_tokens
 #> [1] 500
@@ -352,7 +377,7 @@ span$to_list()
 #> 
 #> 
 #> $events[[1]]$timestamp
-#> [1] "2026-03-01T20:36:15.983Z"
+#> [1] "2026-03-10T16:23:38.142Z"
 #> 
 #> 
 #> 

@@ -144,7 +144,8 @@ tr$end()
 trace_list <- tr$to_list()
 names(trace_list)
 #> [1] "trace_id"      "name"          "status"        "metadata"     
-#> [5] "start_time"    "end_time"      "duration_secs" "spans"
+#> [5] "resource"      "start_time"    "end_time"      "duration_secs"
+#> [9] "spans"
 trace_list$spans[[1]]$metrics
 #> [[1]]
 #> [[1]]$name

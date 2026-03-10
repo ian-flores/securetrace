@@ -9,7 +9,7 @@ Span Class"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">securetrace</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -113,6 +113,7 @@ tool execution, guardrail check, or custom operation.</p>
 <li><p><a href="#method-Span-set_tokens"><code>Span$set_tokens()</code></a></p></li>
 <li><p><a href="#method-Span-set_model"><code>Span$set_model()</code></a></p></li>
 <li><p><a href="#method-Span-set_error"><code>Span$set_error()</code></a></p></li>
+<li><p><a href="#method-Span-set_attribute"><code>Span$set_attribute()</code></a></p></li>
 <li><p><a href="#method-Span-duration"><code>Span$duration()</code></a></p></li>
 <li><p><a href="#method-Span-add_metric"><code>Span$add_metric()</code></a></p></li>
 <li><p><a href="#method-Span-to_list"><code>Span$to_list()</code></a></p></li>
@@ -246,10 +247,30 @@ tool execution, guardrail check, or custom operation.</p>
 </dl><p></p></div>
 </div>
 
+</div><p></p><hr><a id="method-Span-set_attribute"></a><div class="section">
+<h3 id="method-set-attribute-">Method <code>set_attribute()</code><a class="anchor" aria-label="anchor" href="#method-set-attribute-"></a></h3>
+<p>Set a span attribute (key-value pair).</p><div class="section">
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Span</span><span class="op">$</span><span class="fu">set_attribute</span><span class="op">(</span><span class="va">key</span>, <span class="va">value</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>key</code></dt>
+<dd><p>Character string attribute name.</p></dd>
+
+
+<dt><code>value</code></dt>
+<dd><p>Attribute value (scalar or vector).</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
 </div><p></p><hr><a id="method-Span-duration"></a><div class="section">
 <h3 id="method-duration-">Method <code>duration()</code><a class="anchor" aria-label="anchor" href="#method-duration-"></a></h3>
 <p>Get the duration in seconds.</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Span</span><span class="op">$</span><span class="fu">duration</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -261,12 +282,12 @@ tool execution, guardrail check, or custom operation.</p>
 </div><p></p><hr><a id="method-Span-add_metric"></a><div class="section">
 <h3 id="method-add-metric-">Method <code>add_metric()</code><a class="anchor" aria-label="anchor" href="#method-add-metric-"></a></h3>
 <p>Record a custom metric.</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Span</span><span class="op">$</span><span class="fu">add_metric</span><span class="op">(</span><span class="va">name</span>, <span class="va">value</span>, unit <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
+<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>name</code></dt>
 <dd><p>Metric name.</p></dd>
 
@@ -285,7 +306,7 @@ tool execution, guardrail check, or custom operation.</p>
 </div><p></p><hr><a id="method-Span-to_list"></a><div class="section">
 <h3 id="method-to-list-">Method <code>to_list()</code><a class="anchor" aria-label="anchor" href="#method-to-list-"></a></h3>
 <p>Serialize the span to a list.</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Span</span><span class="op">$</span><span class="fu">to_list</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -297,12 +318,12 @@ tool execution, guardrail check, or custom operation.</p>
 </div><p></p><hr><a id="method-Span-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Span</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
+<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
@@ -331,10 +352,10 @@ tool execution, guardrail check, or custom operation.</p>
 <span class="r-in"><span><span class="va">span</span><span class="op">$</span><span class="va">status</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ok"</span>
 <span class="r-in"><span><span class="va">span</span><span class="op">$</span><span class="fu">duration</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.003395557</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.003454685</span>
 <span class="r-in"><span><span class="va">span</span><span class="op">$</span><span class="fu">to_list</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $span_id</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "be45eee35844e7ec"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "c6be45eee35844e7"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $name</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "gpt-call"</span>
@@ -351,14 +372,17 @@ tool execution, guardrail check, or custom operation.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $metadata</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $attributes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $start_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-01T20:36:15.980Z"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-10T16:23:38.139Z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-01T20:36:15.984Z"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-10T16:23:38.143Z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $duration_secs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.003395557</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.003454685</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $input_tokens</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 500</span>
@@ -383,7 +407,7 @@ tool execution, guardrail check, or custom operation.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $events[[1]]$timestamp</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-01T20:36:15.983Z"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-10T16:23:38.142Z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

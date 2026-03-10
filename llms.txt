@@ -262,6 +262,26 @@ MIT
   : Get the Current Active Span
 - [`set_default_exporter()`](https://ian-flores.github.io/securetrace/reference/set_default_exporter.md)
   : Set the Default Exporter
+- [`sampling`](https://ian-flores.github.io/securetrace/reference/sampling.md)
+  : Trace Sampling
+- [`securetrace_sampler()`](https://ian-flores.github.io/securetrace/reference/securetrace_sampler.md)
+  : S7 class: securetrace_sampler
+- [`sampler_always_on()`](https://ian-flores.github.io/securetrace/reference/sampler_always_on.md)
+  : Always-On Sampler
+- [`sampler_always_off()`](https://ian-flores.github.io/securetrace/reference/sampler_always_off.md)
+  : Always-Off Sampler
+- [`sampler_probability()`](https://ian-flores.github.io/securetrace/reference/sampler_probability.md)
+  : Probability Sampler
+- [`sampler_rate_limiting()`](https://ian-flores.github.io/securetrace/reference/sampler_rate_limiting.md)
+  : Rate-Limiting Sampler
+- [`set_default_sampler()`](https://ian-flores.github.io/securetrace/reference/set_default_sampler.md)
+  : Set the Default Sampler
+- [`resource()`](https://ian-flores.github.io/securetrace/reference/resource.md)
+  : Resource Attributes
+- [`set_resource()`](https://ian-flores.github.io/securetrace/reference/set_resource.md)
+  : Set the Default Resource
+- [`current_resource()`](https://ian-flores.github.io/securetrace/reference/current_resource.md)
+  : Get the Current Resource
 
 ## Metrics
 

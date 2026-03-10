@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">securetrace</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -193,7 +193,8 @@ is what exporters receive.</p>
 <span><span class="va">trace_list</span> <span class="op">&lt;-</span> <span class="va">tr</span><span class="op">$</span><span class="fu">to_list</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">trace_list</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "trace_id"      "name"          "status"        "metadata"     </span></span>
-<span><span class="co">#&gt; [5] "start_time"    "end_time"      "duration_secs" "spans"</span></span>
+<span><span class="co">#&gt; [5] "resource"      "start_time"    "end_time"      "duration_secs"</span></span>
+<span><span class="co">#&gt; [9] "spans"</span></span>
 <span><span class="va">trace_list</span><span class="op">$</span><span class="va">spans</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">metrics</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; [[1]]$name</span></span>

@@ -31,6 +31,6 @@ with_trace("demo", {
     })
   })
 })
-#> [trace_id=58157429af86cfc4793d6a395be055a1 span_id=bf57a5cf2c676453] hello from inside a span
+#> [trace_id=c404937460e04b627be2bcb557d2e437 span_id=eb2667dbb73c8c51] hello from inside a span
 #> NULL
 ```

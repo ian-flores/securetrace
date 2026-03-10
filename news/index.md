@@ -1,5 +1,40 @@
 # Changelog
 
+## securetrace 0.2.0
+
+### New features
+
+- **Sampling**: Control which traces are recorded with pluggable
+  samplers.
+  [`sampler_always_on()`](https://ian-flores.github.io/securetrace/reference/sampler_always_on.md),
+  [`sampler_always_off()`](https://ian-flores.github.io/securetrace/reference/sampler_always_off.md),
+  [`sampler_probability()`](https://ian-flores.github.io/securetrace/reference/sampler_probability.md),
+  and
+  [`sampler_rate_limiting()`](https://ian-flores.github.io/securetrace/reference/sampler_rate_limiting.md)
+  cover common strategies. Set the default with
+  [`set_default_sampler()`](https://ian-flores.github.io/securetrace/reference/set_default_sampler.md).
+
+- **Span attributes**: `Span$set_attribute(key, value)` provides a typed
+  key-value attribute API, separate from the freeform `metadata` field.
+  Attributes are included in `to_list()` and all exporters.
+
+- **Resource attributes**:
+  [`resource()`](https://ian-flores.github.io/securetrace/reference/resource.md)
+  and
+  [`set_resource()`](https://ian-flores.github.io/securetrace/reference/set_resource.md)
+  attach service-level metadata (service name, version, deployment
+  environment) to all traces. Resources appear in exported trace data.
+
+### Ecosystem integration
+
+- All ecosystem packages (secureguard, securetools, securer,
+  securecontext, securebench) now emit spans automatically when
+  securetrace is installed and a trace is active. No manual
+  instrumentation needed.
+
+- Pre-built Grafana dashboard and docker-compose setup for turnkey
+  observability with Prometheus metrics.
+
 ## securetrace 0.1.0
 
 - Initial CRAN release.

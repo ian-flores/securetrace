@@ -27,5 +27,5 @@ with_trace("demo", {
     trace_log_prefix()
   })
 })
-#> [1] "[trace_id=1f98af49e43113cb1493af7102758984 span_id=c5b50e67b2aec9e9] "
+#> [1] "[trace_id=a022f98472cdfb0ad5981b7b59f3826f span_id=bf12a93589edeecd] "
 ```
