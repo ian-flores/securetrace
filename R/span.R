@@ -71,6 +71,7 @@ Span <- R6::R6Class(
       self$output_tokens <- 0L
       private$.events <- list()
       private$.metrics <- list()
+      private$.attributes <- list()
       private$.start_time <- NULL
       private$.end_time <- NULL
       private$.error <- NULL
@@ -126,6 +127,17 @@ Span <- R6::R6Class(
       invisible(self)
     },
 
+    #' @description Set a span attribute (key-value pair).
+    #' @param key Character string attribute name.
+    #' @param value Attribute value (scalar or vector).
+    set_attribute = function(key, value) {
+      if (!is.character(key) || length(key) != 1L) {
+        cli::cli_abort("{.arg key} must be a scalar character string.")
+      }
+      private$.attributes[[key]] <- value
+      invisible(self)
+    },
+
     #' @description Get the duration in seconds.
     #' @return Numeric duration, or `NULL` if not started/ended.
     duration = function() {
@@ -156,6 +168,7 @@ Span <- R6::R6Class(
         status = self$status,
         parent_id = self$parent_id,
         metadata = self$metadata,
+        attributes = private$.attributes,
         start_time = format(private$.start_time, "%Y-%m-%dT%H:%M:%OS3Z", tz = "UTC"),
         end_time = if (!is.null(private$.end_time)) {
           format(private$.end_time, "%Y-%m-%dT%H:%M:%OS3Z", tz = "UTC")
@@ -188,6 +201,7 @@ Span <- R6::R6Class(
   private = list(
     .events = NULL,
     .metrics = NULL,
+    .attributes = NULL,
     .start_time = NULL,
     .end_time = NULL,
     .error = NULL,

@@ -19,6 +19,16 @@ reference:
       - current_trace
       - current_span
       - set_default_exporter
+      - sampling
+      - securetrace_sampler
+      - sampler_always_on
+      - sampler_always_off
+      - sampler_probability
+      - sampler_rate_limiting
+      - set_default_sampler
+      - resource
+      - set_resource
+      - current_resource
 
   - title: Metrics
     contents:

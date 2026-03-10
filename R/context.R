@@ -6,6 +6,8 @@
 .trace_context$trace_stack <- list()
 .trace_context$span_stack <- list()
 .trace_context$default_exporter <- NULL
+.trace_context$default_sampler <- NULL
+.trace_context$default_resource <- NULL
 
 #' Execute Code Within a Trace
 #'
@@ -42,7 +44,17 @@
 with_trace <- function(name, expr, ..., exporter = NULL) {
   dots <- list(...)
   metadata <- if (length(dots) > 0) dots else list()
+
+  # Check sampler
+
+  sampler <- .trace_context$default_sampler
+  if (!is.null(sampler) && !sampler@should_sample(name, metadata)) {
+    # Sampled out: execute without tracing
+    return(expr)
+  }
+
   tr <- Trace$new(name, metadata = metadata)
+  tr$resource <- .trace_context$default_resource
   tr$start()
 
   .trace_context$trace_stack <- c(.trace_context$trace_stack, list(tr))

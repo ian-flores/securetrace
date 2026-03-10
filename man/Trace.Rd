@@ -47,6 +47,8 @@ trace_list$name
 \item{\code{metadata}}{Arbitrary metadata attached to the trace.}
 
 \item{\code{status}}{Current status: "running", "completed", or "error".}
+
+\item{\code{resource}}{Resource attributes for this trace.}
 }
 \if{html}{\out{</div>}}
 }

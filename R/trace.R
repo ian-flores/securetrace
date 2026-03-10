@@ -41,6 +41,9 @@ Trace <- R6::R6Class(
     #' @field status Current status: "running", "completed", or "error".
     status = NULL,
 
+    #' @field resource Resource attributes for this trace.
+    resource = NULL,
+
     #' @description Create a new trace.
     #' @param name Name for the trace.
     #' @param metadata Optional named list of metadata.
@@ -94,6 +97,7 @@ Trace <- R6::R6Class(
         name = self$name,
         status = self$status,
         metadata = self$metadata,
+        resource = if (!is.null(self$resource)) as.list(self$resource) else NULL,
         start_time = format(private$.start_time, "%Y-%m-%dT%H:%M:%OS3Z", tz = "UTC"),
         end_time = if (!is.null(private$.end_time)) {
           format(private$.end_time, "%Y-%m-%dT%H:%M:%OS3Z", tz = "UTC")

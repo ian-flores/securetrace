@@ -72,6 +72,7 @@ span$to_list()
 \item \href{#method-Span-set_tokens}{\code{Span$set_tokens()}}
 \item \href{#method-Span-set_model}{\code{Span$set_model()}}
 \item \href{#method-Span-set_error}{\code{Span$set_error()}}
+\item \href{#method-Span-set_attribute}{\code{Span$set_attribute()}}
 \item \href{#method-Span-duration}{\code{Span$duration()}}
 \item \href{#method-Span-add_metric}{\code{Span$add_metric()}}
 \item \href{#method-Span-to_list}{\code{Span$to_list()}}
@@ -202,6 +203,25 @@ Record an error and set status to "error".
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{error}}{The error condition or message string.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Span-set_attribute"></a>}}
+\if{latex}{\out{\hypertarget{method-Span-set_attribute}{}}}
+\subsection{Method \code{set_attribute()}}{
+Set a span attribute (key-value pair).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Span$set_attribute(key, value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{key}}{Character string attribute name.}
+
+\item{\code{value}}{Attribute value (scalar or vector).}
 }
 \if{html}{\out{</div>}}
 }

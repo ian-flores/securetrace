@@ -101,3 +101,21 @@ test_that("Span to_list serializes correctly", {
   expect_equal(lst$model, "gpt-4o")
   expect_length(lst$events, 1)
 })
+
+test_that("span set_attribute works", {
+  s <- Span$new("test", type = "custom")
+  s$start()
+  s$set_attribute("http.method", "GET")
+  s$set_attribute("http.status_code", 200L)
+  s$end()
+
+  l <- s$to_list()
+  expect_equal(l$attributes$http.method, "GET")
+  expect_equal(l$attributes$http.status_code, 200L)
+})
+
+test_that("set_attribute validates key", {
+  s <- Span$new("test", type = "custom")
+  expect_error(s$set_attribute(123, "value"))
+  expect_error(s$set_attribute(c("a", "b"), "value"))
+})
