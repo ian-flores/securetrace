@@ -151,7 +151,7 @@ in another, or when building traces from recorded data.</p>
 <code class="sourceCode R"><span><span class="va">tr</span><span class="op">$</span><span class="va">status</span></span>
 <span><span class="co">#&gt; [1] "completed"</span></span>
 <span><span class="va">tr</span><span class="op">$</span><span class="fu">duration</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.006675005</span></span>
+<span><span class="co">#&gt; [1] 0.006572008</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">tr</span><span class="op">$</span><span class="va">spans</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2</span></span></code></pre></div>
 </div>
@@ -210,7 +210,7 @@ object:</p>
 then re-raises.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trace_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".jsonl"</span><span class="op">)</span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span>
+<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exporter_jsonl.html">exporter_jsonl</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"error-run"</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"failing-step"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"something went wrong"</span><span class="op">)</span></span>
@@ -277,7 +277,7 @@ result metadata:</p>
 export.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trace_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".jsonl"</span><span class="op">)</span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multi_exporter.html">multi_exporter</a></span><span class="op">(</span><span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span>, <span class="fu"><a href="../reference/console_exporter.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exporter_multi.html">exporter_multi</a></span><span class="op">(</span><span class="fu"><a href="../reference/exporter_jsonl.html">exporter_jsonl</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span>, <span class="fu"><a href="../reference/exporter_console.html">exporter_console</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"full-workflow"</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"planning"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">3000</span>, <span class="fl">800</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
@@ -305,7 +305,7 @@ export.</p>
 <span><span class="co">#&gt; -- Spans --</span></span>
 <span><span class="co">#&gt;   * planning [llm] (ok) - 0.000s</span></span>
 <span><span class="co">#&gt;   * fetch-data [tool] (ok) - 0.000s</span></span>
-<span><span class="co">#&gt;   * compute [custom] (ok) - 0.000s</span></span>
+<span><span class="co">#&gt;   * compute [custom] (ok) - 0.001s</span></span>
 <span><span class="co">#&gt;   * validate [guardrail] (ok) - 0.000s</span></span>
 <span><span class="co">#&gt;   * transform [tool] (ok) - 0.000s</span></span>
 <span><span class="co">#&gt;   * summarize [llm] (ok) - 0.000s</span></span>

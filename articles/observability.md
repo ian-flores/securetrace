@@ -70,7 +70,7 @@ tr$end()
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.006675005
+#> [1] 0.006572008
 length(tr$spans)
 #> [1] 2
 ```
@@ -142,7 +142,7 @@ then re-raises.
 
 ``` r
 trace_file <- tempfile(fileext = ".jsonl")
-exp <- jsonl_exporter(trace_file)
+exp <- exporter_jsonl(trace_file)
 with_trace("error-run", exporter = exp, {
   with_span("failing-step", type = "tool", {
     stop("something went wrong")
@@ -220,7 +220,7 @@ export.
 
 ``` r
 trace_file <- tempfile(fileext = ".jsonl")
-exp <- multi_exporter(jsonl_exporter(trace_file), console_exporter(verbose = TRUE))
+exp <- exporter_multi(exporter_jsonl(trace_file), exporter_console(verbose = TRUE))
 result <- with_trace("full-workflow", exporter = exp, {
   with_span("planning", type = "llm", {
     record_tokens(3000, 800, model = "claude-sonnet-4-5")
@@ -248,7 +248,7 @@ result <- with_trace("full-workflow", exporter = exp, {
 #> -- Spans --
 #>   * planning [llm] (ok) - 0.000s
 #>   * fetch-data [tool] (ok) - 0.000s
-#>   * compute [custom] (ok) - 0.000s
+#>   * compute [custom] (ok) - 0.001s
 #>   * validate [guardrail] (ok) - 0.000s
 #>   * transform [tool] (ok) - 0.000s
 #>   * summarize [llm] (ok) - 0.000s

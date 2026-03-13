@@ -49,7 +49,7 @@
 
 
 <dl><dt id="arg-exporter">exporter<a class="anchor" aria-label="anchor" href="#arg-exporter"></a></dt>
-<dd><p>An S3 <code>securetrace_exporter</code> object.</p></dd>
+<dd><p>An S7 <code>securetrace_exporter</code> object.</p></dd>
 
 
 <dt id="arg-trace">trace<a class="anchor" aria-label="anchor" href="#arg-trace"></a></dt>
@@ -63,7 +63,7 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="console_exporter.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="exporter_console.html">exporter_console</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="va"><a href="Trace.html">Trace</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"test-trace"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">tr</span><span class="op">$</span><span class="fu">start</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">tr</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span></span>

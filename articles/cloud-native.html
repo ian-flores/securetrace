@@ -89,9 +89,9 @@ distributed tracing via W3C Trace Context. For core tracing, see
 <span><span class="co">#&gt;   ..$ :List of 2</span></span>
 <span><span class="co">#&gt;   .. ..$ resource  :List of 1</span></span>
 <span><span class="co">#&gt;   .. ..$ scopeSpans:List of 1</span></span></code></pre></div>
-<p>Point <code><a href="../reference/otlp_exporter.html">otlp_exporter()</a></code> at any OTLP-HTTP endpoint.</p>
+<p>Point <code><a href="../reference/exporter_otlp.html">exporter_otlp()</a></code> at any OTLP-HTTP endpoint.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">"http://localhost:4318"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exporter_otlp.html">exporter_otlp</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">"http://localhost:4318"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"data-pipeline"</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"fetch"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fu"><a href="../reference/record_latency.html">record_latency</a></span><span class="op">(</span><span class="fl">0.25</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"analyze"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
@@ -100,7 +100,7 @@ distributed tracing via W3C Trace Context. For core tracing, see
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Pass headers for authenticated collectors.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exporter_otlp.html">exporter_otlp</a></span><span class="op">(</span></span>
 <span>  endpoint <span class="op">=</span> <span class="st">"https://tempo.example.com:4318"</span>,</span>
 <span>  headers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Authorization <span class="op">=</span> <span class="st">"Bearer &lt;token&gt;"</span><span class="op">)</span>,</span>
 <span>  service_name <span class="op">=</span> <span class="st">"my-r-agent"</span></span>
@@ -108,7 +108,7 @@ distributed tracing via W3C Trace Context. For core tracing, see
 <p>Buffer traces with <code>batch_size</code>; call
 <code><a href="../reference/flush_otlp.html">flush_otlp()</a></code> at exit to drain.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span><span class="st">"http://localhost:4318"</span>, batch_size <span class="op">=</span> <span class="fl">10</span>, max_retries <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exporter_otlp.html">exporter_otlp</a></span><span class="op">(</span><span class="st">"http://localhost:4318"</span>, batch_size <span class="op">=</span> <span class="fl">10</span>, max_retries <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"run-"</span>, <span class="va">i</span><span class="op">)</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"work"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="va">i</span> <span class="op">}</span><span class="op">)</span></span>
@@ -165,7 +165,7 @@ distributed tracing via W3C Trace Context. For core tracing, see
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="120"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="300"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 1</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.001563787</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.001552343</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="llm"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.01"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="0.05"} 1</span></span>
@@ -179,13 +179,13 @@ distributed tracing via W3C Trace Context. For core tracing, see
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="120"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="300"} 1</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="tool",le="+Inf"} 1</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="tool"} 0.0005390644</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="tool"} 0.0005106926</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="tool"} 1</span></span></code></pre></div>
-<p>Use <code><a href="../reference/prometheus_exporter.html">prometheus_exporter()</a></code> so completed traces
+<p>Use <code><a href="../reference/exporter_prometheus.html">exporter_prometheus()</a></code> so completed traces
 auto-populate the registry.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_registry.html">prometheus_registry</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">prom_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prometheus_exporter.html">prometheus_exporter</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span></span>
+<span><span class="va">prom_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exporter_prometheus.html">exporter_prometheus</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"run-1"</span>, exporter <span class="op">=</span> <span class="va">prom_exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"llm"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">200</span>, model <span class="op">=</span> <span class="st">"claude-haiku-4-5"</span><span class="op">)</span></span>
@@ -231,7 +231,7 @@ auto-populate the registry.</p>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="120"} 2</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="300"} 2</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 2</span></span>
-<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.0001027584</span></span>
+<span><span class="co">#&gt; securetrace_span_duration_seconds_sum{type="llm"} 0.0001010895</span></span>
 <span><span class="co">#&gt; securetrace_span_duration_seconds_count{type="llm"} 2</span></span></code></pre></div>
 <p>Serve <code>/metrics</code> for Prometheus to scrape.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -306,7 +306,7 @@ active trace.</p>
 <span>  <span class="va">s</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="va">tr</span><span class="op">$</span><span class="fu">add_span</span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
 <span>  <span class="va">tr</span><span class="op">$</span><span class="fu">end</span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="../reference/export_trace.html">export_trace</a></span><span class="op">(</span><span class="fu"><a href="../reference/otlp_exporter.html">otlp_exporter</a></span><span class="op">(</span><span class="st">"http://localhost:4318"</span><span class="op">)</span>, <span class="va">tr</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/export_trace.html">export_trace</a></span><span class="op">(</span><span class="fu"><a href="../reference/exporter_otlp.html">exporter_otlp</a></span><span class="op">(</span><span class="st">"http://localhost:4318"</span><span class="op">)</span>, <span class="va">tr</span><span class="op">)</span></span>
 <span>  <span class="va">res</span><span class="op">$</span><span class="fu">setHeader</span><span class="op">(</span><span class="st">"traceparent"</span>, <span class="fu"><a href="../reference/traceparent.html">traceparent</a></span><span class="op">(</span><span class="va">tr</span><span class="op">$</span><span class="va">trace_id</span>, <span class="va">s</span><span class="op">$</span><span class="va">span_id</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">result</span></span>
 <span><span class="op">}</span></span></code></pre></div>

@@ -81,6 +81,8 @@ execution, guardrail check, or custom operation.
 
 - [`Span$add_metric()`](#method-Span-add_metric)
 
+- [`Span$print()`](#method-Span-print)
+
 - [`Span$to_list()`](#method-Span-to_list)
 
 - [`Span$clone()`](#method-Span-clone)
@@ -276,6 +278,26 @@ Record a custom metric.
 
 ------------------------------------------------------------------------
 
+### Method [`print()`](https://rdrr.io/r/base/print.html)
+
+Print a concise representation of the span.
+
+#### Usage
+
+    Span$print(...)
+
+#### Arguments
+
+- `...`:
+
+  Ignored.
+
+#### Returns
+
+The `Span` object, invisibly.
+
+------------------------------------------------------------------------
+
 ### Method `to_list()`
 
 Serialize the span to a list.
@@ -322,7 +344,7 @@ span$end()
 span$status
 #> [1] "ok"
 span$duration()
-#> [1] 0.003454685
+#> [1] 0.003379345
 span$to_list()
 #> $span_id
 #> [1] "c6be45eee35844e7"
@@ -346,13 +368,13 @@ span$to_list()
 #> list()
 #> 
 #> $start_time
-#> [1] "2026-03-10T16:23:38.139Z"
+#> [1] "2026-03-13T18:27:04.283Z"
 #> 
 #> $end_time
-#> [1] "2026-03-10T16:23:38.143Z"
+#> [1] "2026-03-13T18:27:04.287Z"
 #> 
 #> $duration_secs
-#> [1] 0.003454685
+#> [1] 0.003379345
 #> 
 #> $input_tokens
 #> [1] 500
@@ -377,7 +399,7 @@ span$to_list()
 #> 
 #> 
 #> $events[[1]]$timestamp
-#> [1] "2026-03-10T16:23:38.142Z"
+#> [1] "2026-03-13T18:27:04.285Z"
 #> 
 #> 
 #> 

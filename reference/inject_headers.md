@@ -31,5 +31,5 @@ with_trace("http-call", {
     headers$traceparent
   })
 })
-#> [1] "00-b88c9ae35eb1e9ed1991423dd1445207-7d57df21eebfba76-01"
+#> [1] "00-f17f6df6fa9654985dc7de2b9f9ba196-63bcbf69189b5c91-01"
 ```

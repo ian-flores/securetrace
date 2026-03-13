@@ -7,7 +7,7 @@ Write each trace as one JSON line to an append-only file.
 ``` r
 library(securetrace)
 trace_file <- tempfile(fileext = ".jsonl")
-exp <- jsonl_exporter(trace_file)
+exp <- exporter_jsonl(trace_file)
 with_trace("exported-run", exporter = exp, {
   with_span("llm-call", type = "llm", {
     record_tokens(1500, 300, model = "claude-sonnet-4-5")
@@ -37,7 +37,7 @@ unlink(trace_file)
 Print trace summaries during interactive development.
 
 ``` r
-debug_exp <- console_exporter(verbose = TRUE)
+debug_exp <- exporter_console(verbose = TRUE)
 with_trace("debug-run", exporter = debug_exp, {
   with_span("planning", type = "llm", {
     record_tokens(2000, 500, model = "claude-sonnet-4-5")
@@ -60,13 +60,13 @@ Set `verbose = FALSE` for headers only.
 ## Multiple exporters
 
 Fan out to N destinations with
-[`multi_exporter()`](https://ian-flores.github.io/securetrace/reference/multi_exporter.md).
+[`exporter_multi()`](https://ian-flores.github.io/securetrace/reference/exporter_multi.md).
 
 ``` r
 trace_file <- tempfile(fileext = ".jsonl")
-combined <- multi_exporter(
-  jsonl_exporter(trace_file),
-  console_exporter(verbose = TRUE)
+combined <- exporter_multi(
+  exporter_jsonl(trace_file),
+  exporter_console(verbose = TRUE)
 )
 with_trace("multi-export-run", exporter = combined, {
   with_span("llm-call", type = "llm", {
@@ -94,7 +94,7 @@ call.
 
 ``` r
 trace_file <- tempfile(fileext = ".jsonl")
-set_default_exporter(jsonl_exporter(trace_file))
+set_default_exporter(exporter_jsonl(trace_file))
 with_trace("auto-1", { with_span("work", type = "tool", { 1 + 1 }) })
 #> [1] 2
 with_trace("auto-2", { with_span("more-work", type = "tool", { 2 + 2 }) })
@@ -107,11 +107,11 @@ unlink(trace_file)
 ## Custom exporters
 
 Pass any function to
-[`new_exporter()`](https://ian-flores.github.io/securetrace/reference/new_exporter.md).
+[`exporter()`](https://ian-flores.github.io/securetrace/reference/exporter.md).
 It receives the serialized trace list.
 
 ``` r
-span_counter <- new_exporter(function(trace_list) {
+span_counter <- exporter(function(trace_list) {
   cat(sprintf("Trace '%s': %d spans\n",
               trace_list$name, length(trace_list$spans)))
 })

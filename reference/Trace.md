@@ -58,6 +58,8 @@ guardrail checks.
 
 - [`Trace$to_list()`](#method-Trace-to_list)
 
+- [`Trace$print()`](#method-Trace-print)
+
 - [`Trace$summary()`](#method-Trace-summary)
 
 - [`Trace$clone()`](#method-Trace-clone)
@@ -152,6 +154,26 @@ A named list representation.
 
 ------------------------------------------------------------------------
 
+### Method [`print()`](https://rdrr.io/r/base/print.html)
+
+Print a concise representation of the trace.
+
+#### Usage
+
+    Trace$print(...)
+
+#### Arguments
+
+- `...`:
+
+  Ignored.
+
+#### Returns
+
+The `Trace` object, invisibly.
+
+------------------------------------------------------------------------
+
 ### Method [`summary()`](https://rdrr.io/r/base/summary.html)
 
 Print a formatted summary of the trace.
@@ -198,7 +220,7 @@ tr$end()
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.002908945
+#> [1] 0.002937317
 tr$summary()
 #> Trace: my-agent-run (completed) ID: ec1d6ada44bc15ee3f1285a6f4585e9f Duration:
 #> 0.00s Spans: 1 Tokens: 100 input, 50 output Cost: $0.000000

@@ -58,7 +58,7 @@ result
 # With an exporter
 result <- with_trace("traced-op", {
   10 * 2
-}, exporter = console_exporter(verbose = FALSE))
+}, exporter = exporter_console(verbose = FALSE))
 #> --- Trace: traced-op ---
 #> Status: completed
 #> Duration: 0.00s

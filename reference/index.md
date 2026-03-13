@@ -72,26 +72,32 @@
 
 ## Exporters
 
-- [`new_exporter()`](https://ian-flores.github.io/securetrace/reference/new_exporter.md)
+- [`exporter()`](https://ian-flores.github.io/securetrace/reference/exporter.md)
+  [`new_exporter()`](https://ian-flores.github.io/securetrace/reference/exporter.md)
   : Create a New Exporter
 - [`securetrace_exporter()`](https://ian-flores.github.io/securetrace/reference/securetrace_exporter.md)
   : Exporter Class (S7)
-- [`jsonl_exporter()`](https://ian-flores.github.io/securetrace/reference/jsonl_exporter.md)
+- [`exporter_jsonl()`](https://ian-flores.github.io/securetrace/reference/exporter_jsonl.md)
+  [`jsonl_exporter()`](https://ian-flores.github.io/securetrace/reference/exporter_jsonl.md)
   : JSONL Exporter
-- [`console_exporter()`](https://ian-flores.github.io/securetrace/reference/console_exporter.md)
+- [`exporter_console()`](https://ian-flores.github.io/securetrace/reference/exporter_console.md)
+  [`console_exporter()`](https://ian-flores.github.io/securetrace/reference/exporter_console.md)
   : Console Exporter
 - [`export_trace()`](https://ian-flores.github.io/securetrace/reference/export_trace.md)
   : Export a Trace
-- [`multi_exporter()`](https://ian-flores.github.io/securetrace/reference/multi_exporter.md)
+- [`exporter_multi()`](https://ian-flores.github.io/securetrace/reference/exporter_multi.md)
+  [`multi_exporter()`](https://ian-flores.github.io/securetrace/reference/exporter_multi.md)
   : Multi-Exporter
-- [`json_stdout_exporter()`](https://ian-flores.github.io/securetrace/reference/json_stdout_exporter.md)
+- [`exporter_json_stdout()`](https://ian-flores.github.io/securetrace/reference/exporter_json_stdout.md)
+  [`json_stdout_exporter()`](https://ian-flores.github.io/securetrace/reference/exporter_json_stdout.md)
   : JSON stdout Exporter
 - [`trace_schema()`](https://ian-flores.github.io/securetrace/reference/trace_schema.md)
   : JSONL Trace Schema
 
 ## OTLP Export
 
-- [`otlp_exporter()`](https://ian-flores.github.io/securetrace/reference/otlp_exporter.md)
+- [`exporter_otlp()`](https://ian-flores.github.io/securetrace/reference/exporter_otlp.md)
+  [`otlp_exporter()`](https://ian-flores.github.io/securetrace/reference/exporter_otlp.md)
   : OTLP JSON Exporter
 - [`otlp_format_trace()`](https://ian-flores.github.io/securetrace/reference/otlp_format_trace.md)
   : Format a Trace as OTLP JSON
@@ -106,7 +112,8 @@
   : Create a Prometheus Metrics Registry
 - [`prometheus_metrics()`](https://ian-flores.github.io/securetrace/reference/prometheus_metrics.md)
   : Extract Prometheus Metrics from a Trace
-- [`prometheus_exporter()`](https://ian-flores.github.io/securetrace/reference/prometheus_exporter.md)
+- [`exporter_prometheus()`](https://ian-flores.github.io/securetrace/reference/exporter_prometheus.md)
+  [`prometheus_exporter()`](https://ian-flores.github.io/securetrace/reference/exporter_prometheus.md)
   : Prometheus Exporter
 - [`format_prometheus()`](https://ian-flores.github.io/securetrace/reference/format_prometheus.md)
   : Format Prometheus Text Exposition

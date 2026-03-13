@@ -13,7 +13,7 @@ flush_otlp(exporter)
 - exporter:
 
   An OTLP exporter created by
-  [`otlp_exporter()`](https://ian-flores.github.io/securetrace/reference/otlp_exporter.md).
+  [`exporter_otlp()`](https://ian-flores.github.io/securetrace/reference/exporter_otlp.md).
 
 ## Value
 
@@ -23,7 +23,7 @@ Invisible `NULL`.
 
 ``` r
 if (FALSE) { # \dontrun{
-exp <- otlp_exporter(batch_size = 50L)
+exp <- exporter_otlp(batch_size = 50L)
 # ... export some traces ...
 flush_otlp(exp)
 } # }

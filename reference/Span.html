@@ -116,6 +116,7 @@ tool execution, guardrail check, or custom operation.</p>
 <li><p><a href="#method-Span-set_attribute"><code>Span$set_attribute()</code></a></p></li>
 <li><p><a href="#method-Span-duration"><code>Span$duration()</code></a></p></li>
 <li><p><a href="#method-Span-add_metric"><code>Span$add_metric()</code></a></p></li>
+<li><p><a href="#method-Span-print"><code>Span$print()</code></a></p></li>
 <li><p><a href="#method-Span-to_list"><code>Span$to_list()</code></a></p></li>
 <li><p><a href="#method-Span-clone"><code>Span$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-Span-new"></a><div class="section">
@@ -303,27 +304,47 @@ tool execution, guardrail check, or custom operation.</p>
 </dl><p></p></div>
 </div>
 
+</div><p></p><hr><a id="method-Span-print"></a><div class="section">
+<h3 id="method-print-">Method <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code><a class="anchor" aria-label="anchor" href="#method-print-"></a></h3>
+<p>Print a concise representation of the span.</p><div class="section">
+<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Span</span><span class="op">$</span><span class="fu">print</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>...</code></dt>
+<dd><p>Ignored.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
+<p>The <code>Span</code> object, invisibly.</p>
+</div>
+
 </div><p></p><hr><a id="method-Span-to_list"></a><div class="section">
 <h3 id="method-to-list-">Method <code>to_list()</code><a class="anchor" aria-label="anchor" href="#method-to-list-"></a></h3>
 <p>Serialize the span to a list.</p><div class="section">
-<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Span</span><span class="op">$</span><span class="fu">to_list</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
+<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
 <p>A named list representation.</p>
 </div>
 
 </div><p></p><hr><a id="method-Span-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
+<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Span</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
+<h4 id="arguments-9">Arguments<a class="anchor" aria-label="anchor" href="#arguments-9"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
@@ -352,7 +373,7 @@ tool execution, guardrail check, or custom operation.</p>
 <span class="r-in"><span><span class="va">span</span><span class="op">$</span><span class="va">status</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ok"</span>
 <span class="r-in"><span><span class="va">span</span><span class="op">$</span><span class="fu">duration</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.003454685</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.003379345</span>
 <span class="r-in"><span><span class="va">span</span><span class="op">$</span><span class="fu">to_list</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $span_id</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "c6be45eee35844e7"</span>
@@ -376,13 +397,13 @@ tool execution, guardrail check, or custom operation.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> list()</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $start_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-10T16:23:38.139Z"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-13T18:27:04.283Z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $end_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-10T16:23:38.143Z"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-13T18:27:04.287Z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $duration_secs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.003454685</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.003379345</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $input_tokens</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 500</span>
@@ -407,7 +428,7 @@ tool execution, guardrail check, or custom operation.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $events[[1]]$timestamp</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-10T16:23:38.142Z"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-03-13T18:27:04.285Z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

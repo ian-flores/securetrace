@@ -97,6 +97,7 @@ and guardrail checks.</p>
 <li><p><a href="#method-Trace-add_span"><code>Trace$add_span()</code></a></p></li>
 <li><p><a href="#method-Trace-duration"><code>Trace$duration()</code></a></p></li>
 <li><p><a href="#method-Trace-to_list"><code>Trace$to_list()</code></a></p></li>
+<li><p><a href="#method-Trace-print"><code>Trace$print()</code></a></p></li>
 <li><p><a href="#method-Trace-summary"><code>Trace$summary()</code></a></p></li>
 <li><p><a href="#method-Trace-clone"><code>Trace$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-Trace-new"></a><div class="section">
@@ -179,27 +180,47 @@ and guardrail checks.</p>
 <p>A named list representation.</p>
 </div>
 
+</div><p></p><hr><a id="method-Trace-print"></a><div class="section">
+<h3 id="method-print-">Method <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code><a class="anchor" aria-label="anchor" href="#method-print-"></a></h3>
+<p>Print a concise representation of the trace.</p><div class="section">
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trace</span><span class="op">$</span><span class="fu">print</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>...</code></dt>
+<dd><p>Ignored.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
+<p>The <code>Trace</code> object, invisibly.</p>
+</div>
+
 </div><p></p><hr><a id="method-Trace-summary"></a><div class="section">
 <h3 id="method-summary-">Method <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code><a class="anchor" aria-label="anchor" href="#method-summary-"></a></h3>
 <p>Print a formatted summary of the trace.</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trace</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
+<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
 <p>The trace summary as a character string, invisibly.</p>
 </div>
 
 </div><p></p><hr><a id="method-Trace-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trace</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
@@ -228,7 +249,7 @@ and guardrail checks.</p>
 <span class="r-in"><span><span class="va">tr</span><span class="op">$</span><span class="va">status</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "completed"</span>
 <span class="r-in"><span><span class="va">tr</span><span class="op">$</span><span class="fu">duration</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.002908945</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.002937317</span>
 <span class="r-in"><span><span class="va">tr</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Trace: my-agent-run (completed) ID: ec1d6ada44bc15ee3f1285a6f4585e9f Duration:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 0.00s Spans: 1 Tokens: 100 input, 50 output Cost: $0.000000</span>

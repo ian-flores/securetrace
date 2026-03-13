@@ -68,7 +68,7 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span>
 <span><span class="va">trace_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".jsonl"</span><span class="op">)</span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span>
+<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exporter_jsonl.html">exporter_jsonl</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"exported-run"</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"llm-call"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">1500</span>, <span class="fl">300</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
@@ -94,7 +94,7 @@
 </h2>
 <p>Print trace summaries during interactive development.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">debug_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/console_exporter.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">debug_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exporter_console.html">exporter_console</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"debug-run"</span>, exporter <span class="op">=</span> <span class="va">debug_exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"planning"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fl">500</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
@@ -115,12 +115,12 @@
 <div class="section level2">
 <h2 id="multiple-exporters">Multiple exporters<a class="anchor" aria-label="anchor" href="#multiple-exporters"></a>
 </h2>
-<p>Fan out to N destinations with <code><a href="../reference/multi_exporter.html">multi_exporter()</a></code>.</p>
+<p>Fan out to N destinations with <code><a href="../reference/exporter_multi.html">exporter_multi()</a></code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trace_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".jsonl"</span><span class="op">)</span></span>
-<span><span class="va">combined</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multi_exporter.html">multi_exporter</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="../reference/console_exporter.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">combined</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exporter_multi.html">exporter_multi</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/exporter_jsonl.html">exporter_jsonl</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="../reference/exporter_console.html">exporter_console</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"multi-export-run"</span>, exporter <span class="op">=</span> <span class="va">combined</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"llm-call"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
@@ -146,7 +146,7 @@
 <code><a href="../reference/with_trace.html">with_trace()</a></code> call.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trace_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".jsonl"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/set_default_exporter.html">set_default_exporter</a></span><span class="op">(</span><span class="fu"><a href="../reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/set_default_exporter.html">set_default_exporter</a></span><span class="op">(</span><span class="fu"><a href="../reference/exporter_jsonl.html">exporter_jsonl</a></span><span class="op">(</span><span class="va">trace_file</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"auto-1"</span>, <span class="op">{</span> <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"work"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">1</span> <span class="op">}</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2</span></span>
 <span><span class="fu"><a href="../reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"auto-2"</span>, <span class="op">{</span> <span class="fu"><a href="../reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"more-work"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">2</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">}</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
@@ -158,10 +158,10 @@
 <div class="section level2">
 <h2 id="custom-exporters">Custom exporters<a class="anchor" aria-label="anchor" href="#custom-exporters"></a>
 </h2>
-<p>Pass any function to <code><a href="../reference/new_exporter.html">new_exporter()</a></code>. It receives the
+<p>Pass any function to <code><a href="../reference/exporter.html">exporter()</a></code>. It receives the
 serialized trace list.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">span_counter</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_exporter.html">new_exporter</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">trace_list</span><span class="op">)</span> <span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">span_counter</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exporter.html">exporter</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">trace_list</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Trace '%s': %d spans\n"</span>,</span>
 <span>              <span class="va">trace_list</span><span class="op">$</span><span class="va">name</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">trace_list</span><span class="op">$</span><span class="va">spans</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>

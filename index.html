@@ -138,7 +138,7 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ian-flores.github.io/securetrace/">securetrace</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"my-agent"</span>, exporter <span class="op">=</span> <span class="fu"><a href="reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"traces.jsonl"</span><span class="op">)</span>, <span class="op">{</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"my-agent"</span>, exporter <span class="op">=</span> <span class="fu"><a href="reference/exporter_jsonl.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"traces.jsonl"</span><span class="op">)</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"llm-call"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">1500</span>, <span class="fl">300</span>, model <span class="op">=</span> <span class="st">"claude-sonnet-4-5"</span><span class="op">)</span></span>
 <span>    <span class="st">"The answer is 42"</span></span>
@@ -224,27 +224,27 @@
 <p>Write traces to JSONL files, print to console, or combine multiple exporters:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># JSONL exporter -- one JSON object per line</span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"traces.jsonl"</span><span class="op">)</span></span>
+<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exporter_jsonl.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"traces.jsonl"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"my-run"</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"step-1"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">42</span> <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Console exporter -- human-readable summary</span></span>
-<span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"my-run"</span>, exporter <span class="op">=</span> <span class="fu"><a href="reference/console_exporter.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="op">{</span></span>
+<span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"my-run"</span>, exporter <span class="op">=</span> <span class="fu"><a href="reference/exporter_console.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"step-1"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">42</span> <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Multi-exporter -- fan out to several destinations</span></span>
-<span><span class="va">combined</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/multi_exporter.html">multi_exporter</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="reference/console_exporter.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"traces.jsonl"</span><span class="op">)</span></span>
+<span><span class="va">combined</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exporter_multi.html">multi_exporter</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="reference/exporter_console.html">console_exporter</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="reference/exporter_jsonl.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"traces.jsonl"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"my-run"</span>, exporter <span class="op">=</span> <span class="va">combined</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"step-1"</span>, type <span class="op">=</span> <span class="st">"tool"</span>, <span class="op">{</span> <span class="fl">42</span> <span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Set a default exporter for all with_trace() calls</span></span>
-<span><span class="fu"><a href="reference/set_default_exporter.html">set_default_exporter</a></span><span class="op">(</span><span class="fu"><a href="reference/jsonl_exporter.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"all-traces.jsonl"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/set_default_exporter.html">set_default_exporter</a></span><span class="op">(</span><span class="fu"><a href="reference/exporter_jsonl.html">jsonl_exporter</a></span><span class="op">(</span><span class="st">"all-traces.jsonl"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="prometheus">Prometheus<a class="anchor" aria-label="anchor" href="#prometheus"></a>
@@ -267,7 +267,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="reference/format_prometheus.html">format_prometheus</a></span><span class="op">(</span><span class="va">reg</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Or use the prometheus_exporter() with with_trace()</span></span>
-<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/prometheus_exporter.html">prometheus_exporter</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exporter_prometheus.html">prometheus_exporter</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/with_trace.html">with_trace</a></span><span class="op">(</span><span class="st">"agent-run"</span>, exporter <span class="op">=</span> <span class="va">exp</span>, <span class="op">{</span></span>
 <span>  <span class="fu"><a href="reference/with_span.html">with_span</a></span><span class="op">(</span><span class="st">"call"</span>, type <span class="op">=</span> <span class="st">"llm"</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="reference/record_tokens.html">record_tokens</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">200</span>, model <span class="op">=</span> <span class="st">"gpt-4o"</span><span class="op">)</span></span>

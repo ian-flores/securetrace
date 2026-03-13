@@ -12,7 +12,7 @@ export_trace(exporter, trace)
 
 - exporter:
 
-  An S3 `securetrace_exporter` object.
+  An S7 `securetrace_exporter` object.
 
 - trace:
 
@@ -25,7 +25,7 @@ Invisible `NULL`.
 ## Examples
 
 ``` r
-exp <- console_exporter(verbose = FALSE)
+exp <- exporter_console(verbose = FALSE)
 tr <- Trace$new("test-trace")
 tr$start()
 tr$end()

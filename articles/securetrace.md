@@ -87,7 +87,7 @@ calculate_cost("my-company-claude", input_tokens = 5000, output_tokens = 1000)
 Write traces to JSONL for downstream analysis:
 
 ``` r
-exp <- jsonl_exporter(tempfile("traces", fileext = ".jsonl"))
+exp <- exporter_jsonl(tempfile("traces", fileext = ".jsonl"))
 
 with_trace("exported-run", exporter = exp, {
   with_span("work", type = "tool", { 42 })
@@ -98,7 +98,7 @@ with_trace("exported-run", exporter = exp, {
 Print to console while debugging:
 
 ``` r
-debug_exp <- console_exporter(verbose = TRUE)
+debug_exp <- exporter_console(verbose = TRUE)
 
 with_trace("debug-run", exporter = debug_exp, {
   with_span("step", type = "custom", { 1 + 1 })
@@ -123,7 +123,7 @@ set_default_exporter(exp)
 See
 [`vignette("exporters")`](https://ian-flores.github.io/securetrace/articles/exporters.md)
 for custom exporters,
-[`multi_exporter()`](https://ian-flores.github.io/securetrace/reference/multi_exporter.md),
+[`exporter_multi()`](https://ian-flores.github.io/securetrace/reference/exporter_multi.md),
 and the JSONL schema reference.
 
 ## Trace summary

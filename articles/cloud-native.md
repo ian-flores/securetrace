@@ -32,11 +32,11 @@ str(otlp, max.level = 3)
 ```
 
 Point
-[`otlp_exporter()`](https://ian-flores.github.io/securetrace/reference/otlp_exporter.md)
+[`exporter_otlp()`](https://ian-flores.github.io/securetrace/reference/exporter_otlp.md)
 at any OTLP-HTTP endpoint.
 
 ``` r
-exp <- otlp_exporter(endpoint = "http://localhost:4318")
+exp <- exporter_otlp(endpoint = "http://localhost:4318")
 with_trace("data-pipeline", exporter = exp, {
   with_span("fetch", type = "tool", { record_latency(0.25) })
   with_span("analyze", type = "llm", {
@@ -48,7 +48,7 @@ with_trace("data-pipeline", exporter = exp, {
 Pass headers for authenticated collectors.
 
 ``` r
-exp <- otlp_exporter(
+exp <- exporter_otlp(
   endpoint = "https://tempo.example.com:4318",
   headers = list(Authorization = "Bearer <token>"),
   service_name = "my-r-agent"
@@ -60,7 +60,7 @@ Buffer traces with `batch_size`; call
 at exit to drain.
 
 ``` r
-exp <- otlp_exporter("http://localhost:4318", batch_size = 10, max_retries = 3)
+exp <- exporter_otlp("http://localhost:4318", batch_size = 10, max_retries = 3)
 for (i in seq_len(5)) {
   with_trace(paste0("run-", i), exporter = exp, {
     with_span("work", type = "tool", { i })
@@ -118,7 +118,7 @@ cat(format_prometheus(reg))
 #> securetrace_span_duration_seconds_bucket{type="llm",le="120"} 1
 #> securetrace_span_duration_seconds_bucket{type="llm",le="300"} 1
 #> securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 1
-#> securetrace_span_duration_seconds_sum{type="llm"} 0.001563787
+#> securetrace_span_duration_seconds_sum{type="llm"} 0.001552343
 #> securetrace_span_duration_seconds_count{type="llm"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="0.01"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="0.05"} 1
@@ -132,17 +132,17 @@ cat(format_prometheus(reg))
 #> securetrace_span_duration_seconds_bucket{type="tool",le="120"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="300"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="+Inf"} 1
-#> securetrace_span_duration_seconds_sum{type="tool"} 0.0005390644
+#> securetrace_span_duration_seconds_sum{type="tool"} 0.0005106926
 #> securetrace_span_duration_seconds_count{type="tool"} 1
 ```
 
 Use
-[`prometheus_exporter()`](https://ian-flores.github.io/securetrace/reference/prometheus_exporter.md)
+[`exporter_prometheus()`](https://ian-flores.github.io/securetrace/reference/exporter_prometheus.md)
 so completed traces auto-populate the registry.
 
 ``` r
 reg <- prometheus_registry()
-prom_exp <- prometheus_exporter(reg)
+prom_exp <- exporter_prometheus(reg)
 with_trace("run-1", exporter = prom_exp, {
   with_span("llm", type = "llm", {
     record_tokens(1000, 200, model = "claude-haiku-4-5")
@@ -188,7 +188,7 @@ cat(format_prometheus(reg))
 #> securetrace_span_duration_seconds_bucket{type="llm",le="120"} 2
 #> securetrace_span_duration_seconds_bucket{type="llm",le="300"} 2
 #> securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 2
-#> securetrace_span_duration_seconds_sum{type="llm"} 0.0001027584
+#> securetrace_span_duration_seconds_sum{type="llm"} 0.0001010895
 #> securetrace_span_duration_seconds_count{type="llm"} 2
 ```
 
@@ -275,7 +275,7 @@ function(req, res) {
   s$end()
   tr$add_span(s)
   tr$end()
-  export_trace(otlp_exporter("http://localhost:4318"), tr)
+  export_trace(exporter_otlp("http://localhost:4318"), tr)
   res$setHeader("traceparent", traceparent(tr$trace_id, s$span_id))
   result
 }
