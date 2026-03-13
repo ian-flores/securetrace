@@ -72,7 +72,7 @@ test_that("trace_llm_call auto-extracts model and tokens from Chat object", {
   # Capture the trace via a custom exporter
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 
@@ -150,7 +150,7 @@ test_that("trace_llm_call supports streaming via stream parameter", {
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 
@@ -218,7 +218,7 @@ test_that("trace_llm_call records tool call events from last_turn", {
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 
@@ -259,7 +259,7 @@ test_that("trace_execution records code, output, and handles success", {
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 
@@ -294,7 +294,7 @@ test_that("trace_execution sets error status on execution failure", {
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 
@@ -332,7 +332,7 @@ test_that("trace_guardrail detects secureguard Guard object and extracts results
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 
@@ -375,7 +375,7 @@ test_that("trace_guardrail detects failing secureguard Guard object", {
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 

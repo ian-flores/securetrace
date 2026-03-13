@@ -1,7 +1,7 @@
-# --- 5A: json_stdout_exporter ---
+# --- 5A: exporter_json_stdout ---
 
-test_that("json_stdout_exporter outputs valid JSON lines", {
-  exp <- json_stdout_exporter()
+test_that("exporter_json_stdout outputs valid JSON lines", {
+  exp <- exporter_json_stdout()
 
   tr <- Trace$new("stdout-test")
   tr$start()
@@ -43,8 +43,8 @@ test_that("json_stdout_exporter outputs valid JSON lines", {
   expect_equal(parsed2$output_tokens, 50L)
 })
 
-test_that("json_stdout_exporter includes metrics and metadata", {
-  exp <- json_stdout_exporter()
+test_that("exporter_json_stdout includes metrics and metadata", {
+  exp <- exporter_json_stdout()
 
   tr <- Trace$new("meta-test")
   tr$start()
@@ -63,39 +63,39 @@ test_that("json_stdout_exporter includes metrics and metadata", {
   expect_true(!is.null(parsed$metrics))
 })
 
-test_that("json_stdout_exporter returns a securetrace_exporter", {
-  exp <- json_stdout_exporter()
+test_that("exporter_json_stdout returns a securetrace_exporter", {
+  exp <- exporter_json_stdout()
   expect_true(S7::S7_inherits(exp, securetrace_exporter))
 })
 
 # --- 5B: OTEL env var support ---
 
-test_that("otlp_exporter reads OTEL_EXPORTER_OTLP_ENDPOINT env var", {
+test_that("exporter_otlp reads OTEL_EXPORTER_OTLP_ENDPOINT env var", {
   withr::local_envvar(OTEL_EXPORTER_OTLP_ENDPOINT = "http://my-collector:4318")
 
-  exp <- otlp_exporter()
+  exp <- exporter_otlp()
   endpoint <- attr(exp, "otlp_endpoint")
   expect_equal(endpoint, "http://my-collector:4318")
 })
 
-test_that("otlp_exporter reads OTEL_SERVICE_NAME env var", {
+test_that("exporter_otlp reads OTEL_SERVICE_NAME env var", {
   withr::local_envvar(OTEL_SERVICE_NAME = "my-r-service")
 
   # We can verify by formatting a trace and checking the service name
   # The service_name is captured inside the closure, so we test via otlp_format_trace
   # Since otlp_format_trace takes service_name directly, we test the default arg instead
   # by checking that the exporter was created with no error
-  exp <- otlp_exporter()
+  exp <- exporter_otlp()
   expect_true(S7::S7_inherits(exp, securetrace_exporter))
 })
 
-test_that("otlp_exporter falls back to defaults when env vars unset", {
+test_that("exporter_otlp falls back to defaults when env vars unset", {
   withr::local_envvar(
     OTEL_EXPORTER_OTLP_ENDPOINT = NA,
     OTEL_SERVICE_NAME = NA
   )
 
-  exp <- otlp_exporter()
+  exp <- exporter_otlp()
   endpoint <- attr(exp, "otlp_endpoint")
   expect_equal(endpoint, "http://localhost:4318")
 })

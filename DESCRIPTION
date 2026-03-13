@@ -16,6 +16,7 @@ Depends:
 Imports:
     cli (>= 3.0.0),
     jsonlite,
+    lifecycle (>= 1.0.0),
     R6,
     rlang (>= 1.0.0),
     S7 (>= 0.1.0)

@@ -107,6 +107,17 @@ Trace <- R6::R6Class(
       )
     },
 
+    #' @description Print a concise representation of the trace.
+    #' @param ... Ignored.
+    #' @return The `Trace` object, invisibly.
+    print = function(...) {
+      dur <- self$duration()
+      dur_str <- if (is.null(dur)) "not finished" else sprintf("%.2fs", dur)
+      cli::cli_text("<Trace> {.val {self$name}}")
+      cli::cli_text("  Status: {self$status} | Spans: {length(self$spans)} | Duration: {dur_str}")
+      invisible(self)
+    },
+
     #' @description Print a formatted summary of the trace.
     #' @return The trace summary as a character string, invisibly.
     summary = function() {

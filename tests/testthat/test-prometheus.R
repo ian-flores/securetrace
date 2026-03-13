@@ -204,16 +204,16 @@ test_that("empty registry produces valid (empty) output", {
   expect_equal(output, "")
 })
 
-# -- prometheus_exporter() tests -----------------------------------------------
+# -- exporter_prometheus() tests -----------------------------------------------
 
-test_that("prometheus_exporter returns correct S7 exporter class", {
-  exp <- prometheus_exporter()
+test_that("exporter_prometheus returns correct S7 exporter class", {
+  exp <- exporter_prometheus()
   expect_true(S7::S7_inherits(exp, securetrace_exporter))
 })
 
-test_that("prometheus_exporter feeds registry on export", {
+test_that("exporter_prometheus feeds registry on export", {
   reg <- prometheus_registry()
-  exp <- prometheus_exporter(registry = reg)
+  exp <- exporter_prometheus(registry = reg)
 
   tr <- Trace$new("exporter-test")
   tr$start()

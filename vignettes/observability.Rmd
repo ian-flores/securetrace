@@ -133,7 +133,7 @@ Errors inside `with_span()` set status to `"error"` and record the message. The 
 
 ```{r, error = TRUE}
 trace_file <- tempfile(fileext = ".jsonl")
-exp <- jsonl_exporter(trace_file)
+exp <- exporter_jsonl(trace_file)
 with_trace("error-run", exporter = exp, {
   with_span("failing-step", type = "tool", {
     stop("something went wrong")
@@ -195,7 +195,7 @@ Multi-step workflow: nested spans, tokens, events, metrics, and JSONL export.
 
 ```{r}
 trace_file <- tempfile(fileext = ".jsonl")
-exp <- multi_exporter(jsonl_exporter(trace_file), console_exporter(verbose = TRUE))
+exp <- exporter_multi(exporter_jsonl(trace_file), exporter_console(verbose = TRUE))
 result <- with_trace("full-workflow", exporter = exp, {
   with_span("planning", type = "llm", {
     record_tokens(3000, 800, model = "claude-sonnet-4-5")

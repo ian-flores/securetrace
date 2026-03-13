@@ -16,6 +16,26 @@ securetrace_sampler <- new_class("securetrace_sampler", properties = list(
   should_sample = class_function
 ))
 
+method(print, securetrace_sampler) <- function(x, ...) {
+  # Try to infer the sampler strategy from the function environment
+  fn_env <- environment(x@should_sample)
+  strategy <- "custom"
+  if (is.null(fn_env)) {
+    # Inline function; check if it always returns TRUE or FALSE
+    test_val <- tryCatch(x@should_sample("__test__", list()), error = function(e) NULL)
+    if (isTRUE(test_val)) strategy <- "always_on"
+    else if (isFALSE(test_val)) strategy <- "always_off"
+  } else {
+    if (exists("rate", envir = fn_env, inherits = FALSE)) {
+      strategy <- sprintf("probability (rate = %s)", fn_env$rate)
+    } else if (exists("max_per_second", envir = fn_env, inherits = FALSE)) {
+      strategy <- sprintf("rate_limiting (max = %s/s)", fn_env$max_per_second)
+    }
+  }
+  cat(sprintf("<securetrace_sampler> strategy: %s\n", strategy))
+  invisible(x)
+}
+
 #' Always-On Sampler
 #'
 #' Records every trace. This is the default.
@@ -53,7 +73,9 @@ sampler_always_off <- function() {
 #' s <- sampler_probability(0.1)
 #' @export
 sampler_probability <- function(rate = 1.0) {
-  stopifnot(is.numeric(rate), length(rate) == 1, rate >= 0, rate <= 1)
+  if (!is.numeric(rate) || length(rate) != 1 || rate < 0 || rate > 1) {
+    cli::cli_abort("{.arg rate} must be a single number between 0 and 1, not {.val {rate}}.")
+  }
   securetrace_sampler(should_sample = function(name, metadata) {
     stats::runif(1) < rate
   })
@@ -69,8 +91,9 @@ sampler_probability <- function(rate = 1.0) {
 #' s <- sampler_rate_limiting(5)
 #' @export
 sampler_rate_limiting <- function(max_per_second = 10) {
-  stopifnot(is.numeric(max_per_second), length(max_per_second) == 1,
-            max_per_second > 0)
+  if (!is.numeric(max_per_second) || length(max_per_second) != 1 || max_per_second <= 0) {
+    cli::cli_abort("{.arg max_per_second} must be a single positive number, not {.val {max_per_second}}.")
+  }
   state <- new.env(parent = emptyenv())
   state$count <- 0L
   state$window_start <- Sys.time()

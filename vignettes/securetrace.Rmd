@@ -84,7 +84,7 @@ calculate_cost("my-company-claude", input_tokens = 5000, output_tokens = 1000)
 Write traces to JSONL for downstream analysis:
 
 ```{r}
-exp <- jsonl_exporter(tempfile("traces", fileext = ".jsonl"))
+exp <- exporter_jsonl(tempfile("traces", fileext = ".jsonl"))
 
 with_trace("exported-run", exporter = exp, {
   with_span("work", type = "tool", { 42 })
@@ -94,7 +94,7 @@ with_trace("exported-run", exporter = exp, {
 Print to console while debugging:
 
 ```{r}
-debug_exp <- console_exporter(verbose = TRUE)
+debug_exp <- exporter_console(verbose = TRUE)
 
 with_trace("debug-run", exporter = debug_exp, {
   with_span("step", type = "custom", { 1 + 1 })
@@ -107,7 +107,7 @@ Set a default exporter so every `with_trace()` auto-exports:
 set_default_exporter(exp)
 ```
 
-See `vignette("exporters")` for custom exporters, `multi_exporter()`, and the
+See `vignette("exporters")` for custom exporters, `exporter_multi()`, and the
 JSONL schema reference.
 
 ## Trace summary

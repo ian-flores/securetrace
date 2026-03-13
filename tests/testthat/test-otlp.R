@@ -269,15 +269,15 @@ test_that("all spans carry the trace_id", {
   }
 })
 
-# --- otlp_exporter returns correct class ---
+# --- exporter_otlp returns correct class ---
 
-test_that("otlp_exporter returns a securetrace_exporter S7 object", {
-  exp <- otlp_exporter()
+test_that("exporter_otlp returns a securetrace_exporter S7 object", {
+  exp <- exporter_otlp()
   expect_true(S7::S7_inherits(exp, securetrace_exporter))
 })
 
-test_that("otlp_exporter with custom parameters returns exporter", {
-  exp <- otlp_exporter(
+test_that("exporter_otlp with custom parameters returns exporter", {
+  exp <- exporter_otlp(
     endpoint = "https://my-collector:4318",
     headers = list(Authorization = "Bearer token"),
     service_name = "my-svc",
@@ -401,7 +401,7 @@ test_that("otlp_send retries on transient HTTP errors", {
   )
 
   # The exporter should succeed after retries
-  exp <- otlp_exporter(max_retries = 3L)
+  exp <- exporter_otlp(max_retries = 3L)
   tl <- make_trace_list()
   tr <- Trace$new("retry-test")
   tr$start()
@@ -411,14 +411,14 @@ test_that("otlp_send retries on transient HTTP errors", {
   expect_no_error(export_trace(exp, tr))
 })
 
-test_that("otlp_exporter accepts max_retries parameter", {
-  exp <- otlp_exporter(max_retries = 5L)
+test_that("exporter_otlp accepts max_retries parameter", {
+  exp <- exporter_otlp(max_retries = 5L)
   expect_true(S7::S7_inherits(exp, securetrace_exporter))
 })
 
 # --- OTLP batching ---
 
-test_that("otlp_exporter with batch_size accumulates traces in buffer", {
+test_that("exporter_otlp with batch_size accumulates traces in buffer", {
   send_count <- 0L
 
   local_mocked_bindings(
@@ -429,7 +429,7 @@ test_that("otlp_exporter with batch_size accumulates traces in buffer", {
     .package = "securetrace"
   )
 
-  exp <- otlp_exporter(batch_size = 3L)
+  exp <- exporter_otlp(batch_size = 3L)
 
   # Export 2 traces - should not send yet
   for (i in 1:2) {
@@ -459,7 +459,7 @@ test_that("flush_otlp sends buffered traces immediately", {
     .package = "securetrace"
   )
 
-  exp <- otlp_exporter(batch_size = 10L)
+  exp <- exporter_otlp(batch_size = 10L)
 
   # Export 2 traces - not enough for batch
   for (i in 1:2) {

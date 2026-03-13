@@ -68,6 +68,7 @@ trace_list$name
 \item \href{#method-Trace-add_span}{\code{Trace$add_span()}}
 \item \href{#method-Trace-duration}{\code{Trace$duration()}}
 \item \href{#method-Trace-to_list}{\code{Trace$to_list()}}
+\item \href{#method-Trace-print}{\code{Trace$print()}}
 \item \href{#method-Trace-summary}{\code{Trace$summary()}}
 \item \href{#method-Trace-clone}{\code{Trace$clone()}}
 }
@@ -155,6 +156,26 @@ Serialize the trace to a list.
 
 \subsection{Returns}{
 A named list representation.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trace-print"></a>}}
+\if{latex}{\out{\hypertarget{method-Trace-print}{}}}
+\subsection{Method \code{print()}}{
+Print a concise representation of the trace.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trace$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Ignored.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The \code{Trace} object, invisibly.
 }
 }
 \if{html}{\out{<hr>}}

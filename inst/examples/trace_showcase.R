@@ -13,7 +13,7 @@ cat("=== securetrace showcase ===\n\n")
 
 # ---- Setup: export to a temp JSONL file ----
 jsonl_path <- tempfile("trace_showcase_", fileext = ".jsonl")
-exp <- jsonl_exporter(jsonl_path)
+exp <- exporter_jsonl(jsonl_path)
 
 # ---- Build a realistic multi-step agent trace ----
 .result <- with_trace("research-agent", exporter = exp, task = "summarize paper", user = "demo", {

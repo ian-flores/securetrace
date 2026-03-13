@@ -88,7 +88,7 @@ test_that("with_trace exports on completion", {
   tmp <- tempfile(fileext = ".jsonl")
   on.exit(unlink(tmp), add = TRUE)
 
-  exp <- jsonl_exporter(tmp)
+  exp <- exporter_jsonl(tmp)
   with_trace("export-test", exporter = exp, {
     with_span("work", type = "custom", { 1 + 1 })
   })
@@ -106,7 +106,7 @@ test_that("with_trace exports on error", {
   tmp <- tempfile(fileext = ".jsonl")
   on.exit(unlink(tmp), add = TRUE)
 
-  exp <- jsonl_exporter(tmp)
+  exp <- exporter_jsonl(tmp)
   expect_error(
     with_trace("err-export-test", exporter = exp, {
       stop("fail")
@@ -125,7 +125,7 @@ test_that("set_default_exporter works", {
   tmp <- tempfile(fileext = ".jsonl")
   on.exit(unlink(tmp), add = TRUE)
 
-  exp <- jsonl_exporter(tmp)
+  exp <- exporter_jsonl(tmp)
   set_default_exporter(exp)
 
   with_trace("default-exp-test", {

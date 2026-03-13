@@ -163,17 +163,17 @@ prometheus_metrics <- function(trace, registry = NULL) {
 #' @return An S7 `securetrace_exporter` object. The registry is accessible
 #'   via the exporter's closure environment.
 #' @examples
-#' exp <- prometheus_exporter()
+#' exp <- exporter_prometheus()
 #' tr <- Trace$new("demo")
 #' tr$start()
 #' tr$end()
 #' export_trace(exp, tr)
 #' @export
-prometheus_exporter <- function(registry = NULL) {
+exporter_prometheus <- function(registry = NULL) {
   if (is.null(registry)) {
     registry <- prometheus_registry()
   }
-  new_exporter(function(trace_list) {
+  exporter(function(trace_list) {
     # Reconstruct a minimal Trace-like call:
     # export_fn receives trace_list (already serialized), but
     # prometheus_metrics() expects a Trace R6 object.
@@ -219,6 +219,14 @@ prometheus_exporter <- function(registry = NULL) {
       }
     }
   })
+}
+
+#' @rdname exporter_prometheus
+#' @param ... Arguments passed to [exporter_prometheus()].
+#' @export
+prometheus_exporter <- function(...) {
+  lifecycle::deprecate_warn("0.2.0", "prometheus_exporter()", "exporter_prometheus()")
+  exporter_prometheus(...)
 }
 
 #' Format Prometheus Text Exposition

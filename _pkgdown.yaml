@@ -47,18 +47,18 @@ reference:
 
   - title: Exporters
     contents:
-      - new_exporter
+      - exporter
       - securetrace_exporter
-      - jsonl_exporter
-      - console_exporter
+      - exporter_jsonl
+      - exporter_console
       - export_trace
-      - multi_exporter
-      - json_stdout_exporter
+      - exporter_multi
+      - exporter_json_stdout
       - trace_schema
 
   - title: OTLP Export
     contents:
-      - otlp_exporter
+      - exporter_otlp
       - otlp_format_trace
       - flush_otlp
 
@@ -67,7 +67,7 @@ reference:
       - prometheus
       - prometheus_registry
       - prometheus_metrics
-      - prometheus_exporter
+      - exporter_prometheus
       - format_prometheus
       - serve_prometheus
 

@@ -35,10 +35,10 @@ otlp <- otlp_format_trace(tr$to_list(), service_name = "my-agent")
 str(otlp, max.level = 3)
 ```
 
-Point `otlp_exporter()` at any OTLP-HTTP endpoint.
+Point `exporter_otlp()` at any OTLP-HTTP endpoint.
 
 ```{r, eval = FALSE}
-exp <- otlp_exporter(endpoint = "http://localhost:4318")
+exp <- exporter_otlp(endpoint = "http://localhost:4318")
 with_trace("data-pipeline", exporter = exp, {
   with_span("fetch", type = "tool", { record_latency(0.25) })
   with_span("analyze", type = "llm", {
@@ -50,7 +50,7 @@ with_trace("data-pipeline", exporter = exp, {
 Pass headers for authenticated collectors.
 
 ```{r}
-exp <- otlp_exporter(
+exp <- exporter_otlp(
   endpoint = "https://tempo.example.com:4318",
   headers = list(Authorization = "Bearer <token>"),
   service_name = "my-r-agent"
@@ -60,7 +60,7 @@ exp <- otlp_exporter(
 Buffer traces with `batch_size`; call `flush_otlp()` at exit to drain.
 
 ```{r, eval = FALSE}
-exp <- otlp_exporter("http://localhost:4318", batch_size = 10, max_retries = 3)
+exp <- exporter_otlp("http://localhost:4318", batch_size = 10, max_retries = 3)
 for (i in seq_len(5)) {
   with_trace(paste0("run-", i), exporter = exp, {
     with_span("work", type = "tool", { i })
@@ -92,11 +92,11 @@ prometheus_metrics(tr, reg)
 cat(format_prometheus(reg))
 ```
 
-Use `prometheus_exporter()` so completed traces auto-populate the registry.
+Use `exporter_prometheus()` so completed traces auto-populate the registry.
 
 ```{r}
 reg <- prometheus_registry()
-prom_exp <- prometheus_exporter(reg)
+prom_exp <- exporter_prometheus(reg)
 with_trace("run-1", exporter = prom_exp, {
   with_span("llm", type = "llm", {
     record_tokens(1000, 200, model = "claude-haiku-4-5")
@@ -185,7 +185,7 @@ function(req, res) {
   s$end()
   tr$add_span(s)
   tr$end()
-  export_trace(otlp_exporter("http://localhost:4318"), tr)
+  export_trace(exporter_otlp("http://localhost:4318"), tr)
   res$setHeader("traceparent", traceparent(tr$trace_id, s$span_id))
   result
 }

@@ -7,7 +7,7 @@
 export_trace(exporter, trace)
 }
 \arguments{
-\item{exporter}{An S3 \code{securetrace_exporter} object.}
+\item{exporter}{An S7 \code{securetrace_exporter} object.}
 
 \item{trace}{A \code{Trace} object.}
 }
@@ -18,7 +18,7 @@ Invisible \code{NULL}.
 Calls the exporter's export function with the serialized trace.
 }
 \examples{
-exp <- console_exporter(verbose = FALSE)
+exp <- exporter_console(verbose = FALSE)
 tr <- Trace$new("test-trace")
 tr$start()
 tr$end()

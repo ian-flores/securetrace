@@ -26,15 +26,23 @@ securetrace_exporter <- new_class("securetrace_exporter", properties = list(
 #' # Create an exporter that counts traces
 #' counter <- new.env(parent = emptyenv())
 #' counter$n <- 0L
-#' exp <- new_exporter(function(trace_list) {
+#' exp <- exporter(function(trace_list) {
 #'   counter$n <- counter$n + 1L
 #' })
 #' @export
-new_exporter <- function(export_fn) {
+exporter <- function(export_fn) {
   if (!is.function(export_fn)) {
     cli::cli_abort("{.arg export_fn} must be a function.")
   }
   securetrace_exporter(export_fn = export_fn)
+}
+
+#' @rdname exporter
+#' @param ... Arguments passed to [exporter()].
+#' @export
+new_exporter <- function(...) {
+  lifecycle::deprecate_warn("0.2.0", "new_exporter()", "exporter()")
+  exporter(...)
 }
 
 #' JSONL Exporter
@@ -43,11 +51,11 @@ new_exporter <- function(export_fn) {
 #' (one JSON object per line) to a file.
 #'
 #' @param path File path for the JSONL output.
-#' @return An S3 `securetrace_exporter` object.
+#' @return An S7 `securetrace_exporter` object.
 #' @examples
 #' # Write traces to a temporary JSONL file
 #' tmp <- tempfile(fileext = ".jsonl")
-#' exp <- jsonl_exporter(tmp)
+#' exp <- exporter_jsonl(tmp)
 #'
 #' tr <- Trace$new("demo")
 #' tr$start()
@@ -57,11 +65,19 @@ new_exporter <- function(export_fn) {
 #' readLines(tmp)
 #' unlink(tmp)
 #' @export
-jsonl_exporter <- function(path) {
-  new_exporter(function(trace_list) {
+exporter_jsonl <- function(path) {
+  exporter(function(trace_list) {
     json_line <- jsonlite::toJSON(trace_list, auto_unbox = TRUE, null = "null")
     write(json_line, file = path, append = TRUE)
   })
+}
+
+#' @rdname exporter_jsonl
+#' @param ... Arguments passed to [exporter_jsonl()].
+#' @export
+jsonl_exporter <- function(...) {
+  lifecycle::deprecate_warn("0.2.0", "jsonl_exporter()", "exporter_jsonl()")
+  exporter_jsonl(...)
 }
 
 #' Console Exporter
@@ -69,9 +85,9 @@ jsonl_exporter <- function(path) {
 #' Creates an exporter that prints trace summaries to the console.
 #'
 #' @param verbose If `TRUE`, print detailed span information.
-#' @return An S3 `securetrace_exporter` object.
+#' @return An S7 `securetrace_exporter` object.
 #' @examples
-#' exp <- console_exporter(verbose = TRUE)
+#' exp <- exporter_console(verbose = TRUE)
 #'
 #' tr <- Trace$new("demo-run")
 #' tr$start()
@@ -82,8 +98,8 @@ jsonl_exporter <- function(path) {
 #' tr$end()
 #' export_trace(exp, tr)
 #' @export
-console_exporter <- function(verbose = TRUE) {
-  new_exporter(function(trace_list) {
+exporter_console <- function(verbose = TRUE) {
+  exporter(function(trace_list) {
     cat(sprintf("--- Trace: %s ---\n", trace_list$name))
     cat(sprintf("Status: %s\n", trace_list$status))
     if (!is.null(trace_list$duration_secs)) {
@@ -100,15 +116,23 @@ console_exporter <- function(verbose = TRUE) {
   })
 }
 
+#' @rdname exporter_console
+#' @param ... Arguments passed to [exporter_console()].
+#' @export
+console_exporter <- function(...) {
+  lifecycle::deprecate_warn("0.2.0", "console_exporter()", "exporter_console()")
+  exporter_console(...)
+}
+
 #' Export a Trace
 #'
 #' Calls the exporter's export function with the serialized trace.
 #'
-#' @param exporter An S3 `securetrace_exporter` object.
+#' @param exporter An S7 `securetrace_exporter` object.
 #' @param trace A `Trace` object.
 #' @return Invisible `NULL`.
 #' @examples
-#' exp <- console_exporter(verbose = FALSE)
+#' exp <- exporter_console(verbose = FALSE)
 #' tr <- Trace$new("test-trace")
 #' tr$start()
 #' tr$end()
@@ -128,14 +152,15 @@ export_trace <- function(exporter, trace) {
 #' Combines multiple exporters into one. When a trace is exported,
 #' it is sent to all contained exporters.
 #'
-#' @param ... Exporter objects to combine.
-#' @return An S3 `securetrace_exporter` object.
+#' @param ... For `exporter_multi()`: exporter objects to combine.
+#'   For `multi_exporter()` (deprecated): passed to [exporter_multi()].
+#' @return An S7 `securetrace_exporter` object.
 #' @examples
 #' # Export to both console and JSONL
 #' tmp <- tempfile(fileext = ".jsonl")
-#' combined <- multi_exporter(
-#'   console_exporter(verbose = FALSE),
-#'   jsonl_exporter(tmp)
+#' combined <- exporter_multi(
+#'   exporter_console(verbose = FALSE),
+#'   exporter_jsonl(tmp)
 #' )
 #'
 #' tr <- Trace$new("multi-demo")
@@ -144,18 +169,25 @@ export_trace <- function(exporter, trace) {
 #' export_trace(combined, tr)
 #' unlink(tmp)
 #' @export
-multi_exporter <- function(...) {
+exporter_multi <- function(...) {
   exporters <- list(...)
   for (e in exporters) {
     if (!S7_inherits(e, securetrace_exporter)) {
       cli::cli_abort("All arguments must be {.cls securetrace_exporter} objects.")
     }
   }
-  new_exporter(function(trace_list) {
+  exporter(function(trace_list) {
     for (e in exporters) {
       e@export_fn(trace_list)
     }
   })
+}
+
+#' @rdname exporter_multi
+#' @export
+multi_exporter <- function(...) {
+  lifecycle::deprecate_warn("0.2.0", "multi_exporter()", "exporter_multi()")
+  exporter_multi(...)
 }
 
 #' JSON stdout Exporter
@@ -172,7 +204,7 @@ multi_exporter <- function(...) {
 #'
 #' @return An S7 `securetrace_exporter` object.
 #' @examples
-#' exp <- json_stdout_exporter()
+#' exp <- exporter_json_stdout()
 #'
 #' tr <- Trace$new("demo")
 #' tr$start()
@@ -183,8 +215,8 @@ multi_exporter <- function(...) {
 #' tr$end()
 #' export_trace(exp, tr)
 #' @export
-json_stdout_exporter <- function() {
-  new_exporter(function(trace_list) {
+exporter_json_stdout <- function() {
+  exporter(function(trace_list) {
     trace_id <- trace_list$trace_id
     for (s in trace_list$spans) {
       line <- list(
@@ -214,6 +246,14 @@ json_stdout_exporter <- function() {
           sep = "")
     }
   })
+}
+
+#' @rdname exporter_json_stdout
+#' @param ... Arguments passed to [exporter_json_stdout()].
+#' @export
+json_stdout_exporter <- function(...) {
+  lifecycle::deprecate_warn("0.2.0", "json_stdout_exporter()", "exporter_json_stdout()")
+  exporter_json_stdout(...)
 }
 
 method(print, securetrace_exporter) <- function(x, ...) {

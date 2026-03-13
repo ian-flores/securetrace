@@ -32,7 +32,7 @@
 #' # With an exporter
 #' result <- with_trace("traced-op", {
 #'   10 * 2
-#' }, exporter = console_exporter(verbose = FALSE))
+#' }, exporter = exporter_console(verbose = FALSE))
 #' @section Thread Safety:
 #' The context stack is process-global, following R's standard single-threaded
 #' assumption. Parallel workers spawned via \pkg{future}, \pkg{callr}, or
@@ -185,7 +185,7 @@ current_span <- function() {
 #' @return Invisible `NULL`.
 #' @examples
 #' # Set a default exporter for all with_trace() calls
-#' set_default_exporter(console_exporter(verbose = FALSE))
+#' set_default_exporter(exporter_console(verbose = FALSE))
 #'
 #' # Now with_trace() auto-exports without specifying exporter
 #' with_trace("auto-exported", {
@@ -193,7 +193,7 @@ current_span <- function() {
 #' })
 #'
 #' # Reset by setting a no-op exporter
-#' set_default_exporter(new_exporter(function(trace_list) invisible(NULL)))
+#' set_default_exporter(exporter(function(trace_list) invisible(NULL)))
 #' @export
 set_default_exporter <- function(exporter) {
   if (!S7_inherits(exporter, securetrace_exporter)) {

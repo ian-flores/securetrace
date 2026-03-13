@@ -62,7 +62,7 @@ Span <- R6::R6Class(
                           parent_id = NULL,
                           metadata = list()) {
       self$name <- name
-      self$type <- match.arg(type)
+      self$type <- rlang::arg_match(type)
       self$parent_id <- parent_id
       self$metadata <- metadata
       self$span_id <- private$generate_id()
@@ -155,6 +155,17 @@ Span <- R6::R6Class(
       metric <- list(name = name, value = value)
       if (!is.null(unit)) metric$unit <- unit
       private$.metrics <- c(private$.metrics, list(metric))
+      invisible(self)
+    },
+
+    #' @description Print a concise representation of the span.
+    #' @param ... Ignored.
+    #' @return The `Span` object, invisibly.
+    print = function(...) {
+      dur <- self$duration()
+      dur_str <- if (is.null(dur)) "not finished" else sprintf("%.3fs", dur)
+      cli::cli_text("<Span> {.val {self$name}}")
+      cli::cli_text("  Type: {self$type} | Status: {self$status} | Duration: {dur_str}")
       invisible(self)
     },
 

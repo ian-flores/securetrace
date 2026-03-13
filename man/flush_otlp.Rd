@@ -7,7 +7,7 @@
 flush_otlp(exporter)
 }
 \arguments{
-\item{exporter}{An OTLP exporter created by \code{\link[=otlp_exporter]{otlp_exporter()}}.}
+\item{exporter}{An OTLP exporter created by \code{\link[=exporter_otlp]{exporter_otlp()}}.}
 }
 \value{
 Invisible \code{NULL}.
@@ -17,7 +17,7 @@ Forces immediate sending of any traces buffered in an OTLP exporter.
 }
 \examples{
 \dontrun{
-exp <- otlp_exporter(batch_size = 50L)
+exp <- exporter_otlp(batch_size = 50L)
 # ... export some traces ...
 flush_otlp(exp)
 }

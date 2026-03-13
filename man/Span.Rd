@@ -75,6 +75,7 @@ span$to_list()
 \item \href{#method-Span-set_attribute}{\code{Span$set_attribute()}}
 \item \href{#method-Span-duration}{\code{Span$duration()}}
 \item \href{#method-Span-add_metric}{\code{Span$add_metric()}}
+\item \href{#method-Span-print}{\code{Span$print()}}
 \item \href{#method-Span-to_list}{\code{Span$to_list()}}
 \item \href{#method-Span-clone}{\code{Span$clone()}}
 }
@@ -258,6 +259,26 @@ Record a custom metric.
 \item{\code{unit}}{Optional unit string.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Span-print"></a>}}
+\if{latex}{\out{\hypertarget{method-Span-print}{}}}
+\subsection{Method \code{print()}}{
+Print a concise representation of the span.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Span$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Ignored.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The \code{Span} object, invisibly.
 }
 }
 \if{html}{\out{<hr>}}

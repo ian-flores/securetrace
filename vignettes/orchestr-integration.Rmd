@@ -48,11 +48,11 @@ response <- trace_agent(assistant, "Summarize the iris dataset.")
 Pass an exporter to persist the trace as JSONL.
 
 ```{r}
-exp <- jsonl_exporter(tempfile(fileext = ".jsonl"))
+exp <- exporter_jsonl(tempfile(fileext = ".jsonl"))
 result <- trace_graph(graph, list(data = NULL, summary = NULL), exporter = exp)
 
 # Or set a default for all traces
-set_default_exporter(jsonl_exporter(tempfile(fileext = ".jsonl")))
+set_default_exporter(exporter_jsonl(tempfile(fileext = ".jsonl")))
 result <- trace_graph(graph, list(data = NULL, summary = NULL))
 ```
 

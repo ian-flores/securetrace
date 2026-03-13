@@ -16,7 +16,7 @@ test_that("trace_graph wraps graph$invoke in a trace with correct name", {
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 
@@ -48,7 +48,7 @@ test_that("trace_graph creates child spans for each node execution", {
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 
@@ -96,7 +96,7 @@ test_that("trace_graph sets error status on trace when graph errors", {
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 
@@ -149,7 +149,7 @@ test_that("trace_agent wraps agent$invoke in a trace with correct name", {
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 
@@ -181,7 +181,7 @@ test_that("trace_agent creates a span for the invocation", {
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 
@@ -261,7 +261,7 @@ test_that("trace_agent auto-extracts model and tokens from chat", {
 
   captured <- new.env(parent = emptyenv())
   captured$trace <- NULL
-  capture_exporter <- new_exporter(function(trace_list) {
+  capture_exporter <- exporter(function(trace_list) {
     captured$trace <- trace_list
   })
 

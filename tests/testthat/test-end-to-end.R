@@ -9,7 +9,7 @@ test_that("full pipeline: trace -> nested spans -> export -> read-back -> valida
   tmp <- tempfile(fileext = ".jsonl")
   on.exit(unlink(tmp), add = TRUE)
 
-  exp <- jsonl_exporter(tmp)
+  exp <- exporter_jsonl(tmp)
 
   # ---------- build a realistic trace ----------
   with_trace("agent-run", exporter = exp, user = "test-user", {
@@ -259,7 +259,7 @@ test_that("record_tokens and record_metric convenience wrappers work end-to-end"
   tmp <- tempfile(fileext = ".jsonl")
   on.exit(unlink(tmp), add = TRUE)
 
-  exp <- jsonl_exporter(tmp)
+  exp <- exporter_jsonl(tmp)
 
   with_trace("convenience-api", exporter = exp, {
     with_span("llm-step", type = "llm", {
@@ -294,7 +294,7 @@ test_that("error in span sets error status and still exports", {
   tmp <- tempfile(fileext = ".jsonl")
   on.exit(unlink(tmp), add = TRUE)
 
-  exp <- jsonl_exporter(tmp)
+  exp <- exporter_jsonl(tmp)
 
   expect_error(
     with_trace("error-e2e", exporter = exp, {
@@ -332,7 +332,7 @@ test_that("error in span sets error status and still exports", {
   reset_costs()
 })
 
-test_that("multi_exporter exports to multiple destinations end-to-end", {
+test_that("exporter_multi exports to multiple destinations end-to-end", {
   reset_context()
   reset_costs()
 
@@ -343,7 +343,7 @@ test_that("multi_exporter exports to multiple destinations end-to-end", {
     unlink(tmp2)
   }, add = TRUE)
 
-  exp <- multi_exporter(jsonl_exporter(tmp1), jsonl_exporter(tmp2))
+  exp <- exporter_multi(exporter_jsonl(tmp1), exporter_jsonl(tmp2))
 
   with_trace("multi-e2e", exporter = exp, {
     with_span("work", type = "custom", { 1 + 1 })

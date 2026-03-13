@@ -22,7 +22,7 @@
 #' @examples
 #' \dontrun{
 #' # Export to a local Jaeger instance
-#' exp <- otlp_exporter("http://localhost:4318")
+#' exp <- exporter_otlp("http://localhost:4318")
 #'
 #' tr <- Trace$new("my-run")
 #' tr$start()
@@ -37,7 +37,7 @@
 #' flush_otlp(exp)
 #' }
 #' @export
-otlp_exporter <- function(endpoint = Sys.getenv("OTEL_EXPORTER_OTLP_ENDPOINT",
+exporter_otlp <- function(endpoint = Sys.getenv("OTEL_EXPORTER_OTLP_ENDPOINT",
                                                               "http://localhost:4318"),
                            headers = list(),
                            service_name = Sys.getenv("OTEL_SERVICE_NAME",
@@ -47,7 +47,7 @@ otlp_exporter <- function(endpoint = Sys.getenv("OTEL_EXPORTER_OTLP_ENDPOINT",
   buffer <- new.env(parent = emptyenv())
   buffer$traces <- list()
 
-  exp <- new_exporter(function(trace_list) {
+  exp <- exporter(function(trace_list) {
     payload <- otlp_format_trace(trace_list, service_name = service_name)
     buffer$traces <- c(buffer$traces, list(payload))
 
@@ -65,6 +65,14 @@ otlp_exporter <- function(endpoint = Sys.getenv("OTEL_EXPORTER_OTLP_ENDPOINT",
   attr(exp, "otlp_max_retries") <- max_retries
 
   exp
+}
+
+#' @rdname exporter_otlp
+#' @param ... Arguments passed to [exporter_otlp()].
+#' @export
+otlp_exporter <- function(...) {
+  lifecycle::deprecate_warn("0.2.0", "otlp_exporter()", "exporter_otlp()")
+  exporter_otlp(...)
 }
 
 #' Format a Trace as OTLP JSON
@@ -217,11 +225,11 @@ otlp_format_span <- function(span_list, trace_id) {
 #'
 #' Forces immediate sending of any traces buffered in an OTLP exporter.
 #'
-#' @param exporter An OTLP exporter created by [otlp_exporter()].
+#' @param exporter An OTLP exporter created by [exporter_otlp()].
 #' @return Invisible `NULL`.
 #' @examples
 #' \dontrun{
-#' exp <- otlp_exporter(batch_size = 50L)
+#' exp <- exporter_otlp(batch_size = 50L)
 #' # ... export some traces ...
 #' flush_otlp(exp)
 #' }

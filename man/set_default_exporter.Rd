@@ -17,7 +17,7 @@ Set the Default Exporter
 }
 \examples{
 # Set a default exporter for all with_trace() calls
-set_default_exporter(console_exporter(verbose = FALSE))
+set_default_exporter(exporter_console(verbose = FALSE))
 
 # Now with_trace() auto-exports without specifying exporter
 with_trace("auto-exported", {
@@ -25,5 +25,5 @@ with_trace("auto-exported", {
 })
 
 # Reset by setting a no-op exporter
-set_default_exporter(new_exporter(function(trace_list) invisible(NULL)))
+set_default_exporter(exporter(function(trace_list) invisible(NULL)))
 }
