@@ -43,5 +43,5 @@ s$end()
 tr$add_span(s)
 tr$end()
 export_trace(exp, tr)
-#> {"trace_id":"c0ee6483eaae57b62b7b2f7b71619fb0","span_id":"49188a0f6beaf3a0","parent_id":null,"name":"step1","type":"tool","start_time":"2026-04-23T12:54:49.977Z","end_time":"2026-04-23T12:54:49.977Z","status":"ok","duration_secs":0.0004,"input_tokens":0,"output_tokens":0,"model":null,"error":null}
+#> {"trace_id":"c0ee6483eaae57b62b7b2f7b71619fb0","span_id":"49188a0f6beaf3a0","parent_id":null,"name":"step1","type":"tool","start_time":"2026-04-23T13:30:36.266Z","end_time":"2026-04-23T13:30:36.266Z","status":"ok","duration_secs":0.0003,"input_tokens":0,"output_tokens":0,"model":null,"error":null}
 ```
