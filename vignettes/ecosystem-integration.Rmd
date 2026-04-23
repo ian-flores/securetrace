@@ -59,7 +59,7 @@ as of the current release. Span names follow `package.operation` and
 | -------------- | --------------------------------- | ----------- | --------------------------------------------------- |
 | `securer`      | `securer.execute`                 | `custom`    | `SecureSession$execute()`, `execute_r()`            |
 | `securer`      | `securer.tool_call`               | `tool`      | Tool invocation inside a secure session             |
-| `securetools`  | `tools.<tool_name>`               | `tool`      | `tool_calculator()`, `tool_query_sql()`, ...        |
+| `securetools`  | `tool.<tool_name>`                | `tool`      | `tool_calculator()`, `tool_query_sql()`, ...        |
 | `secureguard`  | `guardrail.<name>`                | `guardrail` | `run_guardrail()`, `check_all()`                    |
 | `secureguard`  | `pipeline.check_{input,code,output}` | `guardrail` | `secure_pipeline()` stages                       |
 | `securecontext`| `context.embed_tfidf`             | `custom`    | `embed_tfidf()`                                     |
