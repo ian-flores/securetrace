@@ -1,5 +1,15 @@
 # Changelog
 
+## securetrace 0.2.1
+
+### Documentation
+
+- New vignette `ecosystem-integration.Rmd` — the canonical reference for
+  how sibling packages (securer, securetools, secureguard,
+  securecontext, orchestr, securebench) emit spans into a securetrace
+  context. Includes the span taxonomy table and a template for writing
+  your own sibling-style instrumentation.
+
 ## securetrace 0.2.0
 
 ### New features

@@ -14,3 +14,5 @@
   Observability](https://ian-flores.github.io/securetrace/articles/cloud-native.md):
 - [Tracing orchestr
   Workflows](https://ian-flores.github.io/securetrace/articles/orchestr-integration.md):
+- [Ecosystem Integration: how sibling packages emit
+  spans](https://ian-flores.github.io/securetrace/articles/ecosystem-integration.md):

@@ -30,5 +30,5 @@ exp@export_fn
 #> {
 #>     cat("Exported:", trace_list$name, "\n")
 #> }
-#> <environment: 0x55e4919c99a8>
+#> <environment: 0x56309aadaca8>
 ```

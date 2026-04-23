@@ -3,11 +3,12 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   cloud-native: cloud-native.html
+  ecosystem-integration: ecosystem-integration.html
   exporters: exporters.html
   observability: observability.html
   orchestr-integration: orchestr-integration.html
   securetrace: securetrace.html
-last_built: 2026-03-13T18:27Z
+last_built: 2026-04-23T12:54Z
 urls:
   reference: https://ian-flores.github.io/securetrace/reference
   article: https://ian-flores.github.io/securetrace/articles

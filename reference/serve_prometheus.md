@@ -26,7 +26,7 @@ serve_prometheus(registry, host = "0.0.0.0", port = 9090)
 ## Value
 
 The httpuv server object (can be stopped with
-[`httpuv::stopServer()`](https://rdrr.io/pkg/httpuv/man/stopServer.html)).
+[`httpuv::stopServer()`](https://rstudio.github.io/httpuv/reference/stopServer.html)).
 
 ## Examples
 
