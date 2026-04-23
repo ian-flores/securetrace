@@ -34,9 +34,9 @@ Suggests:
     testthat (>= 3.0.0),
     withr
 Remotes:
-    ian-flores/securer@v0.2.0,
-    ian-flores/orchestr@v0.2.0,
-    ian-flores/secureguard@v0.3.0
+    ian-flores/securer,
+    ian-flores/orchestr,
+    ian-flores/secureguard
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
