@@ -8,3 +8,4 @@
 ^\.gitignore$
 ^doc$
 ^Meta$
+^\.claude$
