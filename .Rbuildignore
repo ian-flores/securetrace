@@ -9,3 +9,5 @@
 ^doc$
 ^Meta$
 ^\.claude$
+^_pkgdown\.yaml$
+^cran-comments\.md$
