@@ -5,6 +5,7 @@
 Write each trace as one JSON line to an append-only file.
 
 ``` r
+
 library(securetrace)
 trace_file <- tempfile(fileext = ".jsonl")
 exp <- exporter_jsonl(trace_file)
@@ -21,6 +22,7 @@ with_trace("exported-run", exporter = exp, {
 Read back with `jsonlite`:
 
 ``` r
+
 lines <- readLines(trace_file)
 length(lines)
 #> [1] 1
@@ -37,6 +39,7 @@ unlink(trace_file)
 Print trace summaries during interactive development.
 
 ``` r
+
 debug_exp <- exporter_console(verbose = TRUE)
 with_trace("debug-run", exporter = debug_exp, {
   with_span("planning", type = "llm", {
@@ -63,6 +66,7 @@ Fan out to N destinations with
 [`exporter_multi()`](https://ian-flores.github.io/securetrace/reference/exporter_multi.md).
 
 ``` r
+
 trace_file <- tempfile(fileext = ".jsonl")
 combined <- exporter_multi(
   exporter_jsonl(trace_file),
@@ -93,6 +97,7 @@ Set a session-wide exporter instead of passing one per
 call.
 
 ``` r
+
 trace_file <- tempfile(fileext = ".jsonl")
 set_default_exporter(exporter_jsonl(trace_file))
 with_trace("auto-1", { with_span("work", type = "tool", { 1 + 1 }) })
@@ -111,6 +116,7 @@ Pass any function to
 It receives the serialized trace list.
 
 ``` r
+
 span_counter <- exporter(function(trace_list) {
   cat(sprintf("Trace '%s': %d spans\n",
               trace_list$name, length(trace_list$spans)))
@@ -133,6 +139,7 @@ Convert any trace to a plain list with `$to_list()` – this is what
 exporters receive.
 
 ``` r
+
 tr <- Trace$new("serialize-demo")
 tr$start()
 s <- Span$new("work", type = "custom")
@@ -159,6 +166,7 @@ Discover all JSONL fields with
 [`trace_schema()`](https://ian-flores.github.io/securetrace/reference/trace_schema.md):
 
 ``` r
+
 schema <- trace_schema()
 names(schema)
 #> [1] "trace_id"   "name"       "status"     "start_time" "end_time"  

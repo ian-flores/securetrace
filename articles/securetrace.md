@@ -10,6 +10,7 @@ Wrap your workflow in
 break it into spans, and record tokens:
 
 ``` r
+
 library(securetrace)
 
 result <- with_trace("my-agent-run", {
@@ -40,6 +41,7 @@ Built-in pricing covers Anthropic, OpenAI, Gemini, Mistral, and
 DeepSeek.
 
 ``` r
+
 # All known pricing (per 1M tokens)
 costs <- model_costs()
 head(names(costs))
@@ -49,6 +51,7 @@ head(names(costs))
 ```
 
 ``` r
+
 # Cost for a single call
 calculate_cost("claude-sonnet-4-5", input_tokens = 5000, output_tokens = 1000)
 #> [1] 0.03
@@ -57,6 +60,7 @@ calculate_cost("claude-sonnet-4-5", input_tokens = 5000, output_tokens = 1000)
 Register your own models:
 
 ``` r
+
 add_model_cost("my-fine-tuned", input_price = 5, output_price = 20)
 calculate_cost("my-fine-tuned", input_tokens = 10000, output_tokens = 2000)
 #> [1] 0.09
@@ -66,6 +70,7 @@ Cloud provider model IDs (Bedrock, Vertex) resolve automatically via
 [`resolve_model()`](https://ian-flores.github.io/securetrace/reference/resolve_model.md):
 
 ``` r
+
 calculate_cost(
   "anthropic.claude-3-5-sonnet-20241022-v2:0",
   input_tokens = 10000, output_tokens = 2000
@@ -77,6 +82,7 @@ Map internal deployment names with
 [`add_model_alias()`](https://ian-flores.github.io/securetrace/reference/add_model_alias.md):
 
 ``` r
+
 add_model_alias("my-company-claude", "claude-sonnet-4-5")
 calculate_cost("my-company-claude", input_tokens = 5000, output_tokens = 1000)
 #> [1] 0.03
@@ -87,6 +93,7 @@ calculate_cost("my-company-claude", input_tokens = 5000, output_tokens = 1000)
 Write traces to JSONL for downstream analysis:
 
 ``` r
+
 exp <- exporter_jsonl(tempfile("traces", fileext = ".jsonl"))
 
 with_trace("exported-run", exporter = exp, {
@@ -98,6 +105,7 @@ with_trace("exported-run", exporter = exp, {
 Print to console while debugging:
 
 ``` r
+
 debug_exp <- exporter_console(verbose = TRUE)
 
 with_trace("debug-run", exporter = debug_exp, {
@@ -117,6 +125,7 @@ Set a default exporter so every
 auto-exports:
 
 ``` r
+
 set_default_exporter(exp)
 ```
 
@@ -132,6 +141,7 @@ Call `$summary()` on a completed trace to see duration, span count,
 tokens, and cost at a glance:
 
 ``` r
+
 tr <- Trace$new("summarized-run")
 tr$start()
 s <- Span$new("llm", type = "llm")

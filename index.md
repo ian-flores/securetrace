@@ -1,7 +1,7 @@
 # securetrace
 
-> \[!NOTE\] Experimental release. APIs may change before the 1.0
-> stabilization; track the lifecycle badge above for the current tier.
+> **Note:** Experimental release. APIs may change before the 1.0
+> stabilization — track the lifecycle badge above for the current tier.
 
 Observability and tracing for R LLM agent workflows. Structured traces
 with spans, token/cost accounting, latency monitoring, and JSONL export.
@@ -42,19 +42,20 @@ It instruments LLM calls, tool executions, and guardrail checks with
 structured traces, token/cost accounting, and JSONL export – giving
 visibility into what your agents are doing and how much it costs.
 
-| Package                                                      | Role                                                    |
-|--------------------------------------------------------------|---------------------------------------------------------|
-| [securer](https://github.com/ian-flores/securer)             | Sandboxed R execution with tool-call IPC                |
-| [securetools](https://github.com/ian-flores/securetools)     | Pre-built security-hardened tool definitions            |
-| [secureguard](https://github.com/ian-flores/secureguard)     | Input/code/output guardrails (injection, PII, secrets)  |
-| [orchestr](https://github.com/ian-flores/orchestr)           | Graph-based agent orchestration                         |
-| [securecontext](https://github.com/ian-flores/securecontext) | Document chunking, embeddings, RAG retrieval            |
-| [securetrace](https://github.com/ian-flores/securetrace)     | Structured tracing, token/cost accounting, JSONL export |
-| [securebench](https://github.com/ian-flores/securebench)     | Guardrail benchmarking with precision/recall/F1 metrics |
+| Package | Role |
+|----|----|
+| [securer](https://github.com/ian-flores/securer) | Sandboxed R execution with tool-call IPC |
+| [securetools](https://github.com/ian-flores/securetools) | Pre-built security-hardened tool definitions |
+| [secureguard](https://github.com/ian-flores/secureguard) | Input/code/output guardrails (injection, PII, secrets) |
+| [orchestr](https://github.com/ian-flores/orchestr) | Graph-based agent orchestration |
+| [securecontext](https://github.com/ian-flores/securecontext) | Document chunking, embeddings, RAG retrieval |
+| [securetrace](https://github.com/ian-flores/securetrace) | Structured tracing, token/cost accounting, JSONL export |
+| [securebench](https://github.com/ian-flores/securebench) | Guardrail benchmarking with precision/recall/F1 metrics |
 
 ## Installation
 
 ``` r
+
 # install.packages("pak")
 pak::pak("ian-flores/securetrace")
 ```
@@ -62,9 +63,10 @@ pak::pak("ian-flores/securetrace")
 ## Quick Start
 
 ``` r
+
 library(securetrace)
 
-result <- with_trace("my-agent", exporter = jsonl_exporter("traces.jsonl"), {
+result <- with_trace("my-agent", exporter = exporter_jsonl("traces.jsonl"), {
   with_span("llm-call", type = "llm", {
     record_tokens(1500, 300, model = "claude-sonnet-4-5")
     "The answer is 42"
@@ -76,16 +78,22 @@ result <- with_trace("my-agent", exporter = jsonl_exporter("traces.jsonl"), {
 
 - **Structured traces** – OpenTelemetry-inspired traces and spans for R
 - **Token accounting** – Track input/output tokens per span
-- **Cost calculation** – Built-in pricing for Claude and GPT models
-- **JSONL export** – Write traces to structured log files
+- **Cost calculation** – Built-in pricing for Claude, GPT, Gemini,
+  Mistral, and DeepSeek models, plus cloud-provider aliases (Bedrock,
+  Vertex AI)
+- **Exporters** – JSONL, console, OTLP/HTTP (Jaeger/Tempo-compatible),
+  Prometheus, multi-exporter fan-out
 - **Context management** – Automatic trace/span stacking with
   [`with_trace()`](https://ian-flores.github.io/securetrace/reference/with_trace.md)
   /
   [`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md)
-- **Integration helpers** – Wrappers for LLM calls, tool executions, and
-  guardrail checks
-- **Prometheus metrics** – Counters, histograms, and an HTTP `/metrics`
-  endpoint
+- **Sampling** –
+  [`sampler_probability()`](https://ian-flores.github.io/securetrace/reference/sampler_probability.md),
+  [`sampler_rate_limiting()`](https://ian-flores.github.io/securetrace/reference/sampler_rate_limiting.md),
+  etc.
+- **Integration helpers** – Wrappers for LLM calls, tool executions,
+  guardrail checks, and orchestr graphs/agents
+- **Distributed tracing** – W3C `traceparent` header propagation
 
 ### Cost Tracking
 
@@ -93,6 +101,7 @@ securetrace ships with built-in pricing for Claude and GPT models.
 Record tokens per span and calculate costs automatically:
 
 ``` r
+
 library(securetrace)
 
 # Record tokens and compute cost within a trace
@@ -120,6 +129,7 @@ securetrace provides wrappers that auto-instrument calls to ellmer,
 securer, and secureguard:
 
 ``` r
+
 # Trace an ellmer LLM call (requires ellmer)
 chat <- ellmer::chat_openai(model = "gpt-4o")
 with_trace("agent-run", {
@@ -150,28 +160,29 @@ Write traces to JSONL files, print to console, or combine multiple
 exporters:
 
 ``` r
+
 # JSONL exporter -- one JSON object per line
-exp <- jsonl_exporter("traces.jsonl")
+exp <- exporter_jsonl("traces.jsonl")
 with_trace("my-run", exporter = exp, {
   with_span("step-1", type = "tool", { 42 })
 })
 
 # Console exporter -- human-readable summary
-with_trace("my-run", exporter = console_exporter(verbose = TRUE), {
+with_trace("my-run", exporter = exporter_console(verbose = TRUE), {
   with_span("step-1", type = "tool", { 42 })
 })
 
 # Multi-exporter -- fan out to several destinations
-combined <- multi_exporter(
-  console_exporter(verbose = FALSE),
-  jsonl_exporter("traces.jsonl")
+combined <- exporter_multi(
+  exporter_console(verbose = FALSE),
+  exporter_jsonl("traces.jsonl")
 )
 with_trace("my-run", exporter = combined, {
   with_span("step-1", type = "tool", { 42 })
 })
 
 # Set a default exporter for all with_trace() calls
-set_default_exporter(jsonl_exporter("all-traces.jsonl"))
+set_default_exporter(exporter_jsonl("all-traces.jsonl"))
 ```
 
 ### Prometheus
@@ -180,6 +191,7 @@ Expose trace metrics in Prometheus text exposition format for scraping
 by Prometheus, Grafana, or any compatible monitoring system:
 
 ``` r
+
 # Collect metrics from a trace into a registry
 reg <- prometheus_registry()
 tr <- Trace$new("demo")
@@ -195,8 +207,8 @@ tr$end()
 prometheus_metrics(tr, reg)
 cat(format_prometheus(reg))
 
-# Or use the prometheus_exporter() with with_trace()
-exp <- prometheus_exporter()
+# Or use the exporter_prometheus() with with_trace()
+exp <- exporter_prometheus()
 with_trace("agent-run", exporter = exp, {
   with_span("call", type = "llm", {
     record_tokens(500, 200, model = "gpt-4o")
@@ -211,14 +223,26 @@ httpuv::stopServer(srv)
 
 ## Documentation
 
-securetrace includes three vignettes:
+securetrace includes the following vignettes:
 
 - [`vignette("securetrace")`](https://ian-flores.github.io/securetrace/articles/securetrace.md)
-  – Getting Started with securetrace
+  – Getting started: traces, spans, exporters
+- [`vignette("exporters")`](https://ian-flores.github.io/securetrace/articles/exporters.md)
+  – JSONL, console, OTLP, and Prometheus in depth
 - [`vignette("observability")`](https://ian-flores.github.io/securetrace/articles/observability.md)
-  – Observability Integration
+  – End-to-end observability patterns
+- [`vignette("orchestr-integration")`](https://ian-flores.github.io/securetrace/articles/orchestr-integration.md)
+  –
+  [`trace_graph()`](https://ian-flores.github.io/securetrace/reference/trace_graph.md)
+  and
+  [`trace_agent()`](https://ian-flores.github.io/securetrace/reference/trace_agent.md)
+  for orchestr
+- [`vignette("ecosystem-integration")`](https://ian-flores.github.io/securetrace/articles/ecosystem-integration.md)
+  – The `.trace_active()` +
+  [`with_span()`](https://ian-flores.github.io/securetrace/reference/with_span.md)
+  pattern siblings use, plus the canonical span taxonomy
 - [`vignette("cloud-native")`](https://ian-flores.github.io/securetrace/articles/cloud-native.md)
-  – Cloud-Native Observability
+  – Distributed tracing with W3C traceparent headers
 
 Full reference documentation is available at the pkgdown site:
 <https://ian-flores.github.io/securetrace/>

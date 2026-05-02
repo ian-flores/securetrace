@@ -15,6 +15,7 @@ instrument your own code the same way.
 securetrace ships a single private helper that every sibling calls:
 
 ``` r
+
 .trace_active()  # TRUE iff there is a current_trace() on the stack
 ```
 
@@ -41,28 +42,29 @@ as of the current release. Span names follow `package.operation` and
 `type` follows the \[Span\] taxonomy (`llm`, `tool`, `guardrail`,
 `custom`).
 
-| Package         | Span name                            | `type`      | Triggered by                                                                                                     |
-|-----------------|--------------------------------------|-------------|------------------------------------------------------------------------------------------------------------------|
-| `securer`       | `securer.execute`                    | `custom`    | `SecureSession$execute()`, `execute_r()`                                                                         |
-| `securer`       | `securer.tool_call`                  | `tool`      | Tool invocation inside a secure session                                                                          |
-| `securetools`   | `tool.<tool_name>`                   | `tool`      | `tool_calculator()`, `tool_query_sql()`, …                                                                       |
-| `secureguard`   | `guardrail.<name>`                   | `guardrail` | `run_guardrail()`, `check_all()`                                                                                 |
-| `secureguard`   | `pipeline.check_{input,code,output}` | `guardrail` | `secure_pipeline()` stages                                                                                       |
-| `securecontext` | `context.embed_tfidf`                | `custom`    | `embed_tfidf()`                                                                                                  |
-| `securecontext` | `context.embed_texts`                | `custom`    | `embed_texts()`                                                                                                  |
-| `securecontext` | `context.vector_add`                 | `custom`    | `vector_store$add()`                                                                                             |
-| `securecontext` | `context.vector_search`              | `custom`    | `vector_store$search()`                                                                                          |
-| `securecontext` | `context.context_for_chat`           | `custom`    | `context_for_chat()`                                                                                             |
-| `orchestr`      | `agent.invoke`                       | `custom`    | `Agent$invoke()` under [`trace_agent()`](https://ian-flores.github.io/securetrace/reference/trace_agent.md)      |
-| `orchestr`      | `graph.node.<name>`                  | `custom`    | `AgentGraph$invoke()` under [`trace_graph()`](https://ian-flores.github.io/securetrace/reference/trace_graph.md) |
-| `securebench`   | `bench.guardrail_eval`               | `custom`    | `guardrail_eval()`, `benchmark_guardrail()`                                                                      |
-| `securebench`   | `bench.guardrail_metrics`            | `custom`    | `guardrail_metrics()`                                                                                            |
+| Package | Span name | `type` | Triggered by |
+|----|----|----|----|
+| `securer` | `securer.execute` | `custom` | `SecureSession$execute()`, `execute_r()` |
+| `securer` | `securer.tool_call` | `tool` | Tool invocation inside a secure session |
+| `securetools` | `tool.<tool_name>` | `tool` | `tool_calculator()`, `tool_query_sql()`, … |
+| `secureguard` | `guardrail.<name>` | `guardrail` | `run_guardrail()`, `check_all()` |
+| `secureguard` | `pipeline.check_{input,code,output}` | `guardrail` | `secure_pipeline()` stages |
+| `securecontext` | `context.embed_tfidf` | `custom` | `embed_tfidf()` |
+| `securecontext` | `context.embed_texts` | `custom` | `embed_texts()` |
+| `securecontext` | `context.vector_add` | `custom` | `vector_store$add()` |
+| `securecontext` | `context.vector_search` | `custom` | `vector_store$search()` |
+| `securecontext` | `context.context_for_chat` | `custom` | `context_for_chat()` |
+| `orchestr` | `agent.invoke` | `custom` | `Agent$invoke()` under [`trace_agent()`](https://ian-flores.github.io/securetrace/reference/trace_agent.md) |
+| `orchestr` | `graph.node.<name>` | `custom` | `AgentGraph$invoke()` under [`trace_graph()`](https://ian-flores.github.io/securetrace/reference/trace_graph.md) |
+| `securebench` | `bench.guardrail_eval` | `custom` | `guardrail_eval()`, `benchmark_guardrail()` |
+| `securebench` | `bench.guardrail_metrics` | `custom` | `guardrail_metrics()` |
 
 If a span you expect is missing, check that (a) the sibling package is
 installed, and (b) you actually opened a trace around the call. The
 simplest smoke-test is:
 
 ``` r
+
 result <- securetrace::with_trace("smoke", {
   securetools::tool_calculator()@fn("2 + 2")
 })
@@ -75,6 +77,7 @@ If you build a package on top of the ecosystem and want to emit spans
 into the same traces, follow the same pattern the siblings use:
 
 ``` r
+
 #' @keywords internal
 .trace_active <- function() {
   requireNamespace("securetrace", quietly = TRUE) &&

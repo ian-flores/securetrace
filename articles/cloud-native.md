@@ -10,6 +10,7 @@ Inspect the OTLP payload locally with
 [`otlp_format_trace()`](https://ian-flores.github.io/securetrace/reference/otlp_format_trace.md).
 
 ``` r
+
 library(securetrace)
 
 tr <- Trace$new("format-demo")
@@ -36,6 +37,7 @@ Point
 at any OTLP-HTTP endpoint.
 
 ``` r
+
 exp <- exporter_otlp(endpoint = "http://localhost:4318")
 with_trace("data-pipeline", exporter = exp, {
   with_span("fetch", type = "tool", { record_latency(0.25) })
@@ -48,6 +50,7 @@ with_trace("data-pipeline", exporter = exp, {
 Pass headers for authenticated collectors.
 
 ``` r
+
 exp <- exporter_otlp(
   endpoint = "https://tempo.example.com:4318",
   headers = list(Authorization = "Bearer <token>"),
@@ -60,6 +63,7 @@ Buffer traces with `batch_size`; call
 at exit to drain.
 
 ``` r
+
 exp <- exporter_otlp("http://localhost:4318", batch_size = 10, max_retries = 3)
 for (i in seq_len(5)) {
   with_trace(paste0("run-", i), exporter = exp, {
@@ -74,6 +78,7 @@ flush_otlp(exp)
 Create a registry, feed it a trace, render text format.
 
 ``` r
+
 reg <- prometheus_registry()
 tr <- Trace$new("agent-run")
 tr$start()
@@ -118,7 +123,7 @@ cat(format_prometheus(reg))
 #> securetrace_span_duration_seconds_bucket{type="llm",le="120"} 1
 #> securetrace_span_duration_seconds_bucket{type="llm",le="300"} 1
 #> securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 1
-#> securetrace_span_duration_seconds_sum{type="llm"} 0.001534462
+#> securetrace_span_duration_seconds_sum{type="llm"} 0.001592636
 #> securetrace_span_duration_seconds_count{type="llm"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="0.01"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="0.05"} 1
@@ -132,7 +137,7 @@ cat(format_prometheus(reg))
 #> securetrace_span_duration_seconds_bucket{type="tool",le="120"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="300"} 1
 #> securetrace_span_duration_seconds_bucket{type="tool",le="+Inf"} 1
-#> securetrace_span_duration_seconds_sum{type="tool"} 0.0004460812
+#> securetrace_span_duration_seconds_sum{type="tool"} 0.0004858971
 #> securetrace_span_duration_seconds_count{type="tool"} 1
 ```
 
@@ -141,6 +146,7 @@ Use
 so completed traces auto-populate the registry.
 
 ``` r
+
 reg <- prometheus_registry()
 prom_exp <- exporter_prometheus(reg)
 with_trace("run-1", exporter = prom_exp, {
@@ -188,13 +194,14 @@ cat(format_prometheus(reg))
 #> securetrace_span_duration_seconds_bucket{type="llm",le="120"} 2
 #> securetrace_span_duration_seconds_bucket{type="llm",le="300"} 2
 #> securetrace_span_duration_seconds_bucket{type="llm",le="+Inf"} 2
-#> securetrace_span_duration_seconds_sum{type="llm"} 0.0001039505
+#> securetrace_span_duration_seconds_sum{type="llm"} 0.0001101494
 #> securetrace_span_duration_seconds_count{type="llm"} 2
 ```
 
 Serve `/metrics` for Prometheus to scrape.
 
 ``` r
+
 srv <- serve_prometheus(reg, host = "0.0.0.0", port = 9090)
 # ... run traced workloads ...
 httpuv::stopServer(srv)
@@ -205,6 +212,7 @@ httpuv::stopServer(srv)
 Generate and parse W3C `traceparent` headers.
 
 ``` r
+
 tp <- traceparent(
   trace_id = "4bf92f3577b34da6a3ce929d0e0e4736",
   span_id = "00f067aa0ba902b7"
@@ -216,6 +224,7 @@ traceparent("4bf92f3577b34da6a3ce929d0e0e4736", "00f067aa0ba902b7", sampled = FA
 ```
 
 ``` r
+
 ctx <- parse_traceparent("00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01")
 ctx$trace_id
 #> [1] "4bf92f3577b34da6a3ce929d0e0e4736"
@@ -231,6 +240,7 @@ parse_traceparent("invalid-header")
 Inject `traceparent` into outgoing requests from inside an active trace.
 
 ``` r
+
 with_trace("http-client", {
   with_span("api-call", type = "tool", {
     headers <- inject_headers(list("Content-Type" = "application/json"))
@@ -243,6 +253,7 @@ with_trace("http-client", {
 Extract trace context from incoming headers (case-insensitive).
 
 ``` r
+
 incoming <- list(
   "Content-Type" = "application/json",
   traceparent = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
@@ -259,6 +270,7 @@ ctx$span_id
 Server: extract parent context and create child spans.
 
 ``` r
+
 library(securetrace)
 library(plumber)
 
@@ -284,6 +296,7 @@ function(req, res) {
 Client: inject context so both sides share one trace.
 
 ``` r
+
 with_trace("client-workflow", {
   with_span("call-plumber", type = "tool", {
     resp <- httr2::request("http://localhost:8000/analyze") |>

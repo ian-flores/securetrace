@@ -7,17 +7,18 @@ basics and token tracking, see
 [`vignette("securetrace")`](https://ian-flores.github.io/securetrace/articles/securetrace.md).
 
 ``` r
+
 library(securetrace)
 ```
 
 ## Span types
 
-| Type          | Use for                   | Example                                     |
-|---------------|---------------------------|---------------------------------------------|
-| `"llm"`       | Language model calls      | `Span$new("plan", type = "llm")`            |
-| `"tool"`      | Tool / function execution | `Span$new("calc", type = "tool")`           |
-| `"guardrail"` | Input/output validation   | `Span$new("pii-check", type = "guardrail")` |
-| `"custom"`    | Anything else             | `Span$new("transform", type = "custom")`    |
+| Type | Use for | Example |
+|----|----|----|
+| `"llm"` | Language model calls | `Span$new("plan", type = "llm")` |
+| `"tool"` | Tool / function execution | `Span$new("calc", type = "tool")` |
+| `"guardrail"` | Input/output validation | `Span$new("pii-check", type = "guardrail")` |
+| `"custom"` | Anything else | `Span$new("transform", type = "custom")` |
 
 ## Nested spans
 
@@ -29,6 +30,7 @@ Inner spans record the outer span’s ID as `parent_id`:
     '-- Span: "summarize" (llm)         <- sibling
 
 ``` r
+
 result <- with_trace("pipeline", {
   with_span("planning", type = "llm", {
     record_tokens(2000, 500, model = "claude-sonnet-4-5")
@@ -50,6 +52,7 @@ Use the R6 classes when spans are created in one function and ended in
 another, or when building traces from recorded data.
 
 ``` r
+
 tr <- Trace$new("manual-trace", metadata = list(user = "analyst"))
 tr$start()
 s1 <- Span$new("llm-call", type = "llm")
@@ -67,10 +70,11 @@ tr$end()
 ```
 
 ``` r
+
 tr$status
 #> [1] "completed"
 tr$duration()
-#> [1] 0.006238937
+#> [1] 0.007048845
 length(tr$spans)
 #> [1] 2
 ```
@@ -82,6 +86,7 @@ Create with
 attach with `$add_event()`, access with `@`:
 
 ``` r
+
 tr <- Trace$new("event-demo")
 tr$start()
 s <- Span$new("llm-call", type = "llm")
@@ -95,6 +100,7 @@ tr$end()
 ```
 
 ``` r
+
 length(s$events)
 #> [1] 2
 s$events[[1]]@name
@@ -115,6 +121,7 @@ inside
 or `$add_metric()` on the R6 object:
 
 ``` r
+
 result <- with_trace("metrics-demo", {
   with_span("data-processing", type = "tool", {
     record_metric("rows_processed", 1500, unit = "rows")
@@ -125,6 +132,7 @@ result <- with_trace("metrics-demo", {
 ```
 
 ``` r
+
 s <- Span$new("manual-metrics", type = "tool")
 s$start()
 s$add_metric("cache_hits", 42, unit = "count")
@@ -141,6 +149,7 @@ set status to `"error"` and record the message. The trace still exports,
 then re-raises.
 
 ``` r
+
 trace_file <- tempfile(fileext = ".jsonl")
 exp <- exporter_jsonl(trace_file)
 with_trace("error-run", exporter = exp, {
@@ -153,6 +162,7 @@ with_trace("error-run", exporter = exp, {
 ```
 
 ``` r
+
 lines <- readLines(trace_file)
 trace_data <- jsonlite::fromJSON(lines[[1]])
 trace_data$status
@@ -173,6 +183,7 @@ create typed spans automatically. Both require an active
 [`with_trace()`](https://ian-flores.github.io/securetrace/reference/with_trace.md).
 
 ``` r
+
 with_trace("tool-integration", {
   trace_tool_call("calculator", function(x) x * 2, 21)
 })
@@ -180,6 +191,7 @@ with_trace("tool-integration", {
 ```
 
 ``` r
+
 with_trace("guard-integration", {
   trace_guardrail("length-check", function(x) nchar(x) < 1000, "short text")
 })
@@ -193,6 +205,7 @@ wraps `securer::SecureSession$execute()` with a span, recording code and
 stdout as events:
 
 ``` r
+
 session <- securer::SecureSession$new()
 with_trace("sandboxed-run", {
   trace_execution(session, "cat('hello'); 1 + 1")
@@ -207,6 +220,7 @@ Pass a Guard object to
 for structured result metadata:
 
 ``` r
+
 guard <- secureguard::guard_code_analysis()
 with_trace("guarded-input", {
   trace_guardrail("code-safety", guard, "system('rm -rf /')")
@@ -219,6 +233,7 @@ Multi-step workflow: nested spans, tokens, events, metrics, and JSONL
 export.
 
 ``` r
+
 trace_file <- tempfile(fileext = ".jsonl")
 exp <- exporter_multi(exporter_jsonl(trace_file), exporter_console(verbose = TRUE))
 result <- with_trace("full-workflow", exporter = exp, {

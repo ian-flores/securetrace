@@ -1,6 +1,7 @@
 # Tracing orchestr Workflows
 
 ``` r
+
 library(securetrace)
 library(orchestr)
 ```
@@ -11,6 +12,7 @@ Auto-instrument every node in a compiled graph: one span per node, zero
 handler changes.
 
 ``` r
+
 gb <- graph_builder()
 gb$add_node("fetch", function(state, config) list(data = mtcars[1:5, ]))
 gb$add_node("summarize", function(state, config) list(summary = summary(state$data)))
@@ -28,6 +30,7 @@ Wrap a single agent invocation; model name and token deltas are
 extracted from the ellmer chat object automatically.
 
 ``` r
+
 chat <- ellmer::chat_openai(model = "gpt-4o")
 assistant <- agent("assistant", chat)
 response <- trace_agent(assistant, "Summarize the iris dataset.")
@@ -38,6 +41,7 @@ response <- trace_agent(assistant, "Summarize the iris dataset.")
 Pass an exporter to persist the trace as JSONL.
 
 ``` r
+
 exp <- exporter_jsonl(tempfile(fileext = ".jsonl"))
 result <- trace_graph(graph, list(data = NULL, summary = NULL), exporter = exp)
 
@@ -52,6 +56,7 @@ Aggregate costs across all spans. Useful for ReAct loops where call
 count is unpredictable.
 
 ``` r
+
 chat <- ellmer::chat_openai(model = "gpt-4o")
 graph <- react_graph(agent("analyst", chat))
 result <- trace_graph(graph, list(messages = list("Analyze sales trends.")))
@@ -67,6 +72,7 @@ inside a handler for sub-node detail. Combine with
 freely.
 
 ``` r
+
 analyze_node <- function(state, config) {
   with_span("llm-call", type = "llm", {
     record_tokens(500, 120, model = "claude-sonnet-4-5")
