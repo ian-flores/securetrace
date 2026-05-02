@@ -7,8 +7,7 @@
 [![pkgdown](https://github.com/ian-flores/securetrace/actions/workflows/pkgdown.yaml/badge.svg)](https://ian-flores.github.io/securetrace/)
 <!-- badges: end -->
 
-> [!NOTE]
-> Experimental release. APIs may change before the 1.0 stabilization; track the lifecycle badge above for the current tier.
+> **Note:** Experimental release. APIs may change before the 1.0 stabilization — track the lifecycle badge above for the current tier.
 
 Observability and tracing for R LLM agent workflows. Structured traces with spans,
 token/cost accounting, latency monitoring, and JSONL export.
@@ -65,7 +64,7 @@ pak::pak("ian-flores/securetrace")
 ```r
 library(securetrace)
 
-result <- with_trace("my-agent", exporter = jsonl_exporter("traces.jsonl"), {
+result <- with_trace("my-agent", exporter = exporter_jsonl("traces.jsonl"), {
   with_span("llm-call", type = "llm", {
     record_tokens(1500, 300, model = "claude-sonnet-4-5")
     "The answer is 42"
@@ -77,11 +76,12 @@ result <- with_trace("my-agent", exporter = jsonl_exporter("traces.jsonl"), {
 
 - **Structured traces** -- OpenTelemetry-inspired traces and spans for R
 - **Token accounting** -- Track input/output tokens per span
-- **Cost calculation** -- Built-in pricing for Claude and GPT models
-- **JSONL export** -- Write traces to structured log files
+- **Cost calculation** -- Built-in pricing for Claude, GPT, Gemini, Mistral, and DeepSeek models, plus cloud-provider aliases (Bedrock, Vertex AI)
+- **Exporters** -- JSONL, console, OTLP/HTTP (Jaeger/Tempo-compatible), Prometheus, multi-exporter fan-out
 - **Context management** -- Automatic trace/span stacking with `with_trace()` / `with_span()`
-- **Integration helpers** -- Wrappers for LLM calls, tool executions, and guardrail checks
-- **Prometheus metrics** -- Counters, histograms, and an HTTP `/metrics` endpoint
+- **Sampling** -- `sampler_probability()`, `sampler_rate_limiting()`, etc.
+- **Integration helpers** -- Wrappers for LLM calls, tool executions, guardrail checks, and orchestr graphs/agents
+- **Distributed tracing** -- W3C `traceparent` header propagation
 
 ### Cost Tracking
 
@@ -144,27 +144,27 @@ Write traces to JSONL files, print to console, or combine multiple exporters:
 
 ```r
 # JSONL exporter -- one JSON object per line
-exp <- jsonl_exporter("traces.jsonl")
+exp <- exporter_jsonl("traces.jsonl")
 with_trace("my-run", exporter = exp, {
   with_span("step-1", type = "tool", { 42 })
 })
 
 # Console exporter -- human-readable summary
-with_trace("my-run", exporter = console_exporter(verbose = TRUE), {
+with_trace("my-run", exporter = exporter_console(verbose = TRUE), {
   with_span("step-1", type = "tool", { 42 })
 })
 
 # Multi-exporter -- fan out to several destinations
-combined <- multi_exporter(
-  console_exporter(verbose = FALSE),
-  jsonl_exporter("traces.jsonl")
+combined <- exporter_multi(
+  exporter_console(verbose = FALSE),
+  exporter_jsonl("traces.jsonl")
 )
 with_trace("my-run", exporter = combined, {
   with_span("step-1", type = "tool", { 42 })
 })
 
 # Set a default exporter for all with_trace() calls
-set_default_exporter(jsonl_exporter("all-traces.jsonl"))
+set_default_exporter(exporter_jsonl("all-traces.jsonl"))
 ```
 
 ### Prometheus
@@ -187,8 +187,8 @@ tr$end()
 prometheus_metrics(tr, reg)
 cat(format_prometheus(reg))
 
-# Or use the prometheus_exporter() with with_trace()
-exp <- prometheus_exporter()
+# Or use the exporter_prometheus() with with_trace()
+exp <- exporter_prometheus()
 with_trace("agent-run", exporter = exp, {
   with_span("call", type = "llm", {
     record_tokens(500, 200, model = "gpt-4o")
@@ -203,11 +203,14 @@ httpuv::stopServer(srv)
 
 ## Documentation
 
-securetrace includes three vignettes:
+securetrace includes the following vignettes:
 
-- `vignette("securetrace")` -- Getting Started with securetrace
-- `vignette("observability")` -- Observability Integration
-- `vignette("cloud-native")` -- Cloud-Native Observability
+- `vignette("securetrace")` -- Getting started: traces, spans, exporters
+- `vignette("exporters")` -- JSONL, console, OTLP, and Prometheus in depth
+- `vignette("observability")` -- End-to-end observability patterns
+- `vignette("orchestr-integration")` -- `trace_graph()` and `trace_agent()` for orchestr
+- `vignette("ecosystem-integration")` -- The `.trace_active()` + `with_span()` pattern siblings use, plus the canonical span taxonomy
+- `vignette("cloud-native")` -- Distributed tracing with W3C traceparent headers
 
 Full reference documentation is available at the pkgdown site: <https://ian-flores.github.io/securetrace/>
 
